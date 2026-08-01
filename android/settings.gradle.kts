@@ -1,5 +1,12 @@
 pluginManagement {
-    val flutterSdkPath = "C:\\Dev\\flutter"
+    val flutterSdkPath: String = (System.getenv("FLUTTER_ROOT")
+        ?: run {
+            // 兼容本地 Windows：使用当前 settings.gradle.kts 所在项目向上回退到 flutter SDK
+            // 本项目假定 flutter checkout 与当前仓库同级，即 ../flutter
+            val candidate = file("../flutter/packages/flutter_tools/gradle").absolutePath
+            if (java.io.File(candidate).exists()) candidate
+            else "C:\\Dev\\flutter"
+        })
 
     includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
 
