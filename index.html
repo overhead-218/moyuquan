@@ -35,19 +35,11 @@
 <body>
   <!-- Force Flutter to use locally bundled CanvasKit (gstatic.com is blocked in mainland China) -->
   <script>
-    (function () {
-      var waitForLoader = setInterval(function () {
-        if (window._flutter && window._flutter.loader && window._flutter.loader.load) {
-          clearInterval(waitForLoader);
-          var originalLoad = window._flutter.loader.load.bind(window._flutter.loader);
-          window._flutter.loader.load = function (opts) {
-            opts = opts || {};
-            opts.config = Object.assign({}, opts.config, { canvasKitBaseUrl: "canvaskit/", canvasKitVariant: "full" });
-            return originalLoad(opts);
-          };
-        }
-      }, 10);
-    })();
+    // 在 bootstrap 之前注入配置,覆盖默认的 CDN canvaskit 路径
+    window.flutterConfiguration = {
+      canvasKitBaseUrl: "canvaskit/",
+      canvasKitVariant: "full"
+    };
   </script>
   <!--
     You can customize the "flutter_bootstrap.js" script.
