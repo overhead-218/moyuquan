@@ -18,6 +18,26 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
   bool _favorite = false;
   int _currentImageIndex = 0;
   late PageController _imageController;
+  String _imgCat = '全部'; // 头图分类：全部/钓点/住宿/公共区域
+
+  /// 图片分类标签（仅在有对应照片时显示）
+  List<String> get _imgCats {
+    final cats = <String>['全部'];
+    if (spot.images.isNotEmpty) cats.add('钓点');
+    if (spot.accommodationImages.isNotEmpty) cats.add('住宿');
+    if (spot.commonAreaImages.isNotEmpty) cats.add('公共区域');
+    return cats;
+  }
+
+  /// 当前分类下的图片列表
+  List<String> get _catImages {
+    switch (_imgCat) {
+      case '钓点': return spot.images;
+      case '住宿': return spot.accommodationImages;
+      case '公共区域': return spot.commonAreaImages;
+      default: return spot.galleryImages;
+    }
+  }
 
   static const _primary    = Color(0xFF0A7C74);
   static const _lightTeal  = Color(0xFF148F86);
@@ -214,9 +234,9 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                       PageView.builder(
                         controller: _imageController,
                         onPageChanged: (i) => setState(() => _currentImageIndex = i),
-                        itemCount: spot.images.isEmpty ? 1 : spot.images.length,
+                        itemCount: _catImages.isEmpty ? 1 : _catImages.length,
                         itemBuilder: (_, i) {
-                          if (spot.images.isEmpty) {
+                          if (_catImages.isEmpty) {
                             return Container(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
@@ -230,7 +250,7 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                             );
                           }
                           return Image.network(
-                            spot.images[i],
+                            _catImages[i],
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => Container(
                               decoration: BoxDecoration(gradient: LinearGradient(
@@ -265,7 +285,7 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              '${_currentImageIndex + 1}/${spot.images.length}',
+                              '${_currentImageIndex + 1}/${_catImages.length}',
                               style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600),
                             ),
                           ),
@@ -371,10 +391,49 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                         ),
 
                         // ── 住宿信息（野钓/游钓基地常见）───────────────────
-                        if (spot.hasAccommodation) ...[
+                        // ── 图片分类切换（携程/去哪儿风格）──────────────
+                        if (_imgCats.length > 1) ...[
+                          SizedBox(
+                            height: 34,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _imgCats.length,
+                              separatorBuilder: (_, __) => const SizedBox(width: 8),
+                              itemBuilder: (_, i) {
+                                final cat = _imgCats[i];
+                                final sel = _imgCat == cat;
+                                return GestureDetector(
+                                  onTap: () => setState(() {
+                                    _imgCat = cat;
+                                    _currentImageIndex = 0;
+                                    _imageController.jumpToPage(0);
+                                  }),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: sel ? _primary : _bg,
+                                      borderRadius: BorderRadius.circular(17),
+                                    ),
+                                    child: Text(cat, style: TextStyle(
+                                      fontSize: 13, fontWeight: FontWeight.w600,
+                                      color: sel ? Colors.white : _textWeak,
+                                    )),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                           const SizedBox(height: 16),
-                          _buildSectionTitle('🏠 住宿信息'),
-                          const SizedBox(height: 10),
+                        ],
+
+                        // ── 住宿 / 钓棚配套（携程/去哪儿风格）─────────────
+                        if (spot.hasLodgingInfo) ...[
+                          const SizedBox(height: 16),
+                          _buildSectionTitle(
+                            spot.type == '野钓' ? '🏠 钓棚 / 住宿配套' : '🏠 住宿 & 配套',
+                            subtitle: spot.hasAccommodation ? null : '钓点公共区域与设施',
+                          ),
+                          const SizedBox(height: 12),
                           Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
@@ -385,79 +444,61 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                               ],
                             ),
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // 第一行：房型 + 几人/间
-                                Row(
-                                  children: [
-                                    if (spot.roomType != null)
-                                      Expanded(
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              width: 32, height: 32,
-                                              decoration: BoxDecoration(color: _primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                                              child: const Icon(Icons.bed_outlined, size: 16, color: _primary),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Flexible(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(spot.roomType!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _textMain)),
-                                                  if (spot.roomCapacity != null)
-                                                    Text('${spot.roomCapacity!}人/间', style: const TextStyle(fontSize: 11, color: _textWeak)),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
+                                if (spot.facilityChips.isNotEmpty) ...[
+                                  _buildSubLabel('设施服务'),
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 8, runSpacing: 8,
+                                    children: spot.facilityChips.map((f) => _buildFacilityChip(f)).toList(),
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
+                                if (spot.roomType != null || spot.roomCapacity != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 32, height: 32,
+                                          decoration: BoxDecoration(color: _primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                                          child: const Icon(Icons.bed_outlined, size: 16, color: _primary),
                                         ),
-                                      ),
-                                    if (spot.hasWifi)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: _primary.withValues(alpha: 0.08),
-                                          borderRadius: BorderRadius.circular(20),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              if (spot.roomType != null)
+                                                Text(spot.roomType!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _textMain)),
+                                              if (spot.roomCapacity != null)
+                                                Text('${spot.roomCapacity!}人/间', style: const TextStyle(fontSize: 11, color: _textWeak)),
+                                            ],
+                                          ),
                                         ),
-                                        child: const Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(Icons.wifi, size: 14, color: _primary),
-                                            SizedBox(width: 4),
-                                            Text('WiFi', style: TextStyle(fontSize: 12, color: _primary, fontWeight: FontWeight.w600)),
-                                          ],
-                                        ),
-                                      )
-                                    else
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: _textWeak.withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                        child: const Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(Icons.wifi_off, size: 14, color: _textWeak),
-                                            SizedBox(width: 4),
-                                            Text('无WiFi', style: TextStyle(fontSize: 12, color: _textWeak)),
-                                          ],
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                                // 补充说明
+                                      ],
+                                    ),
+                                  ),
                                 if (spot.accommodationNote != null) ...[
-                                  const SizedBox(height: 10),
                                   Container(
                                     width: double.infinity,
                                     padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: _bg,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
+                                    decoration: BoxDecoration(color: _bg, borderRadius: BorderRadius.circular(8)),
                                     child: Text(spot.accommodationNote!, style: const TextStyle(fontSize: 12, color: _textMain, height: 1.5)),
                                   ),
+                                  const SizedBox(height: 12),
+                                ],
+                                if (spot.accommodationImages.isNotEmpty) ...[
+                                  _buildSubLabel('住宿照片'),
+                                  const SizedBox(height: 8),
+                                  _buildImageStrip(spot.accommodationImages),
+                                  const SizedBox(height: 12),
+                                ],
+                                if (spot.commonAreaImages.isNotEmpty) ...[
+                                  _buildSubLabel('公共区域'),
+                                  const SizedBox(height: 8),
+                                  _buildImageStrip(spot.commonAreaImages),
                                 ],
                               ],
                             ),
@@ -627,6 +668,64 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
       ],
     );
   }
+
+  /// 小标题（设施服务 / 住宿照片 / 公共区域）
+  Widget _buildSubLabel(String text) => Text(
+        text,
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _textWeak),
+      );
+
+  /// 设施服务标签（携程/去哪儿风格 chip）
+  Widget _buildFacilityChip(String label) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: _primary.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: _primary.withValues(alpha: 0.18)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(_facilityIcon(label), size: 13, color: _primary),
+            const SizedBox(width: 4),
+            Text(label, style: const TextStyle(fontSize: 12, color: _primary, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      );
+
+  IconData _facilityIcon(String label) {
+    switch (label) {
+      case 'WiFi': return Icons.wifi;
+      case '停车场': return Icons.local_parking;
+      case '餐厅': return Icons.restaurant;
+      case '淋浴热水': return Icons.shower;
+      case '空调': return Icons.ac_unit;
+      case '充电': return Icons.electrical_services;
+      case '渔具出租': return Icons.phishing;
+      default: return Icons.check_circle_outline;
+    }
+  }
+
+  /// 横向图片条（住宿照片 / 公共区域）
+  Widget _buildImageStrip(List<String> urls) => SizedBox(
+        height: 110,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: urls.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 8),
+          itemBuilder: (_, i) => ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.network(
+              urls[i],
+              width: 150, height: 110, fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                width: 150, height: 110, color: _bg,
+                child: const Center(child: Icon(Icons.image, color: _textWeak)),
+              ),
+            ),
+          ),
+        ),
+      );
 
   Widget _buildContactSection() {
     // 未认领：引导商家认领并自助维护联系方式

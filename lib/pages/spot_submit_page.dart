@@ -15,6 +15,7 @@ class _SpotSubmitPageState extends State<SpotSubmitPage> {
   static const Color _bg = Color(0xFFF7F3EE);
   static const Color _surface = Color(0xFFFFFFFF);
   static const Color _textWeak = Color(0xFF999999);
+  static const Color _textMain = Color(0xFF1A1A1A);
 
   static const List<String> _types = ['野钓', '斤塘', '养殖塘', '农家乐', '游钓基地'];
   static const List<String> _typeEmojis = ['🌿', '🐟', '🐟', '🏡', '🏞'];
@@ -22,6 +23,10 @@ class _SpotSubmitPageState extends State<SpotSubmitPage> {
     '鲫鱼', '鲤鱼', '草鱼', '青鱼', '鳜鱼', '翘嘴', '鳙鱼', '鲢鱼',
     '罗非', '马口', '黄颡鱼', '鲈鱼', '黑鱼', '鳊鱼', '鲶鱼', '军鱼',
     '溪石斑', '金线鱼', '黄鳍鲷', '螺蛳青',
+  ];
+
+  static const List<String> _facilityPresets = [
+    'WiFi', '停车场', '餐厅', '淋浴热水', '空调', '充电', '渔具出租',
   ];
 
   final _nameCtrl = TextEditingController();
@@ -35,6 +40,14 @@ class _SpotSubmitPageState extends State<SpotSubmitPage> {
   final _ownerCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _imageCtrl = TextEditingController();
+  final _roomTypeCtrl = TextEditingController();
+  final _roomCapacityCtrl = TextEditingController();
+  final _roomNoteCtrl = TextEditingController();
+  final _accImgCtrl = TextEditingController();
+  final _commonImgCtrl = TextEditingController();
+
+  bool _hasLodging = false;
+  final Set<String> _facilities = {};
 
   String _type = '野钓';
   String _city = '南京';
@@ -53,6 +66,11 @@ class _SpotSubmitPageState extends State<SpotSubmitPage> {
     _ownerCtrl.dispose();
     _descCtrl.dispose();
     _imageCtrl.dispose();
+    _roomTypeCtrl.dispose();
+    _roomCapacityCtrl.dispose();
+    _roomNoteCtrl.dispose();
+    _accImgCtrl.dispose();
+    _commonImgCtrl.dispose();
     super.dispose();
   }
 
@@ -101,6 +119,10 @@ class _SpotSubmitPageState extends State<SpotSubmitPage> {
           .toList();
     }
 
+    final accImages = _parseList(_accImgCtrl.text);
+    final commonImages = _parseList(_commonImgCtrl.text);
+    final facilities = _facilities.toList();
+    final roomCapacity = int.tryParse(_roomCapacityCtrl.text.trim());
     final spot = Spot(
       id: 'u${DateTime.now().millisecondsSinceEpoch}',
       name: name,
@@ -128,6 +150,14 @@ class _SpotSubmitPageState extends State<SpotSubmitPage> {
       favoriteCount: 0,
       postCount: 0,
       description: _descCtrl.text.trim(),
+      hasAccommodation: _hasLodging,
+      roomType: _hasLodging ? (_roomTypeCtrl.text.trim().isEmpty ? null : _roomTypeCtrl.text.trim()) : null,
+      roomCapacity: _hasLodging ? roomCapacity : null,
+      hasWifi: _facilities.contains('WiFi'),
+      accommodationNote: _roomNoteCtrl.text.trim().isEmpty ? null : _roomNoteCtrl.text.trim(),
+      accommodationImages: accImages,
+      commonAreaImages: commonImages,
+      facilities: facilities,
       updatedAt: DateTime.now(),
       submitter: SpotSubmitter.ugc,
     );
@@ -141,6 +171,9 @@ class _SpotSubmitPageState extends State<SpotSubmitPage> {
     );
     Navigator.pop(context);
   }
+
+  List<String> _parseList(String raw) =>
+      raw.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -221,6 +254,78 @@ class _SpotSubmitPageState extends State<SpotSubmitPage> {
               ),
             ]),
             const SizedBox(height: 16),
+            // ── 钓棚 / 住宿配套（携程/去哪儿风格）──────────────
+            _buildCard([
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('钓棚 / 住宿配套', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _textMain)),
+                        GestureDetector(
+                          onTap: () => setState(() => _hasLodging = !_hasLodging),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: _hasLodging ? _primary : _bg,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Text(_hasLodging ? '有' : '无', style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w700,
+                              color: _hasLodging ? Colors.white : _primary,
+                            )),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_hasLodging) ...[
+                      const SizedBox(height: 14),
+                      _buildField(label: '房型', ctrl: _roomTypeCtrl, hint: '如：钓棚木屋/标间'),
+                      _buildDivider(),
+                      _buildField(label: '几人/间', ctrl: _roomCapacityCtrl, hint: '选填', keyboard: TextInputType.number),
+                      _buildDivider(),
+                      _buildField(label: '住宿说明', ctrl: _roomNoteCtrl, hint: '价格/预约方式', maxLines: 2),
+                    ],
+                    const SizedBox(height: 14),
+                    const Text('设施服务（可多选）', style: TextStyle(fontSize: 14, color: _textWeak)),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8, runSpacing: 8,
+                      children: _facilityPresets.map((f) {
+                        final sel = _facilities.contains(f);
+                        return GestureDetector(
+                          onTap: () => setState(() {
+                            if (sel) _facilities.remove(f); else _facilities.add(f);
+                          }),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: sel ? _primary : _bg,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: sel ? _primary : _primary.withValues(alpha: 0.2)),
+                            ),
+                            child: Text(f, style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
+                              color: sel ? Colors.white : _primary,
+                            )),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 14),
+                    _buildField(label: '住宿照片', ctrl: _accImgCtrl, hint: '图片URL，多个逗号分隔', maxLines: 2),
+                    _buildDivider(),
+                    _buildField(label: '公共区域', ctrl: _commonImgCtrl, hint: '餐厅/钓位棚/庭院等，多个逗号分隔', maxLines: 2),
+                  ],
+                ),
+              ),
+            ]),
+            const SizedBox(height: 16),
+
             _buildCard([
               _buildField(label: '联系电话', ctrl: _phoneCtrl, hint: '选填', keyboard: TextInputType.phone),
               _buildDivider(),

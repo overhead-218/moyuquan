@@ -47,6 +47,9 @@ class Spot {
   final int? roomCapacity;        // 几人/间，null=不区分
   final bool hasWifi;            // 是否有WiFi
   final String? accommodationNote; // 住宿补充说明（价格区间、订房方式等）
+  final List<String> accommodationImages; // 住宿照片（客房/钓棚）
+  final List<String> commonAreaImages;   // 公共区域照片（餐厅/钓位棚/庭院）
+  final List<String> facilities;         // 设施服务标签（WiFi/停车场/餐厅/淋浴热水…）
 
   const Spot({
     required this.id,
@@ -84,6 +87,9 @@ class Spot {
     this.roomCapacity,
     this.hasWifi = false,
     this.accommodationNote,
+    this.accommodationImages = const <String>[],
+    this.commonAreaImages = const <String>[],
+    this.facilities = const <String>[],
   });
 
   /// 是否已认领（商家自助维护）
@@ -130,5 +136,23 @@ class Spot {
     final l = lastStocking;
     if (l == null || stockingCycleDays <= 0) return null;
     return l.add(Duration(days: stockingCycleDays));
+  }
+
+  /// 是否展示「住宿 / 钓棚配套」区块（任一住宿信息存在即展示）
+  bool get hasLodgingInfo =>
+      hasAccommodation ||
+      accommodationImages.isNotEmpty ||
+      commonAreaImages.isNotEmpty ||
+      facilities.isNotEmpty;
+
+  /// 头图轮播「全部」分类的图片顺序：钓点 > 住宿 > 公共区域
+  List<String> get galleryImages =>
+      [...images, ...accommodationImages, ...commonAreaImages];
+
+  /// 设施服务标签（合并 WiFi 标识）
+  List<String> get facilityChips {
+    final s = <String>{...facilities};
+    if (hasWifi) s.add('WiFi');
+    return s.toList();
   }
 }

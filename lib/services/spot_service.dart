@@ -28,6 +28,20 @@ class SpotService {
     contactPhone: '13812345601',
     wechat: 'lh88801',
     ownerName: '老李',
+    hasAccommodation: true,
+    roomType: '湖边钓棚木屋',
+    roomCapacity: 2,
+    hasWifi: true,
+    accommodationNote: '湖边钓棚木屋，含早约120元/人/晚，钓友拼住更划算，周末需提前订。',
+    accommodationImages: const [
+      'https://picsum.photos/seed/s001room1/400/300',
+      'https://picsum.photos/seed/s001room2/400/300',
+    ],
+    commonAreaImages: const [
+      'https://picsum.photos/seed/s001area1/400/300',
+      'https://picsum.photos/seed/s001area2/400/300',
+    ],
+    facilities: const ['停车场', '餐厅', '淋浴热水', '渔具出租', 'WiFi'],
     rating: 4.6, reviewCount: 89, viewCount: 3200, favoriteCount: 412, postCount: 23,
     description: '水质清澈，鲫鱼密度高，适合手竿。近岸有缓坡，停车方便。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
@@ -126,6 +140,15 @@ class SpotService {
     roomCapacity: 2,
     hasWifi: true,
     accommodationNote: '千岛湖度假村配套，木屋别墅+湖景标间，WiFi覆盖，含早餐，需提前预约。',
+    accommodationImages: const [
+      'https://picsum.photos/seed/s006room1/400/300',
+      'https://picsum.photos/seed/s006room2/400/300',
+    ],
+    commonAreaImages: const [
+      'https://picsum.photos/seed/s006area1/400/300',
+      'https://picsum.photos/seed/s006area2/400/300',
+    ],
+    facilities: const ['WiFi', '停车场', '餐厅', '温泉', '水上娱乐'],
     submitter: SpotSubmitter.operator,
     ),
     Spot(
