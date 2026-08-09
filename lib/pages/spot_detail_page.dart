@@ -478,7 +478,7 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                         const SizedBox(height: 20),
 
                         // ── 鱼种窗口期 / 塘内鱼种 ───────────────────
-                        if (spot.type == '野钓' || spot.type == '游钓基地') ...[
+                        if (spot.type == '野钓') ...[
                           _buildSectionTitle('🐟 鱼种窗口期', subtitle: '旺季月份范围 · 基于鱼种习性'),
                           const SizedBox(height: 12),
                           _buildFishSeason(),
