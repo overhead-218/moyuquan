@@ -112,8 +112,7 @@ class _LoginPageState extends State<LoginPage>
                     width: 110,
                     height: 110,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0A7C74),
-                      borderRadius: BorderRadius.circular(28),
+                      shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
                           color: const Color(0xFF0A7C74).withValues(alpha: 0.28),
@@ -122,11 +121,10 @@ class _LoginPageState extends State<LoginPage>
                         ),
                       ],
                     ),
-                    child: const Center(
-                      child: Text(
-                        '🎣',
-                        style: TextStyle(fontSize: 56),
-                      ),
+                    child: Image.asset(
+                      'assets/images/logo_1024.png',
+                      width: 110,
+                      height: 110,
                     ),
                   ),
                 ),

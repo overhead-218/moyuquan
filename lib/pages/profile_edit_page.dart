@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/user_profile.dart';
 
 /// 编辑资料页
 class ProfileEditPage extends StatefulWidget {
@@ -19,10 +20,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   static const Color _kTextWeak = Color(0xFF999999);
   static const Color _kShadow = Color(0xFF1A1A1A);
 
-  final _nicknameCtrl = TextEditingController(text: '老李');
-  final _bioCtrl = TextEditingController(text: '专注野钓15年');
-  final _locationCtrl = TextEditingController(text: '南京');
-  String _gender = '男';
+  final _nicknameCtrl =
+      TextEditingController(text: UserProfile.instance.name);
+  final _bioCtrl = TextEditingController(text: UserProfile.instance.bio);
+  final _locationCtrl =
+      TextEditingController(text: UserProfile.instance.city);
+  String _gender = UserProfile.instance.gender;
 
   @override
   void dispose() {
@@ -51,6 +54,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         actions: [
           TextButton(
             onPressed: () {
+              UserProfile.instance.name = _nicknameCtrl.text.trim();
+              UserProfile.instance.bio = _bioCtrl.text.trim();
+              UserProfile.instance.city = _locationCtrl.text.trim();
+              UserProfile.instance.gender = _gender;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: const Text('资料已保存'),

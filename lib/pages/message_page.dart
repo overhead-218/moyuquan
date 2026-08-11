@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'chat_detail_page.dart';
+import '../services/message_service.dart';
 
 /// 消息
 class MessagePage extends StatelessWidget {
@@ -17,15 +18,7 @@ class MessagePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> messages = [
-      {'name': '海钓阿强', 'last': '明天出发钓鱼？', 'time': '刚刚', 'avatar': '🎣', 'unread': 2},
-      {'name': '钓鱼王', 'last': '这个饵料配方很赞', 'time': '12:30', 'avatar': '🐟', 'unread': 0},
-      {'name': '野钓大叔', 'last': '[图片]', 'time': '昨天', 'avatar': '🎣', 'unread': 1},
-      {'name': '江南老饕', 'last': '好的，到时见', 'time': '昨天', 'avatar': '🦑', 'unread': 0},
-      {'name': '老李', 'last': '上次那个钓点还有?', 'time': '周一', 'avatar': '🐠', 'unread': 0},
-      {'name': '渔民小张', 'last': '今天收获不错', 'time': '周日', 'avatar': '🐟', 'unread': 0},
-      {'name': '菜鸟', 'last': '新手求带', 'time': '周日', 'avatar': '🎣', 'unread': 5},
-    ];
+    final messages = MessageService.messages;
 
     return Scaffold(
       backgroundColor: _kBackground,

@@ -21,6 +21,10 @@ class FavoritesPage extends StatelessWidget {
       'likes': '2341',
       'time': '3天前',
       'image': 'https://picsum.photos/seed/fav1/400/300.jpg',
+      'content': '空军的原因有很多，但你真的知道是哪个吗',
+      'location': '南京·六合',
+      'postType': 'diary',
+      'commentCount': 128,
     },
     {
       'title': '夏季夜钓选位指南',
@@ -29,6 +33,10 @@ class FavoritesPage extends StatelessWidget {
       'likes': '1567',
       'time': '1周前',
       'image': 'https://picsum.photos/seed/fav2/400/280.jpg',
+      'content': '夜钓选位是关键，水深和地形决定了鱼获',
+      'location': '宁波·象山港',
+      'postType': 'spot',
+      'commentCount': 89,
     },
     {
       'title': '第一次海钓需要准备什么？',
@@ -37,6 +45,10 @@ class FavoritesPage extends StatelessWidget {
       'likes': '892',
       'time': '2周前',
       'image': 'https://picsum.photos/seed/fav3/400/320.jpg',
+      'content': '装备、饵料、安全，一个都不能少',
+      'location': '温州·洞头岛',
+      'postType': 'diary',
+      'commentCount': 67,
     },
     {
       'title': '舟山矶钓圣地合集',
@@ -45,6 +57,10 @@ class FavoritesPage extends StatelessWidget {
       'likes': '2104',
       'time': '3周前',
       'image': 'https://picsum.photos/seed/fav4/400/260.jpg',
+      'content': '矶钓天堂，建议收藏',
+      'location': '杭州·千岛湖',
+      'postType': 'spot',
+      'commentCount': 201,
     },
   ];
 
@@ -89,6 +105,11 @@ class FavoritesPage extends StatelessWidget {
                     imageHeight: 240,
                     likeCount: int.parse(item['likes'] as String),
                     index: i,
+                    title: item['title'] as String,
+                    content: item['content'] as String,
+                    location: item['location'] as String,
+                    postType: item['postType'] as String,
+                    commentCount: item['commentCount'] as int,
                   ),
                 ),
               );

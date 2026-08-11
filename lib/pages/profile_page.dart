@@ -9,13 +9,40 @@ import 'history_places_page.dart';
 import 'member_center_page.dart';
 import 'orders_page.dart';
 import 'settings_page.dart';
+import 'message_page.dart';
+import '../services/message_service.dart';
+import '../services/user_profile.dart';
 
 /// 我的
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  String _name = UserProfile.instance.name;
+  String _bio = UserProfile.instance.bio;
+  String _city = UserProfile.instance.city;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  void _load() {
+    setState(() {
+      _name = UserProfile.instance.name;
+      _bio = UserProfile.instance.bio;
+      _city = UserProfile.instance.city;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final unread = MessageService.totalUnread;
+    final hasUnread = unread > 0;
     return Scaffold(
       backgroundColor: const Color(0xFFF7F3EE),
       appBar: AppBar(
@@ -50,7 +77,7 @@ class ProfilePage extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const ProfileEditPage()),
-                ),
+                ).then((_) => _load()),
                 child: Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
@@ -88,22 +115,39 @@ class ProfilePage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 20),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '老李',
-                              style: TextStyle(
+                              _name,
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 22,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Text(
-                              '已钓鱼 3 年 · 钓获 128 种',
-                              style: TextStyle(color: Colors.white70, fontSize: 13),
+                              _bio,
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 13),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const Icon(Icons.location_on,
+                                    color: Colors.white70, size: 13),
+                                const SizedBox(width: 3),
+                                Expanded(
+                                  child: Text(
+                                    _city,
+                                    style: const TextStyle(
+                                        color: Colors.white70, fontSize: 13),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -115,9 +159,113 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            // 数据栏：帖子/粉丝/关注
+            // 消息入口（显眼位：头像下方独立卡）
             _AnimatedEntry(
               index: 1,
+              child: GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MessagePage()),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            width: 46,
+                            height: 46,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF4458).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(13),
+                            ),
+                            child: const Icon(
+                              Icons.notifications_none,
+                              color: Color(0xFFFF4458),
+                              size: 26,
+                            ),
+                          ),
+                          if (hasUnread)
+                            Positioned(
+                              right: -3,
+                              top: -3,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 5, vertical: 2),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFFF4458),
+                                  shape: BoxShape.circle,
+                                  border: Border.fromBorderSide(
+                                    BorderSide(color: Colors.white, width: 2),
+                                  ),
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 18,
+                                  minHeight: 18,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    unread > 99 ? '99+' : '$unread',
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 10),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              '消息',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1A1A1A),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              hasUnread ? '$unread 条新消息' : '暂无新消息',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: hasUnread
+                                    ? const Color(0xFF999999)
+                                    : const Color(0xFFBBBBBB),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right,
+                        color: Color(0xFF999999),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // 数据栏：帖子/粉丝/关注
+            _AnimatedEntry(
+              index: 2,
               child: Row(
                 children: [
                   _StatBlock(
@@ -150,7 +298,7 @@ class ProfilePage extends StatelessWidget {
             const SizedBox(height: 16),
             // 等级卡片（金色渐变）
             _AnimatedEntry(
-              index: 2,
+              index: 3,
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: const BoxDecoration(
@@ -186,7 +334,7 @@ class ProfilePage extends StatelessWidget {
             const SizedBox(height: 16),
             // 菜单列表
             _AnimatedEntry(
-              index: 3,
+              index: 4,
               child: Column(
                 children: [
                   _MenuItem(
@@ -334,11 +482,13 @@ class _MenuItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final String? trailing;
+  final int? badge;
   final VoidCallback? onTap;
   const _MenuItem({
     required this.icon,
     required this.label,
     this.trailing,
+    this.badge,
     this.onTap,
   });
 
@@ -359,7 +509,35 @@ class _MenuItem extends StatelessWidget {
       ),
       child: ListTile(
         onTap: onTap,
-        leading: Icon(icon, color: const Color(0xFF0A7C74)),
+        leading: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(icon, color: const Color(0xFF0A7C74)),
+            if (badge != null)
+              Positioned(
+                right: -3,
+                top: -3,
+                child: Container(
+                  width: badge! > 0 ? 16 : 9,
+                  height: badge! > 0 ? 16 : 9,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF4458),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                  child: badge! > 0
+                      ? Center(
+                          child: Text(
+                            badge! > 9 ? '9+' : badge!.toString(),
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 10),
+                          ),
+                        )
+                      : null,
+                ),
+              ),
+          ],
+        ),
         title: Text(label,
             style: const TextStyle(fontSize: 15, color: Color(0xFF1A1A1A))),
         trailing: trailing != null

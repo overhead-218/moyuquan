@@ -33,6 +33,14 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <!-- Force Flutter to use locally bundled CanvasKit (gstatic.com is blocked in mainland China) -->
+  <script>
+    // 在 bootstrap 之前注入配置,覆盖默认的 CDN canvaskit 路径
+    window.flutterConfiguration = {
+      canvasKitBaseUrl: "canvaskit/",
+      canvasKitVariant: "full"
+    };
+  </script>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader

@@ -21,6 +21,10 @@ class MyPostsPage extends StatelessWidget {
       'time': '3天前',
       'avatar': '🎣',
       'name': '老李',
+      'content': '自己配的饵料，牛窝三号加轻麸，上鱼效果很好',
+      'location': '南京·六合',
+      'postType': 'catch',
+      'commentCount': 56,
     },
     {
       'title': '清晨5点出发，大板鲫连竿上岸全过程',
@@ -30,6 +34,10 @@ class MyPostsPage extends StatelessWidget {
       'time': '1周前',
       'avatar': '🎣',
       'name': '老李',
+      'content': '凌晨五点出门，到地方天还没亮，打窝等半小时开始连竿',
+      'location': '南京·浦口',
+      'postType': 'catch',
+      'commentCount': 34,
     },
     {
       'title': '第一次海钓就爆箱，石斑鱼狂拉！',
@@ -39,6 +47,10 @@ class MyPostsPage extends StatelessWidget {
       'time': '2周前',
       'avatar': '🎣',
       'name': '老李',
+      'content': '第一次海钓就上头，石斑鱼一条接一条，累得手都酸了',
+      'location': '宁波·象山港',
+      'postType': 'catch',
+      'commentCount': 89,
     },
   ];
 
@@ -80,6 +92,10 @@ class MyPostsPage extends StatelessWidget {
             avatar: p['avatar'] as String,
             name: p['name'] as String,
             index: i,
+            content: p['content'] as String,
+            location: p['location'] as String,
+            postType: p['postType'] as String,
+            commentCount: p['commentCount'] as int,
           );
         },
       ),
@@ -103,6 +119,10 @@ class _PostCard extends StatelessWidget {
   final String avatar;
   final String name;
   final int index;
+  final String content;
+  final String location;
+  final String postType;
+  final int commentCount;
 
   const _PostCard({
     required this.title,
@@ -113,6 +133,10 @@ class _PostCard extends StatelessWidget {
     required this.avatar,
     required this.name,
     required this.index,
+    required this.content,
+    required this.location,
+    required this.postType,
+    required this.commentCount,
   });
 
   @override
@@ -129,6 +153,11 @@ class _PostCard extends StatelessWidget {
               imageHeight: 240,
               likeCount: int.parse(likes),
               index: index,
+              title: title,
+              content: content,
+              location: location,
+              postType: postType,
+              commentCount: commentCount,
             ),
           ),
         );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'share_card_page.dart';
 
 /// 鱼获详情页
 class CatchDetailPage extends StatelessWidget {
@@ -31,6 +32,13 @@ class CatchDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shareData = CatchShareData(
+      name: name,
+      avatar: avatar,
+      fish: fish,
+      weight: weight,
+      rank: rank,
+    );
     return Scaffold(
       backgroundColor: _kBackground,
       body: CustomScrollView(
@@ -215,6 +223,10 @@ class CatchDetailPage extends StatelessWidget {
                           icon: Icons.share_outlined,
                           label: '分享',
                           color: _kTextWeak,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => ShareCardPage.catchItem(shareData)),
+                          ),
                         ),
                       ),
                     ],
@@ -317,17 +329,21 @@ class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
+  final VoidCallback? onTap;
 
   const _ActionButton({
     required this.icon,
     required this.label,
     required this.color,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
         color: _kSurfaceCD,
         borderRadius: BorderRadius.circular(16),
@@ -349,6 +365,7 @@ class _ActionButton extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

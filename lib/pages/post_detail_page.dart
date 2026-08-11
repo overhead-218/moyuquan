@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'user_profile_page.dart';
+import 'share_card_page.dart';
 
 /// 帖子详情页
 class PostDetailPage extends StatefulWidget {
@@ -9,6 +10,11 @@ class PostDetailPage extends StatefulWidget {
   final double imageHeight;
   final int likeCount;
   final int index;
+  final String title;
+  final String content;
+  final String location;
+  final String postType;
+  final int commentCount;
 
   const PostDetailPage({
     super.key,
@@ -18,6 +24,11 @@ class PostDetailPage extends StatefulWidget {
     required this.imageHeight,
     required this.likeCount,
     required this.index,
+    required this.title,
+    required this.content,
+    required this.location,
+    required this.postType,
+    required this.commentCount,
   });
 
   @override
@@ -125,9 +136,29 @@ class _PostDetailPageState extends State<PostDetailPage>
                     color: _kSurface.withValues(alpha: 0.25),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.more_horiz, color: Colors.white, size: 20),
+                  child: const Icon(Icons.share, color: Colors.white, size: 20),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ShareCardPage.post(
+                        PostShareData(
+                          authorName: widget.authorName,
+                          authorAvatar: widget.authorAvatar,
+                          title: widget.title,
+                          content: widget.content,
+                          location: widget.location,
+                          imageUrl: widget.imageUrl,
+                          likeCount: _likeCount,
+                          commentCount: widget.commentCount,
+                          postType: widget.postType,
+                          index: widget.index,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
