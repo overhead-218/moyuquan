@@ -49973,9 +49973,13 @@ r.push(B.a4)
 h=A.a1(new A.a2(B.R2,new A.aCg(o),h),g)
 r.push(A.ir(h,8,8))
 r.push(B.ej)
-r.push(o.xG(o.CW,"\u56fe\u7247URL\uff0c\u591a\u4e2a\u9017\u53f7\u5206\u9694","\u4f4f\u5bbf\u7167\u7247",2))
+h=o.cy
+g=h?"\u4f4f\u5bbf\u7167\u7247":"\u9493\u68da/\u4f11\u606f\u533a\u7167\u7247"
+h=h?"\u56fe\u7247URL\uff0c\u591a\u4e2a\u9017\u53f7\u5206\u9694":"\u9493\u68da/\u906e\u9633\u68da/\u4f11\u606f\u533a\uff0c\u591a\u4e2a\u9017\u53f7\u5206\u9694"
+r.push(o.xG(o.CW,h,g,2))
 r.push(A.D(n,n,B.e,B.b4,n,n,n,1,B.aN,n,n,n,n))
-r.push(o.xG(o.cx,"\u9910\u5385/\u9493\u4f4d\u68da/\u5ead\u9662\u7b49\uff0c\u591a\u4e2a\u9017\u53f7\u5206\u9694","\u516c\u5171\u533a\u57df",2))
+h=o.cy?"\u9910\u5385/\u9493\u4f4d\u68da/\u5ead\u9662\u7b49\uff0c\u591a\u4e2a\u9017\u53f7\u5206\u9694":"\u505c\u8f66/\u9910\u996e/\u536b\u751f\u95f4\u7b49\u914d\u5957\uff0c\u591a\u4e2a\u9017\u53f7\u5206\u9694"
+r.push(o.xG(o.cx,h,"\u516c\u5171\u533a\u57df",2))
 return A.dE(k,B.E,A.kW(A.ap(A.a([j,B.at,i,B.at,f,B.at,o.uB(A.a([new A.aQ(B.an,A.ap(r,B.x,B.h,B.j),n)],l)),B.at,o.uB(A.a([o.El(o.y,m,B.o3,"\u8054\u7cfb\u7535\u8bdd"),A.D(n,n,B.e,B.b4,n,n,n,1,B.aN,n,n,n,n),o.lh(o.z,m,"\u5fae\u4fe1"),A.D(n,n,B.e,B.b4,n,n,n,1,B.aN,n,n,n,n),o.lh(o.Q,m,"\u8d1f\u8d23\u4eba"),A.D(n,n,B.e,B.b4,n,n,n,1,B.aN,n,n,n,n),o.lh(o.at,"\u9009\u586b\uff0c\u591a\u4e2a\u7528\u9017\u53f7\u5206\u9694","\u56fe\u7247URL"),A.D(n,n,B.e,B.b4,n,n,n,1,B.aN,n,n,n,n),o.xG(o.as,"\u4ecb\u7ecd\u4e00\u4e0b\u8fd9\u4e2a\u9493\u70b9","\u7b80\u4ecb",3)],l)),B.at,A.D(n,B.a8L,B.e,n,n,new A.J(B.n.P(0.08),n,n,A.X(14),n,n,B.m),n,n,n,B.iQ,n,n,n),B.Di],l),B.k,B.h,B.j),n,B.y,B.an,n,B.Z),n)},
 uB(a){var s=null,r=A.X(20),q=A.a([new A.aA(0,B.u,B.t.P(0.05),B.aO,14)],t.V)
 return A.D(s,A.ap(a,B.k,B.h,B.j),B.e,s,s,new A.J(B.i,s,s,r,q,s,B.m),s,s,s,s,s,s,s)},
