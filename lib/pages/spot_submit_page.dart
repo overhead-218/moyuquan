@@ -17,8 +17,8 @@ class _SpotSubmitPageState extends State<SpotSubmitPage> {
   static const Color _textWeak = Color(0xFF999999);
   static const Color _textMain = Color(0xFF1A1A1A);
 
-  static const List<String> _types = ['野钓', '斤塘', '养殖塘', '农家乐', '游钓基地'];
-  static const List<String> _typeEmojis = ['🌿', '🐟', '🐟', '🏡', '🏞'];
+  static const List<String> _types = ['野钓', '路亚', '斤塘', '黑坑', '养殖塘', '农家乐', '游钓基地'];
+  static const List<String> _typeEmojis = ['🌿', '🎮', '🐟', '🏴\u200d☠️', '🐟', '🏡', '🏞'];
   static const List<String> _fishPresets = [
     '鲫鱼', '鲤鱼', '草鱼', '青鱼', '鳜鱼', '翘嘴', '鳙鱼', '鲢鱼',
     '罗非', '马口', '黄颡鱼', '鲈鱼', '黑鱼', '鳊鱼', '鲶鱼', '军鱼',
