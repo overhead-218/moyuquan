@@ -19,6 +19,10 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
   String _sortBy = '热度';      // 热度 | 距离 | 评分
   final List<Spot> _allSpots = SpotService.all;
 
+  // Mock用户坐标（后续接定位SDK替换）
+  final double _userLat = 32.06;  // 南京市中心
+  final double _userLon = 118.78;
+
   static const _primary    = Color(0xFF0A7C74);
   static const _lightTeal  = Color(0xFF148F86);
   static const _bg         = Color(0xFFF7F3EE);
@@ -49,6 +53,9 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
     if (_sortBy == '评分') {
       list = List<Spot>.from(list);
       list.sort((a, b) => b.rating.compareTo(a.rating));
+    }
+    if (_sortBy == '距离') {
+      list = SpotService.sortByDistance(list, _userLat, _userLon);
     }
     return list;
   }

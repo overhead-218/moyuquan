@@ -1,3 +1,4 @@
+import 'dart:math';
 import '../models/spot.dart';
 
 /// 钓点服务（mock 版）
@@ -1655,5 +1656,35 @@ class SpotService {
     } catch (_) {
       return null;
     }
+  }
+
+  /// 计算两点间距离（Haversine公式，单位km）
+  static double distanceBetween(
+    double lat1, double lon1,
+    double lat2, double lon2,
+  ) {
+    const R = 6371.0; // 地球半径（km）
+    final dLat = _toRad(lat2 - lat1);
+    final dLon = _toRad(lon2 - lon1);
+    final a = 0.5 - 0.5 * cos(2 * dLat) +
+             0.5 * cos(2 * dLon) * cos(_toRad(lat1)) * cos(_toRad(lat2));
+    return R * 2 * asin(sqrt(a));
+  }
+
+  static double _toRad(double deg) => deg * 0.01745329252;
+
+  /// 按距离排序（需用户坐标）
+  static List<Spot> sortByDistance(
+    List<Spot> spots,
+    double userLat,
+    double userLon,
+  ) {
+    final copy = List<Spot>.from(spots);
+    copy.sort((a, b) {
+      final da = distanceBetween(userLat, userLon, a.latitude, a.longitude);
+      final db = distanceBetween(userLat, userLon, b.latitude, b.longitude);
+      return da.compareTo(db);
+    });
+    return copy;
   }
 }
