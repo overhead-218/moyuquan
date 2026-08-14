@@ -4,13 +4,14 @@ import '../models/spot.dart';
 /// 钓点服务（mock 版）
 class SpotService {
   /// 城市列表（发现页 / 投稿页共用单一真源）
-      static const List<String> cities = [
+        static const List<String> cities = [
     '三亚',
     '上海',
     '上饶',
     '丽江',
     '乐山',
     '佛山',
+    '凯里',
     '北京',
     '十堰',
     '南京',
@@ -30,12 +31,15 @@ class SpotService {
     '常州',
     '常德',
     '广州',
+    '库尔勒',
     '德宏',
     '德阳',
     '成都',
     '扬州',
     '无锡',
     '昆明',
+    '昌吉',
+    '普洱',
     '曲靖',
     '杭州',
     '松原',
@@ -68,6 +72,7 @@ class SpotService {
     '重庆',
     '长春',
     '长沙',
+    '阜康',
     '青岛',
     '黄山',
     '黔东南',
