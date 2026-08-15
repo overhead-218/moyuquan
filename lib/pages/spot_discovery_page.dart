@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import '../models/spot.dart';
+import '../services/geo_service.dart';
 import '../services/spot_service.dart';
 import 'spot_detail_page.dart';
 import 'spot_submit_page.dart';
@@ -19,9 +22,62 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
   String _sortBy = '热度';      // 热度 | 距离 | 评分
   final List<Spot> _allSpots = SpotService.all;
 
-  // Mock用户坐标（后续接定位SDK替换）
-  final double _userLat = 32.06;  // 南京市中心
-  final double _userLon = 118.78;
+  // 用户坐标：浏览器定位成功则更新，失败保持南京市中心兜底
+  double _userLat = 32.06;
+  double _userLon = 118.78;
+  bool _userPicked = false; // 用户手动选过城市后，定位结果不再覆盖城市
+
+  @override
+  void initState() {
+    super.initState();
+    // 1. 记住的城市优先
+    final saved = GeoService.loadCity();
+    if (saved != null && _cities.contains(saved)) {
+      _selectedCity = saved;
+    }
+    // 2. 浏览器定位（刷新真实坐标 + 未手动选择时映射城市）
+    _tryLocate();
+  }
+
+  Future<void> _tryLocate() async {
+    final pos = await GeoService.locate();
+    if (!mounted || pos == null) return;
+    setState(() {
+      _userLat = pos.lat;
+      _userLon = pos.lon;
+      if (!_userPicked) {
+        final nearest = _nearestCity(pos.lat, pos.lon);
+        if (nearest != null && _cities.contains(nearest)) {
+          _selectedCity = nearest;
+        }
+      }
+    });
+  }
+
+  /// 找离坐标最近的钓点所在城市（城市尺度粗匹配）。
+  String? _nearestCity(double lat, double lon) {
+    String? best;
+    var bestD = double.infinity;
+    for (final s in _allSpots) {
+      final d = _distKm(lat, lon, s.latitude, s.longitude);
+      if (d < bestD) {
+        bestD = d;
+        best = s.city;
+      }
+    }
+    return best;
+  }
+
+  /// Haversine 距离（公里）。
+  static double _distKm(double la1, double lo1, double la2, double lo2) {
+    const r = 6371.0;
+    final dLat = (la2 - la1) * pi / 180;
+    final dLon = (lo2 - lo1) * pi / 180;
+    final a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(la1 * pi / 180) * cos(la2 * pi / 180) *
+            sin(dLon / 2) * sin(dLon / 2);
+    return r * 2 * asin(sqrt(a));
+  }
 
   static const _primary    = Color(0xFF0A7C74);
   static const _lightTeal  = Color(0xFF148F86);
@@ -136,7 +192,13 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
           ),
           PopupMenuButton<String>(
             initialValue: _selectedCity,
-            onSelected: (v) => setState(() => _selectedCity = v),
+            onSelected: (v) {
+              setState(() {
+                _selectedCity = v;
+                _userPicked = true;
+              });
+              GeoService.saveCity(v);
+            },
             offset: const Offset(0, 44),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Container(
