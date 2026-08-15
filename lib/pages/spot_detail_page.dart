@@ -252,12 +252,7 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                           return Image.network(
                             _catImages[i],
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              decoration: BoxDecoration(gradient: LinearGradient(
-                                colors: [_primary, _lightTeal],
-                              )),
-                              child: Center(child: Text(spot.typeEmoji, style: const TextStyle(fontSize: 80))),
-                            ),
+                            errorBuilder: (_, __, ___) => _imgFallback(),
                           );
                         },
                       ),
@@ -706,6 +701,60 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
     }
   }
 
+  /// 类型 → 占位渐变色（图片加载失败时的本地主题占位）
+  static const _typeColors = <String, List<Color>>{
+    '野钓': [Color(0xFF14564E), Color(0xFF0A7C74)],
+    '路亚': [Color(0xFF0F4C5C), Color(0xFF148F86)],
+    '黑坑': [Color(0xFF33383D), Color(0xFF5C6670)],
+    '斤塘': [Color(0xFF6B5230), Color(0xFFC49A5E)],
+    '农家乐': [Color(0xFF3F5A30), Color(0xFF7FA65A)],
+    '游钓基地': [Color(0xFF114A54), Color(0xFF2E8C99)],
+    '养殖塘': [Color(0xFF24503F), Color(0xFF5A9C7E)],
+  };
+
+  List<Color> get _fallbackColors =>
+      _typeColors[spot.type] ?? const [Color(0xFF0A7C74), Color(0xFF148F86)];
+
+  /// 轮播大图占位：渐变 + 圆底 emoji
+  Widget _imgFallback() => Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: _fallbackColors,
+          ),
+        ),
+        child: Center(
+          child: Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.18),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(spot.typeEmoji, style: const TextStyle(fontSize: 46)),
+            ),
+          ),
+        ),
+      );
+
+  /// 图廊小图占位：渐变 + emoji
+  Widget _stripFallback() => Container(
+        width: 150,
+        height: 110,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: _fallbackColors,
+          ),
+        ),
+        child: Center(
+          child: Text(spot.typeEmoji, style: const TextStyle(fontSize: 26)),
+        ),
+      );
+
   /// 横向图片条（住宿照片 / 公共区域）
   Widget _buildImageStrip(List<String> urls) => SizedBox(
         height: 110,
@@ -718,10 +767,7 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
             child: Image.network(
               urls[i],
               width: 150, height: 110, fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                width: 150, height: 110, color: _bg,
-                child: const Center(child: Icon(Icons.image, color: _textWeak)),
-              ),
+              errorBuilder: (_, __, ___) => _stripFallback(),
             ),
           ),
         ),

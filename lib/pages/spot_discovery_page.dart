@@ -573,6 +573,27 @@ class _SpotCard extends StatelessWidget {
 
   const _SpotCard({required this.spot, required this.index, required this.onTap});
 
+  static List<Color> _fallbackColors(String type) {
+    switch (type) {
+      case '野钓':
+        return const [Color(0xFF14564E), Color(0xFF0A7C74)];
+      case '路亚':
+        return const [Color(0xFF0F4C5C), Color(0xFF148F86)];
+      case '黑坑':
+        return const [Color(0xFF33383D), Color(0xFF5C6670)];
+      case '斤塘':
+        return const [Color(0xFF6B5230), Color(0xFFC49A5E)];
+      case '农家乐':
+        return const [Color(0xFF3F5A30), Color(0xFF7FA65A)];
+      case '游钓基地':
+        return const [Color(0xFF114A54), Color(0xFF2E8C99)];
+      case '养殖塘':
+        return const [Color(0xFF24503F), Color(0xFF5A9C7E)];
+      default:
+        return const [Color(0xFF0A7C74), Color(0xFF148F86)];
+    }
+  }
+
   static const _primary = Color(0xFF0A7C74);
   static const _gold = Color(0xFFC49A5E);
   static const _surface = Color(0xFFFFFFFF);
@@ -607,7 +628,7 @@ class _SpotCard extends StatelessWidget {
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
                       decoration: BoxDecoration(gradient: LinearGradient(
-                        colors: [const Color(0xFF0A7C74), const Color(0xFF148F86)],
+                        colors: _fallbackColors(spot.type),
                       )),
                       child: Center(child: Text(spot.typeEmoji, style: const TextStyle(fontSize: 40))),
                     ),
