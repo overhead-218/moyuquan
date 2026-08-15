@@ -594,6 +594,9 @@ class _SpotCard extends StatelessWidget {
     }
   }
 
+  static ImageProvider _imgProvider(String url) =>
+      url.startsWith('assets/') ? AssetImage(url) : NetworkImage(url);
+
   static const _primary = Color(0xFF0A7C74);
   static const _gold = Color(0xFFC49A5E);
   static const _surface = Color(0xFFFFFFFF);
@@ -623,8 +626,8 @@ class _SpotCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    spot.images.isNotEmpty ? spot.images.first : '',
+                  Image(
+                    image: _imgProvider(spot.images.first),
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
                       decoration: BoxDecoration(gradient: LinearGradient(

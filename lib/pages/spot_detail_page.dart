@@ -249,8 +249,8 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                               ),
                             );
                           }
-                          return Image.network(
-                            _catImages[i],
+                          return Image(
+                            image: _imgProvider(_catImages[i]),
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => _imgFallback(),
                           );
@@ -755,6 +755,10 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
         ),
       );
 
+  /// 图片加载：本地 asset 优先，网络图兜底
+  ImageProvider _imgProvider(String url) =>
+      url.startsWith('assets/') ? AssetImage(url) : NetworkImage(url);
+
   /// 横向图片条（住宿照片 / 公共区域）
   Widget _buildImageStrip(List<String> urls) => SizedBox(
         height: 110,
@@ -764,8 +768,8 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
           separatorBuilder: (_, __) => const SizedBox(width: 8),
           itemBuilder: (_, i) => ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: Image.network(
-              urls[i],
+            child: Image(
+              image: _imgProvider(urls[i]),
               width: 150, height: 110, fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => _stripFallback(),
             ),
