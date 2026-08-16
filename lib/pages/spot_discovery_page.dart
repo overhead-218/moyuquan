@@ -7,6 +7,16 @@ import '../services/spot_service.dart';
 import 'spot_detail_page.dart';
 import 'spot_submit_page.dart';
 
+// ── 全局常量（所有类共用）────────────────────────────
+const _primary    = Color(0xFF0A7C74);
+const _lightTeal  = Color(0xFF148F86);
+const _bg         = Color(0xFFF7F3EE);
+const _surface    = Color(0xFFFFFFFF);
+const _gold       = Color(0xFFC49A5E);
+const _red        = Color(0xFFFF4757);
+const _textMain   = Color(0xFF1A1A1A);
+const _textWeak   = Color(0xFF999999);
+
 /// 钓点发现页
 /// 携程三层漏斗：城市 → 综合热度排序 → 筛选
 class SpotDiscoveryPage extends StatefulWidget {
@@ -80,15 +90,6 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
             sin(dLon / 2) * sin(dLon / 2);
     return r * 2 * asin(sqrt(a));
   }
-
-  static const _primary    = Color(0xFF0A7C74);
-  static const _lightTeal  = Color(0xFF148F86);
-  static const _bg         = Color(0xFFF7F3EE);
-  static const _surface    = Color(0xFFFFFFFF);
-  static const _gold       = Color(0xFFC49A5E);
-  static const _red        = Color(0xFFFF4757);
-  static const _textMain   = Color(0xFF1A1A1A);
-  static const _textWeak   = Color(0xFF999999);
 
   // 按抖音/小红书搜索量排序：路亚 > 野钓 > 黑坑 > 斤塘 > 农家乐 > 游钓基地 > 养殖塘
   static const _types = ['全部', '路亚', '野钓', '黑坑', '斤塘', '农家乐', '游钓基地', '养殖塘'];
@@ -187,6 +188,11 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
             ),
           ),
           const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.search, color: _primary),
+            onPressed: _openSearch,
+            tooltip: '搜索钓点',
+          ),
           IconButton(
             icon: const Icon(Icons.add, color: _primary),
             onPressed: _addSpot,
@@ -473,6 +479,59 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
     ).then((_) => setState(() {}));
   }
 
+  // ── 搜索浮层 ────────────────────────────────────────
+  void _openSearch() {
+    final query = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('搜索钓点', style: TextStyle(fontWeight: FontWeight.w700)),
+        content: TextField(
+          controller: query,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: '输入钓点名称、鱼种或地址...',
+            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+            prefixIcon: const Icon(Icons.search, color: _primary),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          onSubmitted: (_) => _doSearch(query.text, ctx),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          ElevatedButton(
+            onPressed: () => _doSearch(query.text, ctx),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('搜索'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _doSearch(String q, BuildContext ctx) {
+    Navigator.pop(ctx);
+    if (q.trim().isEmpty) return;
+    final results = SpotService.search(q.trim());
+    if (results.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('未找到匹配钓点')),
+      );
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _SearchResultsPage(query: q.trim(), results: results),
+      ),
+    );
+  }
+
   void _showFilterSheet() {
     showModalBottomSheet(
       context: context,
@@ -545,8 +604,6 @@ class _SortChip extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
   const _SortChip({required this.label, required this.selected, required this.onTap});
-  static const _primary  = Color(0xFF0A7C74);
-  static const _surface  = Color(0xFFFFFFFF);
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -598,12 +655,6 @@ class _SpotCard extends StatelessWidget {
 
   static ImageProvider _imgProvider(String url) =>
       url.startsWith('assets/') ? AssetImage(url) : NetworkImage(url);
-
-  static const _primary = Color(0xFF0A7C74);
-  static const _gold = Color(0xFFC49A5E);
-  static const _surface = Color(0xFFFFFFFF);
-  static const _textMain = Color(0xFF1A1A1A);
-  static const _textWeak = Color(0xFF999999);
 
   @override
   Widget build(BuildContext context) {
@@ -759,5 +810,37 @@ class _SpotCard extends StatelessWidget {
     if (n >= 10000) return '${(n / 10000).toStringAsFixed(1)}w';
     if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}k';
     return '$n';
+  }
+}
+
+// ── 搜索结果页 ────────────────────────────────────────
+class _SearchResultsPage extends StatelessWidget {
+  final String query;
+  final List<Spot> results;
+  const _SearchResultsPage({required this.query, required this.results});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: _bg,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Text('"$query" 的搜索结果', style: const TextStyle(color: _textMain, fontWeight: FontWeight.w600)),
+        iconTheme: const IconThemeData(color: _textMain),
+      ),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: results.length,
+        itemBuilder: (_, i) => _SpotCard(
+          spot: results[i],
+          index: i,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => SpotDetailPage(spot: results[i])),
+          ),
+        ),
+      ),
+    );
   }
 }
