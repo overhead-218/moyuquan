@@ -17,7 +17,7 @@ class SpotDiscoveryPage extends StatefulWidget {
 }
 
 class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
-  String _selectedCity = '南京';
+  String _selectedCity = '上海';
   String _selectedType = '全部'; // 全部 | 路亚 | 野钓 | 黑坑 | 斤塘 | 农家乐 | 游钓基地 | 养殖塘
   String _sortBy = '热度';      // 热度 | 距离 | 评分
   final List<Spot> _allSpots = SpotService.all;

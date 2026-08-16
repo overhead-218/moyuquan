@@ -19,7 +19,7 @@ class FeedPage extends StatefulWidget {
 
 class _FeedPageState extends State<FeedPage> {
   int _segmentIndex = 1; // 默认"发现"
-  String _selectedCity = '南京'; // 当前选中城市（initState 会读 GeoService 记忆）
+  String _selectedCity = '上海'; // 默认城市（initState 会读 GeoService 记忆覆盖）
 
   // 城市列表：spot_service 完整 80+ 城作为权威源
   static final List<String> _allCities = SpotService.cities;
