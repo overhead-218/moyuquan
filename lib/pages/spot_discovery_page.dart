@@ -30,10 +30,12 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
   @override
   void initState() {
     super.initState();
-    // 1. 记住的城市优先
+    // 1. 记住的城市优先 — 记忆有效意味着用户曾经手动选过，置 _userPicked=true
+    //    防止后续定位覆盖用户的明确选择
     final saved = GeoService.loadCity();
     if (saved != null && _cities.contains(saved)) {
       _selectedCity = saved;
+      _userPicked = true;
     }
     // 2. 浏览器定位（刷新真实坐标 + 未手动选择时映射城市）
     _tryLocate();

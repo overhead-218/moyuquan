@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/post.dart';
 import '../services/post_service.dart';
+import '../services/spot_service.dart';
+import '../services/geo_service.dart';
 import 'post_detail_page.dart';
 import 'search_page.dart';
 import 'map_page.dart';
@@ -17,15 +19,10 @@ class FeedPage extends StatefulWidget {
 
 class _FeedPageState extends State<FeedPage> {
   int _segmentIndex = 1; // 默认"发现"
-  String _selectedCity = '南京'; // 当前选中城市
+  String _selectedCity = '南京'; // 当前选中城市（initState 会读 GeoService 记忆）
 
-  static const _allCities = [
-    '南京', '六合', '浦口', '江宁', '溧水', '高淳',
-    '黄山', '杭州', '千岛湖', '宁波', '温州',
-    '成都', '眉山', '乐山', '宜宾', '泸州',
-    '贵阳', '黔东南', '遵义', '安顺',
-    '昆明', '大理', '丽江', '曲靖',
-  ];
+  // 城市列表：spot_service 完整 80+ 城作为权威源
+  static final List<String> _allCities = SpotService.cities;
 
   static const _accent = Color(0xFFFF4458); // 小红书红
 
@@ -132,7 +129,10 @@ class _FeedPageState extends State<FeedPage> {
                   bottom: 0,
                   child: PopupMenuButton<String>(
                     initialValue: _selectedCity,
-                    onSelected: (v) => setState(() => _selectedCity = v),
+                    onSelected: (v) {
+                      setState(() => _selectedCity = v);
+                      GeoService.saveCity(v); // 同步到 localStorage，钓点页下次会读到
+                    },
                     offset: const Offset(0, 44),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
