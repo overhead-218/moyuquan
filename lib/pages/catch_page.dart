@@ -962,7 +962,7 @@ class _ReelTab extends StatelessWidget {
     _EquipItem(name: '达亿瓦 斯泰拉', spec: 'STEEZ AIR 1018H', type: '水滴轮', score: 10230, heat: 4210, replies: 512, tags: ['旗舰', '轻量', '感度极佳', '竞技首选']),
     _EquipItem(name: '禧玛诺 班塔', spec: 'BANTA 150SH', type: '水滴轮', score: 9540, heat: 3780, replies: 398, tags: ['泛用', '刹车稳', '入门首选']),
     _EquipItem(name: '达亿瓦 Zillion', spec: 'ZILLION TW HD 1016XHL', type: '水滴轮', score: 9130, heat: 3340, replies: 287, tags: ['巨物', '高转速', '大力矩']),
-    _EquipItem(name: '禧玛诺 安塔', spec: 'ANTARES DC MD', type: '水滴轮', score: 8760, heat: 2890, replies: 243, tags: ['电磁刹车', '远投', '新手友好']),
+    _EquipItem(name: '禧玛诺 安塔', spec: 'ANTARES DC MD', type: '水滴轮', score: 8760, heat: 2890, replies: 243, tags: ['电磁刹车', '远投', '新手友好'], imageUrl: 'assets/images/equip/shimano_antares_dc.jpg'),
     _EquipItem(name: '阿布 BFS', spec: 'REVO BFS X', type: '纺车轮', score: 8420, heat: 2560, replies: 221, tags: ['微物', '轻量', '性价比']),
     _EquipItem(name: '达亿瓦 蜘蛛', spec: 'SPIDER MINI 80', type: '纺车轮', score: 8100, heat: 2230, replies: 198, tags: ['小饵', '泛用', '感度好']),
     _EquipItem(name: '禧玛诺 万奎士', spec: 'VANQUISH C3000', type: '纺车轮', score: 7890, heat: 1980, replies: 176, tags: ['远投', '轻量', '海水淡水产']),
@@ -1074,10 +1074,11 @@ class _EquipItem {
   final int heat;    // 讨论热度
   final int replies;
   final List<String> tags;
+  final String? imageUrl;  // 产品图片路径
   const _EquipItem({
     required this.name, required this.spec, required this.type,
     required this.score, required this.heat, required this.replies,
-    required this.tags,
+    required this.tags, this.imageUrl,
   });
 }
 
@@ -1129,18 +1130,33 @@ class _EquipCard extends StatelessWidget {
                 )),
               ),
               const SizedBox(width: 10),
-              // 装备图标
+              // 装备图片
               Container(
-                width: 44, height: 44,
+                width: 60, height: 60,
                 decoration: BoxDecoration(
-                  color: _rankColor.withAlpha((0.12 * 255).toInt()),
+                  color: _rankColor.withAlpha((0.08 * 255).toInt()),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Center(
-                  child: Icon(
-                    rank <= 3 ? Icons.star : Icons.settings_input_component,
-                    color: _rankColor, size: 22,
-                  ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: item.imageUrl != null
+                    ? Image.asset(
+                        item.imageUrl!,
+                        width: 60, height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Center(
+                          child: Icon(
+                            rank <= 3 ? Icons.star : Icons.settings_input_component,
+                            color: _rankColor, size: 24,
+                          ),
+                        ),
+                      )
+                    : Center(
+                        child: Icon(
+                          rank <= 3 ? Icons.star : Icons.settings_input_component,
+                          color: _rankColor, size: 24,
+                        ),
+                      ),
                 ),
               ),
               const SizedBox(width: 12),
