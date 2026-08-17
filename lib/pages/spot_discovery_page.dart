@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../models/spot.dart';
 import '../services/geo_service.dart';
 import '../services/spot_service.dart';
-import '../services/spot_avatar_generator.dart';
 import 'spot_detail_page.dart';
 import 'spot_submit_page.dart';
 
@@ -673,29 +672,21 @@ class _SpotCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: Row(
           children: [
-            // 封面图 - 数字头像
+            // 封面图
             SizedBox(
               width: 110,
               height: 110,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // 数字头像
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                  Image(
+                    image: _imgProvider(spot.images.first),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      decoration: BoxDecoration(gradient: LinearGradient(
                         colors: _fallbackColors(spot.type),
-                      ),
-                    ),
-                    child: Center(
-                      child: SpotAvatarGenerator.generate(
-                        spotId: spot.id,
-                        spotType: spot.type,
-                        fishSpecies: spot.fishSpecies,
-                        size: 90,
-                      ),
+                      )),
+                      child: Center(child: Text(spot.typeEmoji, style: const TextStyle(fontSize: 40))),
                     ),
                   ),
                   // 类型标签
