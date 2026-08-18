@@ -1519,6 +1519,28 @@ class SpotService {
   ),
 
   Spot(
+    id: 's252', name: '鱼多多俱乐部', type: '农家乐', typeEmoji: '🏕',
+    city: '黔西南', district: '兴义市', address: '贵州省黔西南布依族苗族自治州兴义市万峰湖田寨',
+    latitude: 24.97, longitude: 104.93,
+    images: ['assets/images/spots/spot_063.jpg', 'assets/images/spots/spot_064.jpg'],
+    fishSpecies: ['翘嘴', '罗非', '鲤鱼', '草鱼'],
+    fishPeakSeason: const <String, String>{},
+    lastStockingDate: null,
+    stockingCycleDays: 0,
+    price: 666.0, priceNote: '人均¥666/人；湖畔客栈民宿，可垂钓', businessHours: '全天开放',
+    contactPhone: null,
+    wechat: null, ownerName: null,
+    rating: 4.5, reviewCount: 120, viewCount: 2600, favoriteCount: 180, postCount: 9,
+    description: '黔西南万峰湖畔客栈民宿，垂钓+住宿一体。抖音黔西南观景民宿热销榜第3名。地点详情：https://v.douyin.com/iCpxrmXxul4/',
+    updatedAt: DateTime.now().subtract(const Duration(days: 1)),
+    submitter: SpotSubmitter.operator,
+    hasAccommodation: true,
+    roomType: null, roomCapacity: null, hasWifi: true,
+    accommodationNote: '湖畔客栈民宿，房型与订房详询商家（抖音搜索「鱼多多俱乐部」）。',
+    facilities: ['免费停车', '餐厅', 'WiFi', '休息区'],
+  ),
+
+  Spot(
     id: 's073', name: '北斗湾国际路亚基地', type: '路亚', typeEmoji: '🎮',
     city: '贵阳', district: '花溪区', address: '贵阳市花溪区北斗湾（高德导航北斗湾国际路亚基地）',
     latitude: 26.408, longitude: 106.657,
