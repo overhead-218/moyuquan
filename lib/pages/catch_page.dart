@@ -9,6 +9,7 @@ import 'catch_detail_page.dart';
 import 'post_detail_page.dart';
 import 'spot_detail_page.dart';
 import 'user_profile_page.dart';
+import 'equip_detail_page.dart';
 
 /// 鱼获榜 → 钓鱼精华聚合页
 /// 4维度Tab：大鱼榜 · 热门钓点 · 热帖 · 人气钓友
@@ -1140,7 +1141,20 @@ class _EquipCard extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(14),
-            onTap: () => _showEquipDetail(context, item, rank),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => EquipDetailPage(
+                name: item.name,
+                spec: item.spec,
+                type: item.type,
+                rank: rank,
+                score: item.score,
+                heat: item.heat,
+                replies: item.replies,
+                tags: item.tags,
+                imageUrl: item.imageUrl,
+              )),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Row(
@@ -1267,177 +1281,8 @@ class _EquipCard extends StatelessWidget {
     return '$n';
   }
 
-  void _showEquipDetail(BuildContext context, _EquipItem item, int rank) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40, height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (item.imageUrl != null)
-                      Center(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.asset(
-                            item.imageUrl!,
-                            width: 200, height: 200,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              width: 200, height: 200,
-                              color: _primary.withValues(alpha: 0.08),
-                              child: const Icon(Icons.catching_pokemon, size: 60, color: _primary),
-                            ),
-                          ),
-                        ),
-                      ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(item.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: _textMain)),
-                              const SizedBox(height: 4),
-                              Text(item.spec, style: const TextStyle(fontSize: 14, color: _textMid)),
-                            ],
-                          ),
-                        ),
-                        if (rank <= 3)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: _rankColor.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(rank == 1 ? 'TOP 1' : '#$rank', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _rankColor)),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(color: _primary.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(8)),
-                          child: Text(item.type, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _primary)),
-                        ),
-                        const SizedBox(width: 12),
-                        const Icon(Icons.whatshot, size: 16, color: Color(0xFFFF6B35)),
-                        const SizedBox(width: 4),
-                        Text(_fmt(item.score), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFFFF6B35))),
-                        const Text(' 综合热度', style: TextStyle(fontSize: 12, color: _textWeak)),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    const Text('产品标签', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _textMain)),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8, runSpacing: 8,
-                      children: item.tags.map((t) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(color: _primary.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(12)),
-                        child: Text(t, style: const TextStyle(fontSize: 12, color: _primary, fontWeight: FontWeight.w500)),
-                      )).toList(),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text('热度明细', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _textMain)),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(child: _StatBox(icon: Icons.whatshot, label: '综合热度', value: _fmt(item.score))),
-                        const SizedBox(width: 10),
-                        Expanded(child: _StatBox(icon: Icons.trending_up, label: '讨论热度', value: _fmt(item.heat))),
-                        const SizedBox(width: 10),
-                        Expanded(child: _StatBox(icon: Icons.forum_outlined, label: '讨论数', value: '${item.replies}')),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    const Text('钓友评价', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _textMain)),
-                    const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: _bg, borderRadius: BorderRadius.circular(12)),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 32, height: 32,
-                                decoration: BoxDecoration(color: _primary.withValues(alpha: 0.1), shape: BoxShape.circle),
-                                child: const Center(child: Text('钓', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _primary))),
-                              ),
-                              const SizedBox(width: 10),
-                              const Text('钓友口碑', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _textMain)),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(item.tags.isNotEmpty ? '这款${item.type}在钓友中评价不错，${item.tags.first}是主要亮点。' : '暂无用户评价。', style: const TextStyle(fontSize: 13, color: _textMid, height: 1.5)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
 }
-
-class _StatBox extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  const _StatBox({required this.icon, required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: _bg, borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        children: [
-          Icon(icon, size: 20, color: _primary),
-          const SizedBox(height: 6),
-          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _textMain)),
-          const SizedBox(height: 2),
-          Text(label, style: const TextStyle(fontSize: 10, color: _textWeak)),
-        ],
-      ),
-    );
-  }
-}
-
-
-
-
-// ═══════════════════════════════════════════════════════
-// TAB 5: 鱼竿榜 — 真实电商热销数据
-// ═══════════════════════════════════════════════════════
 
 // ── 全局常量 ────────────────────────────────────────────
 const _primary   = Color(0xFF0A7C74);
