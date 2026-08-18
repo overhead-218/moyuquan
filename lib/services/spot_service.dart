@@ -1495,6 +1495,29 @@ class SpotService {
     submitter: SpotSubmitter.operator,
   ),
 
+  // 黔西南·兴义万峰湖（补充：抖音/团购商家主页，2026-08-18）
+  Spot(
+    id: 's251', name: '栩烽棠垂钓乐园', type: '农家乐', typeEmoji: '🏕',
+    city: '黔西南', district: '兴义市', address: '贵州省黔西南布依族苗族自治州兴义市万峰湖纳么村马岭河峡谷北59米',
+    latitude: 25.02, longitude: 104.95,
+    images: ['assets/images/spots/spot_061.jpg', 'assets/images/spots/spot_062.jpg'],
+    fishSpecies: ['翘嘴', '罗非', '鲤鱼', '草鱼'],
+    fishPeakSeason: const <String, String>{},
+    lastStockingDate: null,
+    stockingCycleDays: 0,
+    price: 378.0, priceNote: '人均¥378/人；钓票¥280起（含餐食+休息），豪华筏钓票¥468', businessHours: '24小时营业',
+    contactPhone: null,
+    wechat: null, ownerName: null,
+    rating: 4.6, reviewCount: 35, viewCount: 3200, favoriteCount: 280, postCount: 12,
+    description: '黔西南万峰湖畔农家乐垂钓乐园，筏钓+餐食+住宿一条龙。米级翘嘴出没，园区湖景绝美，适合亲子休闲与团建。',
+    updatedAt: DateTime.now().subtract(const Duration(days: 1)),
+    submitter: SpotSubmitter.operator,
+    hasAccommodation: true,
+    roomType: null, roomCapacity: null, hasWifi: false,
+    accommodationNote: '钓票含休息，豪华筏钓票含酒店式筏钓+休息；房型与订房详询商家。',
+    facilities: ['免费停车', '餐厅', '充电', '休息区'],
+  ),
+
   Spot(
     id: 's073', name: '北斗湾国际路亚基地', type: '路亚', typeEmoji: '🎮',
     city: '贵阳', district: '花溪区', address: '贵阳市花溪区北斗湾（高德导航北斗湾国际路亚基地）',
