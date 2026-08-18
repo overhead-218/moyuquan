@@ -1118,6 +1118,7 @@ class _EquipCard extends StatelessWidget {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     final top3 = rank <= 3;
     return TweenAnimationBuilder<double>(
@@ -1127,148 +1128,156 @@ class _EquipCard extends StatelessWidget {
       builder: (_, v, child) => Transform.scale(
         scale: v, child: Opacity(opacity: v, child: child),
       ),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: top3 ? Border.all(color: _rankColor.withAlpha((0.5 * 255).toInt()), width: 1.5) : null,
-          boxShadow: [BoxShadow(
-            color: _primary.withAlpha((0.06 * 255).toInt()), blurRadius: 6, offset: const Offset(0, 2),
-          )],
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => EquipDetailPage(
+            name: item.name,
+            spec: item.spec,
+            type: item.type,
+            rank: rank,
+            score: item.score,
+            heat: item.heat,
+            replies: item.replies,
+            tags: item.tags,
+            imageUrl: item.imageUrl,
+          )),
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          decoration: BoxDecoration(
+            color: Colors.white,
             borderRadius: BorderRadius.circular(14),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => EquipDetailPage(
-                name: item.name,
-                spec: item.spec,
-                type: item.type,
-                rank: rank,
-                score: item.score,
-                heat: item.heat,
-                replies: item.replies,
-                tags: item.tags,
-                imageUrl: item.imageUrl,
-              )),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 28,
-                    child: Text('$rank', style: TextStyle(
-                      fontSize: rank <= 3 ? 18 : 14,
-                      fontWeight: FontWeight.w900, color: _rankColor,
-                    )),
-                  ),
-                  const SizedBox(width: 10),
-                  // 装备图片
-              Container(
-                width: 60, height: 60,
-                decoration: BoxDecoration(
-                  color: _rankColor.withAlpha((0.08 * 255).toInt()),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: item.imageUrl != null
-                    ? Image.asset(
-                        item.imageUrl!,
-                        width: 60, height: 60,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Center(
-                          child: Icon(
-                            rank <= 3 ? Icons.star : Icons.settings_input_component,
-                            color: _rankColor, size: 24,
-                          ),
-                        ),
-                      )
-                    : Center(
-                        child: Icon(
-                          rank <= 3 ? Icons.star : Icons.settings_input_component,
-                          color: _rankColor, size: 24,
-                        ),
-                      ),
-                ),
+            border: top3 ? Border.all(color: _rankColor.withAlpha((0.5 * 255).toInt()), width: 1.5) : null,
+            boxShadow: [BoxShadow(
+              color: _primary.withAlpha((0.06 * 255).toInt()), blurRadius: 6, offset: const Offset(0, 2),
+            )],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => EquipDetailPage(
+                  name: item.name,
+                  spec: item.spec,
+                  type: item.type,
+                  rank: rank,
+                  score: item.score,
+                  heat: item.heat,
+                  replies: item.replies,
+                  tags: item.tags,
+                  imageUrl: item.imageUrl,
+                )),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(item.name,
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700,
-                              color: _textMain),
+                    SizedBox(
+                      width: 28,
+                      child: Text('$rank', style: TextStyle(
+                        fontSize: rank <= 3 ? 18 : 14,
+                        fontWeight: FontWeight.w900, color: _rankColor,
+                      )),
+                    ),
+                    const SizedBox(width: 10),
+                    // 装备图片
+                    Container(
+                      width: 60, height: 60,
+                      decoration: BoxDecoration(
+                        color: _rankColor.withAlpha((0.08 * 255).toInt()),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: item.imageUrl != null
+                          ? Image.asset(
+                              item.imageUrl!,
+                              width: 60, height: 60,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Center(
+                                child: Icon(Icons.image_outlined, size: 28, color: _rankColor.withAlpha((0.4 * 255).toInt())),
+                              ),
+                            )
+                          : Center(
+                              child: Icon(Icons.image_outlined, size: 28, color: _rankColor.withAlpha((0.4 * 255).toInt())),
+                            ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(item.name, style: const TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.w700, color: _textMain,
+                                ), overflow: TextOverflow.ellipsis, maxLines: 1),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: _rankColor.withAlpha((0.15 * 255).toInt()),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  rank == 1 ? 'TOP' : '#$rank',
+                                  style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800,
+                                    color: _rankColor),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(item.spec,
+                            style: const TextStyle(fontSize: 12, color: _textWeak),
                             maxLines: 1, overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        if (rank <= 3) ...[
-                          const SizedBox(width: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                            decoration: BoxDecoration(
-                              color: _rankColor.withAlpha((0.15 * 255).toInt()),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              rank == 1 ? 'TOP' : '#$rank',
-                              style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800,
-                                color: _rankColor),
-                            ),
+                          const SizedBox(height: 4),
+                          Wrap(
+                            spacing: 4, runSpacing: 3,
+                            children: item.tags.take(3).map((t) => Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: _primary.withAlpha((0.06 * 255).toInt()),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Text(t, style: const TextStyle(
+                                fontSize: 10, color: _primary, fontWeight: FontWeight.w500,
+                              )),
+                            )).toList(),
                           ),
                         ],
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(item.spec,
-                      style: const TextStyle(fontSize: 12, color: _textWeak),
-                      maxLines: 1, overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 4, runSpacing: 3,
-                      children: item.tags.take(3).map((t) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: _primary.withAlpha((0.06 * 255).toInt()),
-                          borderRadius: BorderRadius.circular(5),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(_fmt(item.score),
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _primary)),
+                        Text('综合热度', style: const TextStyle(fontSize: 9, color: _textWeak)),
+                        const SizedBox(height: 2),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.forum_outlined, size: 10, color: _textWeak),
+                            const SizedBox(width: 2),
+                            Text('${item.replies}', style: const TextStyle(fontSize: 10, color: _textWeak)),
+                          ],
                         ),
-                        child: Text(t, style: const TextStyle(
-                          fontSize: 10, color: _primary, fontWeight: FontWeight.w500,
-                        )),
-                      )).toList(),
+                      ],
                     ),
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(_fmt(item.score),
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _primary)),
-                  Text('综合热度', style: const TextStyle(fontSize: 9, color: _textWeak)),
-                  const SizedBox(height: 2),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.forum_outlined, size: 10, color: _textWeak),
-                      const SizedBox(width: 2),
-                      Text('${item.replies}', style: const TextStyle(fontSize: 10, color: _textWeak)),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+            ),
           ),
         ),
       ),
@@ -1280,7 +1289,6 @@ class _EquipCard extends StatelessWidget {
     if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}k';
     return '$n';
   }
-
 
 }
 
