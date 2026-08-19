@@ -6,7 +6,7 @@ import 'spot_discovery_page.dart';
 import 'spot_submit_page.dart';
 
 /// 主 Shell：小红书风底部导航
-/// 顺序：首页 / 钓点 / ➕(发布) / 鱼获 / 我（➕ 居中）
+/// 顺序：首页 / 钓点 / ➕(发布) / 榜单 / 我（➕ 居中）
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
 
@@ -19,7 +19,7 @@ class _HomeShellState extends State<HomeShell> {
 
   static const _kAccent = Color(0xFFFF4458); // 小红书红
 
-  // 5 个槽位：0首页 / 1钓点 / 2发布占位 / 3鱼获 / 4我的
+  // 5 个槽位：0首页 / 1钓点 / 2发布占位 / 3榜单 / 4我的
   final _pages = const [
     FeedPage(),
     SpotDiscoveryPage(),
@@ -32,7 +32,7 @@ class _HomeShellState extends State<HomeShell> {
     {'icon': Icons.home_outlined, 'activeIcon': Icons.home, 'label': '首页'},
     {'icon': Icons.place_outlined, 'activeIcon': Icons.place, 'label': '钓点'},
     null, // 发布占位（居中 ➕）
-    {'icon': Icons.set_meal_outlined, 'activeIcon': Icons.set_meal, 'label': '鱼获'},
+    {'icon': Icons.leaderboard_outlined, 'activeIcon': Icons.leaderboard, 'label': '榜单'},
     {'icon': Icons.person_outline, 'activeIcon': Icons.person, 'label': '我的'},
   ];
 
@@ -78,7 +78,7 @@ class _HomeShellState extends State<HomeShell> {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const SpotSubmitPage()));
               }),
-              _publishItem('晒鱼获', Icons.photo_camera_outlined, () { Navigator.pop(context); }),
+              _publishItem('晒渔获', Icons.photo_camera_outlined, () { Navigator.pop(context); }),
               _publishItem('写渔获日记', Icons.edit_outlined, () { Navigator.pop(context); }),
             ],
           ),
