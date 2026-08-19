@@ -937,8 +937,14 @@ class _HeroBanner extends StatelessWidget {
 // ═══════════════════════════════════════════════════════
 // TAB 5: 鱼竿榜
 // ═══════════════════════════════════════════════════════
-class _RodTab extends StatelessWidget {
+class _RodTab extends StatefulWidget {
   const _RodTab();
+  @override
+  State<_RodTab> createState() => _RodTabState();
+}
+
+class _RodTabState extends State<_RodTab> {
+  String? _selectedType;
 
   static final _rods = [
     _EquipItem(name: '达亿瓦 阿比德', spec: 'EXIST AI 168ML', type: '鲤综合', score: 9820, heat: 3421, replies: 286, tags: ['轻量', '感度强', '野钓神器'], imageUrl: 'assets/images/equip/达亿瓦_阿比德.png'),
@@ -953,19 +959,55 @@ class _RodTab extends StatelessWidget {
     _EquipItem(name: '禧玛诺 安塔里斯', spec: 'ANTARES 180', type: '鲤综合', score: 6950, heat: 1290, replies: 64, tags: ['轻量', '高感', '竞技首选'], imageUrl: 'assets/images/equip/禧玛诺_安塔里斯.png'),
   ];
 
+  List<String> get _types {
+    final t = _rods.map((e) => e.type).toSet().toList();
+    t.sort();
+    return t;
+  }
+
+  List<_EquipItem> get _filtered {
+    final list = _selectedType == null ? _rods : _rods.where((e) => e.type == _selectedType).toList();
+    list.sort((a, b) => b.score.compareTo(a.score));
+    return list;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final items = _filtered;
+    final types = _types;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       children: [
         const _HeroBanner(
           emoji: '🎣', title: '鱼竿榜',
-          subtitle: '钓友口碑综合排行',
+          subtitle: '鲤综合 · 鲈鱼 · 鳜鱼 · 海钓 · 巨物',
           accent: Color(0xFF0277BD),
         ),
+        const SizedBox(height: 12),
+        // 类型筛选栏
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _FilterChip(
+                label: '全部',
+                selected: _selectedType == null,
+                onTap: () => setState(() => _selectedType = null),
+              ),
+              for (var t in types) ...[
+                const SizedBox(width: 6),
+                _FilterChip(
+                  label: t,
+                  selected: _selectedType == t,
+                  onTap: () => setState(() => _selectedType = t),
+                ),
+              ],
+            ],
+          ),
+        ),
         const SizedBox(height: 16),
-        for (var i = 0; i < _rods.length; i++)
-          _EquipCard(item: _rods[i], rank: i + 1, delay: i * 35),
+        for (var i = 0; i < items.length; i++)
+          _EquipCard(item: items[i], rank: i + 1, delay: i * 35),
       ],
     );
   }
@@ -974,8 +1016,14 @@ class _RodTab extends StatelessWidget {
 // ═══════════════════════════════════════════════════════
 // TAB 6: 鱼轮榜
 // ═══════════════════════════════════════════════════════
-class _ReelTab extends StatelessWidget {
+class _ReelTab extends StatefulWidget {
   const _ReelTab();
+  @override
+  State<_ReelTab> createState() => _ReelTabState();
+}
+
+class _ReelTabState extends State<_ReelTab> {
+  String? _selectedType;
 
   static final _reels = [
     _EquipItem(name: '达亿瓦 斯泰拉', spec: 'STEEZ AIR 1018H', type: '水滴轮', score: 10230, heat: 4210, replies: 512, tags: ['旗舰', '轻量', '感度极佳', '竞技首选'], imageUrl: 'assets/images/equip/达亿瓦_斯泰拉.png'),
@@ -990,8 +1038,22 @@ class _ReelTab extends StatelessWidget {
     _EquipItem(name: '品钓 雷霆', spec: 'THUNDER PRO 2000', type: '纺车轮', score: 7180, heat: 1490, replies: 108, tags: ['巨物', '大力矩', '水库专用'], imageUrl: 'assets/images/equip/品钓_雷霆.png'),
   ];
 
+  List<String> get _types {
+    final t = _reels.map((e) => e.type).toSet().toList();
+    t.sort();
+    return t;
+  }
+
+  List<_EquipItem> get _filtered {
+    final list = _selectedType == null ? _reels : _reels.where((e) => e.type == _selectedType).toList();
+    list.sort((a, b) => b.score.compareTo(a.score));
+    return list;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final items = _filtered;
+    final types = _types;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       children: [
@@ -1000,9 +1062,22 @@ class _ReelTab extends StatelessWidget {
           subtitle: '水滴轮 · 纺车轮口碑排行',
           accent: Color(0xFF6A1B9A),
         ),
+        const SizedBox(height: 12),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _FilterChip(label: '全部', selected: _selectedType == null, onTap: () => setState(() => _selectedType = null)),
+              for (var t in types) ...[
+                const SizedBox(width: 6),
+                _FilterChip(label: t, selected: _selectedType == t, onTap: () => setState(() => _selectedType = t)),
+              ],
+            ],
+          ),
+        ),
         const SizedBox(height: 16),
-        for (var i = 0; i < _reels.length; i++)
-          _EquipCard(item: _reels[i], rank: i + 1, delay: i * 35),
+        for (var i = 0; i < items.length; i++)
+          _EquipCard(item: items[i], rank: i + 1, delay: i * 35),
       ],
     );
   }
@@ -1011,8 +1086,14 @@ class _ReelTab extends StatelessWidget {
 // ═══════════════════════════════════════════════════════
 // TAB 7: 饵料榜
 // ═══════════════════════════════════════════════════════
-class _LureTab extends StatelessWidget {
+class _LureTab extends StatefulWidget {
   const _LureTab();
+  @override
+  State<_LureTab> createState() => _LureTabState();
+}
+
+class _LureTabState extends State<_LureTab> {
+  String? _selectedType;
 
   static final _lures = [
     _EquipItem(name: '德州钓组', spec: 'Texas Rig', type: '软饵', score: 9870, heat: 4120, replies: 543, tags: ['通用', '防挂', '野钓首选'], imageUrl: 'assets/images/equip/德州钓组.png'),
@@ -1027,19 +1108,46 @@ class _LureTab extends StatelessWidget {
     _EquipItem(name: '德州钓组（无铅）', spec: 'Naked Texas', type: '软饵', score: 6430, heat: 1650, replies: 143, tags: ['自然', '高难度', '老手专用'], imageUrl: 'assets/images/equip/德州钓组_无铅.png'),
   ];
 
+  List<String> get _types {
+    final t = _lures.map((e) => e.type).toSet().toList();
+    t.sort();
+    return t;
+  }
+
+  List<_EquipItem> get _filtered {
+    final list = _selectedType == null ? _lures : _lures.where((e) => e.type == _selectedType).toList();
+    list.sort((a, b) => b.score.compareTo(a.score));
+    return list;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final items = _filtered;
+    final types = _types;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       children: [
         const _HeroBanner(
           emoji: '🪤', title: '饵料榜',
-          subtitle: '软饵 · 硬饵 · 亮片 · 水面系排行',
+          subtitle: '软饵 · 硬饵 · 亮片 · 水面系 · 铁板',
           accent: Color(0xFF2E7D32),
         ),
+        const SizedBox(height: 12),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _FilterChip(label: '全部', selected: _selectedType == null, onTap: () => setState(() => _selectedType = null)),
+              for (var t in types) ...[
+                const SizedBox(width: 6),
+                _FilterChip(label: t, selected: _selectedType == t, onTap: () => setState(() => _selectedType = t)),
+              ],
+            ],
+          ),
+        ),
         const SizedBox(height: 16),
-        for (var i = 0; i < _lures.length; i++)
-          _EquipCard(item: _lures[i], rank: i + 1, delay: i * 35),
+        for (var i = 0; i < items.length; i++)
+          _EquipCard(item: items[i], rank: i + 1, delay: i * 35),
       ],
     );
   }
@@ -1048,8 +1156,14 @@ class _LureTab extends StatelessWidget {
 // ═══════════════════════════════════════════════════════
 // TAB 8: 小药榜
 // ═══════════════════════════════════════════════════════
-class _BaitTab extends StatelessWidget {
+class _BaitTab extends StatefulWidget {
   const _BaitTab();
+  @override
+  State<_BaitTab> createState() => _BaitTabState();
+}
+
+class _BaitTabState extends State<_BaitTab> {
+  String? _selectedType;
 
   static final _baits = [
     _EquipItem(name: 'DMT 促食剂', spec: 'DMT Powder', type: '促食', score: 9120, heat: 3210, replies: 398, tags: ['穿透力强', '四季通用', '竞技必备'], imageUrl: 'assets/images/equip/DMT_促食剂.png'),
@@ -1064,19 +1178,46 @@ class _BaitTab extends StatelessWidget {
     _EquipItem(name: '红薯膏', spec: '红薯膏 浓缩型', type: '味型类', score: 6760, heat: 1650, replies: 187, tags: ['薯香', '鲤鱼类', '秋冬季'], imageUrl: 'assets/images/equip/红薯膏.png'),
   ];
 
+  List<String> get _types {
+    final t = _baits.map((e) => e.type).toSet().toList();
+    t.sort();
+    return t;
+  }
+
+  List<_EquipItem> get _filtered {
+    final list = _selectedType == null ? _baits : _baits.where((e) => e.type == _selectedType).toList();
+    list.sort((a, b) => b.score.compareTo(a.score));
+    return list;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final items = _filtered;
+    final types = _types;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       children: [
         const _HeroBanner(
           emoji: '💧', title: '小药榜',
-          subtitle: '促食 · 聚鱼 · 味型 · 中药类排行',
+          subtitle: '促食 · 聚鱼 · 味型 · 中药类',
           accent: Color(0xFFBF360C),
         ),
+        const SizedBox(height: 12),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _FilterChip(label: '全部', selected: _selectedType == null, onTap: () => setState(() => _selectedType = null)),
+              for (var t in types) ...[
+                const SizedBox(width: 6),
+                _FilterChip(label: t, selected: _selectedType == t, onTap: () => setState(() => _selectedType = t)),
+              ],
+            ],
+          ),
+        ),
         const SizedBox(height: 16),
-        for (var i = 0; i < _baits.length; i++)
-          _EquipCard(item: _baits[i], rank: i + 1, delay: i * 35),
+        for (var i = 0; i < items.length; i++)
+          _EquipCard(item: items[i], rank: i + 1, delay: i * 35),
       ],
     );
   }
@@ -1240,6 +1381,15 @@ class _EquipCard extends StatelessWidget {
                             style: const TextStyle(fontSize: 12, color: _textWeak),
                             maxLines: 1, overflow: TextOverflow.ellipsis,
                           ),
+                          const SizedBox(height: 3),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: _rankColor.withAlpha((0.12 * 255).toInt()),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Text(item.type, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: _rankColor)),
+                          ),
                           const SizedBox(height: 4),
                           Wrap(
                             spacing: 4, runSpacing: 3,
@@ -1299,3 +1449,30 @@ const _gold      = Color(0xFFC49A5E);
 const _textMain  = Color(0xFF1A1A1A);
 const _textMid   = Color(0xFF666666);
 const _textWeak  = Color(0xFF999999);
+
+// 装备类型筛选 Chip
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _FilterChip({required this.label, required this.selected, required this.onTap});
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? _primary : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: selected ? _primary : _primary.withAlpha((0.2 * 255).toInt())),
+        ),
+        child: Text(label, style: TextStyle(
+          fontSize: 12, fontWeight: FontWeight.w600,
+          color: selected ? Colors.white : _primary,
+        )),
+      ),
+    );
+  }
+}
