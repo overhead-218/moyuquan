@@ -947,16 +947,16 @@ class _RodTabState extends State<_RodTab> {
   String? _selectedType;
 
   static final _rods = [
-    _EquipItem(name: '达亿瓦 阿比德', spec: 'EXIST AI 168ML', type: '鲤综合', score: 9820, heat: 3421, replies: 286, tags: ['轻量', '感度强', '野钓神器'], imageUrl: 'assets/images/equip/达亿瓦_阿比德.png'),
-    _EquipItem(name: '禧玛诺 红猪', spec: 'POISSANT 270', type: '鲤综合', score: 9210, heat: 2890, replies: 198, tags: ['手感好', '抛投稳', '入门首选'], imageUrl: 'assets/images/equip/禧玛诺_红猪.png'),
-    _EquipItem(name: '达亿瓦 布拉迪', spec: 'BRADI FX 180', type: '鲤竞技', score: 8750, heat: 2650, replies: 312, tags: ['高阶', '回鱼快', '竞技首选'], imageUrl: 'assets/images/equip/达亿瓦_布拉迪.png'),
-    _EquipItem(name: '禧玛诺 沙漠者', spec: 'DESOLATE S86L+', type: '鳜鱼', score: 8530, heat: 2340, replies: 165, tags: ['软饵', '精细作钓', '感度极佳'], imageUrl: 'assets/images/equip/禧玛诺_沙漠者.png'),
-    _EquipItem(name: 'NS 进化论', spec: 'EVOLUTION TOUCH 183', type: '鲈鱼', score: 8190, heat: 2100, replies: 143, tags: ['泛用', '腰力足', '国产精品'], imageUrl: 'assets/images/equip/NS_进化论.png'),
-    _EquipItem(name: '达亿瓦 阿比德', spec: 'EXIST AIR 162', type: '鲈鱼', score: 7910, heat: 1980, replies: 124, tags: ['轻量', '感度强', '水滴轮适配'], imageUrl: 'assets/images/equip/达亿瓦_阿比德2.png'),
-    _EquipItem(name: 'Gloomis E12', spec: 'E12XST 769', type: '海钓', score: 7640, heat: 1820, replies: 98, tags: ['海钓', '远投', '防锈'], imageUrl: 'assets/images/equip/Gloomis_E12.png'),
-    _EquipItem(name: '品钓 鲟龙', spec: 'XUNLONG PRO 210', type: '巨物', score: 7320, heat: 1650, replies: 77, tags: ['巨物', '100g铅', '水库大物'], imageUrl: 'assets/images/equip/品钓_鲟龙.png'),
-    _EquipItem(name: 'NS 阿尔法', spec: 'ALPHA X 186', type: '鲈鱼', score: 7100, heat: 1430, replies: 89, tags: ['远投', '大坝', '泛用'], imageUrl: 'assets/images/equip/NS_阿尔法.png'),
-    _EquipItem(name: '禧玛诺 安塔里斯', spec: 'ANTARES 180', type: '鲤综合', score: 6950, heat: 1290, replies: 64, tags: ['轻量', '高感', '竞技首选'], imageUrl: 'assets/images/equip/禧玛诺_安塔里斯.png'),
+    _EquipItem(name: '禧玛诺 Exsence', spec: 'Infinity B86MH', type: '海鲈', score: 9820, heat: 4210, replies: 512, tags: ['旗舰', '感度强', '海鲈首选'], imageUrl: 'assets/images/equip/rod_shimano_exsence_b86mh.jpg'),
+    _EquipItem(name: '达亿瓦 Emeraldas', spec: 'MX 86M-S', type: '鱿鱼', score: 9350, heat: 3890, replies: 398, tags: ['鱿鱼', '轻量', '路亚精品'], imageUrl: 'assets/images/equip/rod_daiwa_emeraldas_mx_86ms.jpg'),
+    _EquipItem(name: '禧玛诺 Lunamis', spec: 'S86M', type: '路亚', score: 8980, heat: 3560, replies: 321, tags: ['泛用', '腰力足', '入门进阶'], imageUrl: 'assets/images/equip/rod_shimano_lunamis_s86m.jpg'),
+    _EquipItem(name: '达亿瓦 Lurenist', spec: '86ML', type: '路亚', score: 8650, heat: 3210, replies: 287, tags: ['软饵', '精细', '感度佳'], imageUrl: 'assets/images/equip/rod_daiwa_lurenist_86ml.jpg'),
+    _EquipItem(name: '禧玛诺 World Shaula', spec: 'BG 21055R-3', type: '雷强', score: 8320, heat: 2890, replies: 243, tags: ['雷强', '重草', '暴力'], imageUrl: 'assets/images/equip/rod_shimano_world_shaula_bg.jpg'),
+    _EquipItem(name: 'Gamakatsu Luxe Yoihime', spec: 'Soh S78M', type: '阿鲫', score: 7980, heat: 2560, replies: 221, tags: ['阿鲫', '轻量', '手感好'], imageUrl: 'assets/images/equip/rod_gamakatsu_luxe_yoihime_s78m.jpg'),
+    _EquipItem(name: '禧玛诺 Brennius', spec: 'S80LS', type: '路亚', score: 7650, heat: 2230, replies: 198, tags: ['泛用', '性价比', '耐用'], imageUrl: 'assets/images/equip/rod_shimano_brennius_s80ls.jpg'),
+    _EquipItem(name: 'Major Craft Giant Killing', spec: 'GK5C-732MH', type: '慢摇', score: 7320, heat: 1980, replies: 176, tags: ['慢摇', '铁板', '船钓'], imageUrl: 'assets/images/equip/rod_major_craft_giant_killing_732mh.jpg'),
+    _EquipItem(name: 'Tenryu Horizon MJ', spec: 'HMJ642B-M', type: '船钓', score: 7090, heat: 1760, replies: 154, tags: ['船钓', '根鱼', '专业'], imageUrl: 'assets/images/equip/rod_tenryu_horizon_mj_642b_m.jpg'),
+    _EquipItem(name: 'OLYMPIC Finezza UX', spec: '23GFINUS-832ML-T', type: '阿鲫', score: 6860, heat: 1540, replies: 132, tags: ['阿鲫', '高感', '进口精品'], imageUrl: 'assets/images/equip/rod_olympic_finezza_ux_832mlt.gif'),
   ];
 
   List<String> get _types {
@@ -1026,16 +1026,16 @@ class _ReelTabState extends State<_ReelTab> {
   String? _selectedType;
 
   static final _reels = [
-    _EquipItem(name: '达亿瓦 斯泰拉', spec: 'STEEZ AIR 1018H', type: '水滴轮', score: 10230, heat: 4210, replies: 512, tags: ['旗舰', '轻量', '感度极佳', '竞技首选'], imageUrl: 'assets/images/equip/达亿瓦_斯泰拉.png'),
-    _EquipItem(name: '禧玛诺 班塔', spec: 'BANTA 150SH', type: '水滴轮', score: 9540, heat: 3780, replies: 398, tags: ['泛用', '刹车稳', '入门首选'], imageUrl: 'assets/images/equip/禧玛诺_班塔.png'),
-    _EquipItem(name: '达亿瓦 Zillion', spec: 'ZILLION TW HD 1016XHL', type: '水滴轮', score: 9130, heat: 3340, replies: 287, tags: ['巨物', '高转速', '大力矩'], imageUrl: 'assets/images/equip/达亿瓦_Zillion.png'),
-    _EquipItem(name: '禧玛诺 安塔', spec: 'ANTARES DC MD', type: '水滴轮', score: 8760, heat: 2890, replies: 243, tags: ['电磁刹车', '远投', '新手友好'], imageUrl: 'assets/images/equip/shimano_antares_dc.jpg'),
-    _EquipItem(name: '阿布 BFS', spec: 'REVO BFS X', type: '纺车轮', score: 8420, heat: 2560, replies: 221, tags: ['微物', '轻量', '性价比'], imageUrl: 'assets/images/equip/阿布_BFS.png'),
-    _EquipItem(name: '达亿瓦 蜘蛛', spec: 'SPIDER MINI 80', type: '纺车轮', score: 8100, heat: 2230, replies: 198, tags: ['小饵', '泛用', '感度好'], imageUrl: 'assets/images/equip/达亿瓦_蜘蛛.png'),
-    _EquipItem(name: '禧玛诺 万奎士', spec: 'VANQUISH C3000', type: '纺车轮', score: 7890, heat: 1980, replies: 176, tags: ['远投', '轻量', '海水淡水产'], imageUrl: 'assets/images/equip/禧玛诺_万奎士.png'),
-    _EquipItem(name: '达亿瓦 红蝴蝶', spec: 'CALAIS 200H', type: '水滴轮', score: 7650, heat: 1760, replies: 154, tags: ['泛用', '顺滑', '性价比'], imageUrl: 'assets/images/equip/达亿瓦_红蝴蝶.png'),
-    _EquipItem(name: 'NS 红蝎', spec: 'RED SCORPION X', type: '纺车轮', score: 7420, heat: 1650, replies: 132, tags: ['入门', '耐用', '国产精品'], imageUrl: 'assets/images/equip/NS_红蝎.png'),
-    _EquipItem(name: '品钓 雷霆', spec: 'THUNDER PRO 2000', type: '纺车轮', score: 7180, heat: 1490, replies: 108, tags: ['巨物', '大力矩', '水库专用'], imageUrl: 'assets/images/equip/品钓_雷霆.png'),
+    _EquipItem(name: '禧玛诺 STELLA SW', spec: '5000HG', type: '纺车轮', score: 10230, heat: 5210, replies: 612, tags: ['旗舰', '海水', '顺滑', '远投'], imageUrl: 'assets/images/equip/reel_shimano_stella_sw_5000hg.jpg'),
+    _EquipItem(name: '达亿瓦 STEEZ SV TW', spec: 'LIGHT TW 100H', type: '水滴轮', score: 9840, heat: 4780, replies: 498, tags: ['旗舰', '轻量', '微物', '竞技'], imageUrl: 'assets/images/equip/reel_daiwa_steez_sv_light_tw_100h.jpg'),
+    _EquipItem(name: '达亿瓦 EXIST', spec: 'SF2500SS', type: '纺车轮', score: 9430, heat: 4340, replies: 387, tags: ['旗舰', '感度', '轻量'], imageUrl: 'assets/images/equip/reel_daiwa_exist_sf2500ss.jpg'),
+    _EquipItem(name: '达亿瓦 CERTATE HD', spec: 'LT3000', type: '纺车轮', score: 9120, heat: 3940, replies: 321, tags: ['泛用', '耐磨', '海水'], imageUrl: 'assets/images/equip/reel_daiwa_certate_hd_lt3000.jpg'),
+    _EquipItem(name: '禧玛诺 TWIN POWER', spec: 'C2000SHG', type: '纺车轮', score: 8780, heat: 3560, replies: 287, tags: ['泛用', '轻量', '海水淡水产'], imageUrl: 'assets/images/equip/reel_shimano_twin_power_c2000shg.png'),
+    _EquipItem(name: '达亿瓦 ZILLION TW', spec: '150', type: '水滴轮', score: 8450, heat: 3230, replies: 254, tags: ['巨物', '高转速', '大力矩'], imageUrl: 'assets/images/equip/reel_daiwa_zillion_tw_150.png'),
+    _EquipItem(name: '禧玛诺 Vanford', spec: 'C2000S', type: '纺车轮', score: 8120, heat: 2890, replies: 221, tags: ['轻量', 'CI4+', '性价比'], imageUrl: 'assets/images/equip/reel_shimano_vanford_c2000s.png'),
+    _EquipItem(name: '达亿瓦 TATULA TW', spec: '200H', type: '水滴轮', score: 7790, heat: 2560, replies: 198, tags: ['泛用', '刹车稳', '入门首选'], imageUrl: 'assets/images/equip/reel_daiwa_tatula_tw_200h.png'),
+    _EquipItem(name: '达亿瓦 CALDIA FC', spec: 'LT2000S', type: '纺车轮', score: 7460, heat: 2230, replies: 176, tags: ['入门', '耐用', '性价比'], imageUrl: 'assets/images/equip/reel_daiwa_caldia_fc_lt2000s.png'),
+    _EquipItem(name: '禧玛诺 NASCI', spec: '2500', type: '纺车轮', score: 7130, heat: 1980, replies: 154, tags: ['入门', '耐用', '泛用'], imageUrl: 'assets/images/equip/reel_shimano_nasci_2500.png'),
   ];
 
   List<String> get _types {
