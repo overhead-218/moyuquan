@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../services/post_service.dart';
@@ -6,9 +7,11 @@ import '../services/spot_service.dart';
 import '../models/post.dart';
 import '../models/spot.dart';
 
-/// 发布帖子页面（晒渔获）
+/// 发布帖子页面（晒渔获 / 写渔获日记）
 class PostPublishPage extends StatefulWidget {
-  const PostPublishPage({super.key});
+  final String initialType; // 'catch' | 'diary'
+
+  const PostPublishPage({super.key, this.initialType = 'catch'});
 
   @override
   State<PostPublishPage> createState() => _PostPublishPageState();
@@ -23,7 +26,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
   List<XFile> _images = [];
   Spot? _selectedSpot;
   bool _isSubmitting = false;
-  String _postType = 'catch'; // 默认晒渔获
+  late final String _postType = widget.initialType;
 
   @override
   void dispose() {
@@ -183,7 +186,8 @@ class _PostPublishPageState extends State<PostPublishPage> {
           icon: const Icon(Icons.close, color: Color(0xFF333333)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('晒渔获', style: TextStyle(color: Color(0xFF333333), fontSize: 17)),
+        title: Text(_postType == 'diary' ? '写渔获日记' : '晒渔获', 
+          style: const TextStyle(color: Color(0xFF333333), fontSize: 17)),
         actions: [
           TextButton(
             onPressed: _isSubmitting ? null : _submit,
@@ -236,12 +240,19 @@ class _PostPublishPageState extends State<PostPublishPage> {
                           padding: const EdgeInsets.only(right: 8),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.file(
-                              File(_images[i].path),
-                              width: 100,
-                              height: 100,
-                              fit: BoxFit.cover,
-                            ),
+                            child: kIsWeb
+                              ? Image.network(
+                                  _images[i].path,
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.file(
+                                  File(_images[i].path),
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                ),
                           ),
                         ),
                       ),

@@ -83,7 +83,10 @@ class _HomeShellState extends State<HomeShell> {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const PostPublishPage()));
               }),
-              _publishItem('写渔获日记', Icons.edit_outlined, () { Navigator.pop(context); }),
+              _publishItem('写渔获日记', Icons.edit_outlined, () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const PostPublishPage(initialType: 'diary')));
+              }),
             ],
           ),
         ),
