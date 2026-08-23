@@ -4,6 +4,7 @@ import 'catch_page.dart';
 import 'profile_page.dart';
 import 'spot_discovery_page.dart';
 import 'spot_submit_page.dart';
+import 'post_publish_page.dart';
 
 /// 主 Shell：小红书风底部导航
 /// 顺序：首页 / 钓点 / ➕(发布) / 榜单 / 我（➕ 居中）
@@ -78,7 +79,10 @@ class _HomeShellState extends State<HomeShell> {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const SpotSubmitPage()));
               }),
-              _publishItem('晒渔获', Icons.photo_camera_outlined, () { Navigator.pop(context); }),
+              _publishItem('晒渔获', Icons.photo_camera_outlined, () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const PostPublishPage()));
+              }),
               _publishItem('写渔获日记', Icons.edit_outlined, () { Navigator.pop(context); }),
             ],
           ),
