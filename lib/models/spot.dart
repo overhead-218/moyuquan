@@ -149,6 +149,32 @@ class Spot {
   List<String> get galleryImages =>
       [...images, ...accommodationImages, ...commonAreaImages];
 
+  /// 默认实景图池（CC 授权的真实钓鱼/湖泊照，见 assets/images/spots/wm_*.jpg）
+  /// 用于没有钓友上传图的钓点兜底，避免渐变占位
+  static const List<String> _fallbackImages = [
+    'assets/images/spots/wm_01.jpg',
+    'assets/images/spots/wm_02.jpg',
+    'assets/images/spots/wm_03.jpg',
+    'assets/images/spots/wm_04.jpg',
+    'assets/images/spots/wm_05.jpg',
+    'assets/images/spots/wm_06.jpg',
+    'assets/images/spots/wm_07.jpg',
+    'assets/images/spots/wm_08.jpg',
+    'assets/images/spots/wm_09.jpg',
+    'assets/images/spots/wm_10.jpg',
+    'assets/images/spots/wm_11.jpg',
+    'assets/images/spots/wm_12.jpg',
+    'assets/images/spots/wm_13.jpg',
+    'assets/images/spots/wm_14.jpg',
+    'assets/images/spots/wm_15.jpg',
+    'assets/images/spots/wm_16.jpg',
+  ];
+
+  /// 展示用头图：有真实图用真实图，否则按 id 稳定取一张兜底实景图
+  List<String> get displayImages => images.isNotEmpty
+      ? images
+      : [_fallbackImages[id.hashCode.abs() % _fallbackImages.length]];
+
   /// 设施服务标签（合并 WiFi 标识）
   List<String> get facilityChips {
     final s = <String>{...facilities};

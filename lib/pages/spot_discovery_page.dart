@@ -384,7 +384,7 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
                 fit: StackFit.expand,
                 children: [
                   Image.network(
-                    s.images.isNotEmpty ? s.images.first : '',
+                    s.displayImages.first,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
                       decoration: BoxDecoration(gradient: LinearGradient(
@@ -692,7 +692,7 @@ class _SpotCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   Image(
-                    image: _imgProvider(spot.images.first),
+                    image: _imgProvider(spot.displayImages.first),
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
                       decoration: BoxDecoration(gradient: LinearGradient(

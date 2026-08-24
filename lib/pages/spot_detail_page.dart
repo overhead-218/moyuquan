@@ -40,7 +40,7 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
   /// 图片分类标签（仅在有对应照片时显示）
   List<String> get _imgCats {
     final cats = <String>['全部'];
-    if (spot.images.isNotEmpty) cats.add('钓点');
+    cats.add('钓点'); // displayImages 保证有兜底实景图，始终展示
     if (spot.accommodationImages.isNotEmpty) cats.add('住宿');
     if (spot.commonAreaImages.isNotEmpty) cats.add('公共区域');
     return cats;
@@ -49,10 +49,10 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
   /// 当前分类下的图片列表
   List<String> get _catImages {
     switch (_imgCat) {
-      case '钓点': return spot.images;
+      case '钓点': return spot.displayImages;
       case '住宿': return spot.accommodationImages;
       case '公共区域': return spot.commonAreaImages;
-      default: return spot.galleryImages;
+      default: return spot.galleryImages.isNotEmpty ? spot.galleryImages : spot.displayImages;
     }
   }
 
