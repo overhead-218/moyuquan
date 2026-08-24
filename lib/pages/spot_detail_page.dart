@@ -1,8 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/spot.dart';
 import '../services/spot_service.dart';
 import 'share_card_page.dart';
+
+/// 服务·价格产品卡数据
+class _SvcCard {
+  final String emoji;
+  final String title;
+  final String price;
+  final String unit;
+  final String note;
+  const _SvcCard({
+    required this.emoji,
+    required this.title,
+    required this.price,
+    required this.unit,
+    required this.note,
+  });
+}
 
 /// 钓点详情页
 class SpotDetailPage extends StatefulWidget {
@@ -318,72 +335,20 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 名称 + 评分
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                spot.name,
-                                style: const TextStyle(
-                                  fontSize: 22, fontWeight: FontWeight.w800,
-                                  color: _textMain, letterSpacing: -0.4,
-                                ),
-                              ),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Icon(Icons.star, size: 16, color: _gold),
-                                    const SizedBox(width: 3),
-                                    Text(
-                                      spot.rating.toStringAsFixed(1),
-                                      style: const TextStyle(
-                                        fontSize: 18, fontWeight: FontWeight.w800, color: _textMain,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Text(
-                                  '${spot.reviewCount}条评价',
-                                  style: const TextStyle(fontSize: 11, color: _textWeak),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        // 地址
-                        GestureDetector(
-                          onTap: () {},
-                          child: Row(
-                            children: [
-                              const Icon(Icons.location_on_outlined, size: 14, color: _gold),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  spot.address,
-                                  style: const TextStyle(fontSize: 13, color: _textWeak),
-                                ),
-                              ),
-                              const Icon(Icons.chevron_right, size: 16, color: _textWeak),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        // 营业时间
-                        Row(
-                          children: [
-                            const Icon(Icons.access_time, size: 14, color: _textWeak),
-                            const SizedBox(width: 4),
-                            Text(
-                              spot.businessHours,
-                              style: const TextStyle(fontSize: 13, color: _textWeak),
-                            ),
-                          ],
-                        ),
+                        // ── 模块1：顶部商家信息条（抖音风格）──
+                        _buildMerchantBar(),
+
+                        const SizedBox(height: 14),
+
+                        // ── 模块2：快捷操作胶囊按钮行 ──
+                        _buildQuickActions(),
+
+                        const SizedBox(height: 16),
+
+                        // ── 模块4：简介区块 ──
+                        _buildIntroBlock(),
+
+                        const SizedBox(height: 18),
 
                         // ── 住宿信息（野钓/游钓基地常见）───────────────────
                         // ── 图片分类切换（携程/去哪儿风格）──────────────
@@ -540,33 +505,8 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                           const SizedBox(height: 20),
                         ],
 
-                        // ── 收费信息 ────────────────────────────────────
-                        _buildSectionTitle('💰 收费信息'),
-                        const SizedBox(height: 12),
-                        _buildPriceSection(),
-
-                        const SizedBox(height: 20),
-                        const Divider(height: 1, color: Color(0xFFEEEEEE)),
-                        const SizedBox(height: 20),
-
-                        // ── 钓点介绍 ────────────────────────────────────
-                        _buildSectionTitle('📝 钓点介绍'),
-                        const SizedBox(height: 12),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: _surface,
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2)),
-                            ],
-                          ),
-                          child: Text(
-                            spot.description,
-                            style: const TextStyle(fontSize: 14, color: _textMain, height: 1.6),
-                          ),
-                        ),
+                        // ── 模块3：服务·价格产品卡（抖音「商家」tab 风格）──
+                        _buildServiceCards(),
 
                         const SizedBox(height: 20),
                         const Divider(height: 1, color: Color(0xFFEEEEEE)),
@@ -662,6 +602,270 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
         ],
       ],
     );
+  }
+
+  // ────────────────────────────────────────────────────────────
+  // 抖音风格模块：顶部商家信息条 / 快捷操作 / 简介 / 服务产品卡
+  // ────────────────────────────────────────────────────────────
+
+  /// 模块1：顶部商家信息条（抖音风格）
+  Widget _buildMerchantBar() {
+    final certTag = spot.isClaimed ? '已认领 · 商家' : '平台整理';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          spot.name,
+          style: const TextStyle(
+            fontSize: 22, fontWeight: FontWeight.w800,
+            color: _textMain, letterSpacing: -0.4,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8, runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: _primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text('${spot.typeEmoji} ${spot.type}',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _primary)),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: _gold.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(certTag, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _gold)),
+            ),
+            if (spot.claimedBy != null)
+              Text('· ${spot.claimedBy}', style: const TextStyle(fontSize: 12, color: _textWeak)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            const Icon(Icons.star, size: 15, color: _gold),
+            const SizedBox(width: 3),
+            Text(spot.rating.toStringAsFixed(1),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: _textMain)),
+            const SizedBox(width: 4),
+            const Text('评分', style: TextStyle(fontSize: 11, color: _textWeak)),
+            _metricDot(),
+            _metric('${spot.reviewCount}', '评价'),
+            _metricDot(),
+            _metric('${spot.favoriteCount}', '收藏'),
+            _metricDot(),
+            _metric('${spot.viewCount}', '浏览'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _metric(String v, String label) => Row(
+        children: [
+          Text(v, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: _textMain)),
+          const SizedBox(width: 3),
+          Text(label, style: const TextStyle(fontSize: 11, color: _textWeak)),
+        ],
+      );
+
+  Widget _metricDot() => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Container(width: 3, height: 3, decoration: BoxDecoration(color: _textWeak, shape: BoxShape.circle)),
+      );
+
+  /// 模块2：快捷操作胶囊按钮行（抖音风格）
+  Widget _buildQuickActions() => SizedBox(
+        height: 64,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          children: [
+            _quickPill(Icons.phone_in_talk, '联系', _onTapContact),
+            _quickPill(Icons.navigation_outlined, '导航', _onTapNavigate),
+            _quickPill(Icons.access_time, '营业时间', _onTapHours),
+            _quickPill(Icons.location_on_outlined, '地址', _onTapAddress),
+          ],
+        ),
+      );
+
+  Widget _quickPill(IconData icon, String label, VoidCallback onTap) => Padding(
+        padding: const EdgeInsets.only(right: 10),
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: _surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _primary.withValues(alpha: 0.18)),
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 6, offset: const Offset(0, 2))],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 18, color: _primary),
+                const SizedBox(height: 4),
+                Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _textMain)),
+              ],
+            ),
+          ),
+        ),
+      );
+
+  void _onTapContact() {
+    if (spot.contactPhone != null) {
+      _callPhone(spot.contactPhone!);
+    } else if (spot.wechat != null) {
+      _openWechat(spot.wechat!);
+    } else {
+      _snack('商家可认领，暂未公开电话');
+    }
+  }
+
+  void _onTapNavigate() {
+    final url = 'https://uri.amap.com/marker?position=${spot.longitude},${spot.latitude}'
+        '&name=${Uri.encodeComponent(spot.name)}&src=moyuquan&coordinate=gaode&callnative=1';
+    _openUrl(url);
+  }
+
+  void _onTapHours() => _snack('营业时间：${spot.businessHours}');
+
+  void _onTapAddress() {
+    Clipboard.setData(ClipboardData(text: spot.address));
+    _snack('地址已复制');
+  }
+
+  void _snack(String msg) => ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(content: Text(msg), duration: const Duration(seconds: 2)));
+
+  /// 模块4：简介区块（抖音风格）
+  Widget _buildIntroBlock() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: _surface,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
+            ),
+            child: Text(
+              spot.description,
+              style: const TextStyle(fontSize: 14, color: _textMain, height: 1.6),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8, runSpacing: 8,
+            children: [
+              _regionChip('📍 ${spot.city} · ${spot.district}'),
+              _regionChip('🕒 ${spot.businessHours}'),
+              if (spot.isClaimed) _regionChip('✅ 已认领商家'),
+            ],
+          ),
+        ],
+      );
+
+  Widget _regionChip(String text) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(color: _bg, borderRadius: BorderRadius.circular(12)),
+        child: Text(text, style: const TextStyle(fontSize: 11, color: _textWeak)),
+      );
+
+  /// 模块3：服务·价格产品卡（抖音「商家」tab 风格），数据驱动
+  Widget _buildServiceCards() {
+    final cards = <_SvcCard>[];
+    cards.add(_SvcCard(
+      emoji: '🎣', title: '钓费',
+      price: spot.price == 0 ? '免费' : '¥${spot.price.toStringAsFixed(0)}',
+      unit: spot.price == 0 ? '' : '/人',
+      note: spot.priceNote.isEmpty ? '详情咨询商家' : spot.priceNote,
+    ));
+    if (spot.hasAccommodation) {
+      final p = _extractPrice(spot.accommodationNote);
+      cards.add(_SvcCard(
+        emoji: '🏠', title: spot.roomType ?? '住宿',
+        price: p ?? '详询', unit: p != null ? '/间' : '',
+        note: spot.accommodationNote ?? '',
+      ));
+    }
+    if (spot.facilityChips.contains('餐饮')) {
+      cards.add(_SvcCard(emoji: '🍱', title: '餐饮', price: '提供', unit: '', note: '平台整理 · 商家提供'));
+    }
+    if (spot.facilityChips.contains('导钓服务')) {
+      cards.add(_SvcCard(emoji: '🧭', title: '导钓', price: '提供', unit: '', note: '平台整理 · 商家提供'));
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('🛒 服务 & 价格'),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 134,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: cards.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (_, i) {
+              final c = cards[i];
+              return Container(
+                width: 150,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: _surface,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: _primary.withValues(alpha: 0.12)),
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 36, height: 36,
+                      decoration: BoxDecoration(color: _primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                      child: Center(child: Text(c.emoji, style: const TextStyle(fontSize: 20))),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(c.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _textMain)),
+                    const SizedBox(height: 4),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(c.price, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: _gold)),
+                        if (c.unit.isNotEmpty) ...[
+                          const SizedBox(width: 2),
+                          Text(c.unit, style: const TextStyle(fontSize: 11, color: _textWeak)),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Expanded(
+                      child: Text(c.note, maxLines: 2, overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 11, color: _textWeak, height: 1.4)),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  String? _extractPrice(String? text) {
+    if (text == null) return null;
+    final m = RegExp(r'¥\s*(\d+)').firstMatch(text);
+    return m?.group(1) != null ? '¥${m!.group(1)}' : null;
   }
 
   /// 小标题（设施服务 / 住宿照片 / 公共区域）
@@ -1053,55 +1257,6 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
   void _subscribeStocking() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('放鱼提醒已订阅，开钓前会通知你 🔔'), duration: Duration(seconds: 2)),
-    );
-  }
-
-  Widget _buildPriceSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 60, height: 60,
-            decoration: BoxDecoration(
-              color: spot.price == 0
-                  ? const Color(0xFFE8F5E9)
-                  : _primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Center(
-              child: spot.price == 0
-                  ? const Text('免费', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF2E7D32)))
-                  : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('¥${spot.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _primary)),
-                        Text('/人', style: TextStyle(fontSize: 11, color: _primary.withValues(alpha: 0.7))),
-                      ],
-                    ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  spot.price == 0 ? '免费野钓' : '钓费 ¥${spot.price.toStringAsFixed(0)}/人',
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _textMain),
-                ),
-                const SizedBox(height: 4),
-                Text(spot.priceNote, style: const TextStyle(fontSize: 12, color: _textWeak, height: 1.4)),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 
