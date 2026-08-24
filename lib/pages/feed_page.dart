@@ -498,52 +498,88 @@ class _FeedImageCardState extends State<_FeedImageCard>
                       },
                     ),
                   ),
-                  // 用户信息区 — 头像+昵称 与 点赞
+                  // 内容区 — 标题 + 作者 + 点赞（小红书卡片风）
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                    padding: const EdgeInsets.fromLTRB(8, 8, 8, 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.post.authorName,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF1A1A1A),
+                        // 标题（帖子正文钩子，小红书卡片核心信息）
+                        if (widget.post.title.isNotEmpty)
+                          Text(
+                            widget.post.title,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1A1A1A),
+                              height: 1.35,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 6),
-                        GestureDetector(
-                          onTap: _toggleLike,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              AnimatedScale(
-                                scale: _liked ? 1.4 : 1.0,
-                                duration: const Duration(milliseconds: 200),
-                                curve: Curves.elasticOut,
-                                child: Icon(
-                                  _liked
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                  size: 14,
-                                  color: _liked
-                                      ? const Color(0xFFFF4458)
-                                      : const Color(0xFF999999),
-                                ),
+                        const SizedBox(height: 8),
+                        // 作者（头像+昵称） + 点赞
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 9,
+                                    backgroundColor: const Color(0xFFF0ECE6),
+                                    child: Text(
+                                      widget.post.authorAvatar,
+                                      style: const TextStyle(fontSize: 11),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Expanded(
+                                    child: Text(
+                                      widget.post.authorName,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Color(0xFF888888),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 3),
-                              Text(
-                                '$_likeCount',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFF999999),
-                                ),
+                            ),
+                            const SizedBox(width: 6),
+                            GestureDetector(
+                              onTap: _toggleLike,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  AnimatedScale(
+                                    scale: _liked ? 1.4 : 1.0,
+                                    duration: const Duration(milliseconds: 200),
+                                    curve: Curves.elasticOut,
+                                    child: Icon(
+                                      _liked
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      size: 13,
+                                      color: _liked
+                                          ? const Color(0xFFFF4458)
+                                          : const Color(0xFF999999),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    '$_likeCount',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF999999),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
