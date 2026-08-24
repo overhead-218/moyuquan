@@ -1,5 +1,7 @@
 import 'dart:math';
 import '../models/spot.dart';
+import 'backend_config.dart';
+import 'tcb_rest_client.dart';
 
 /// 钓点服务（mock 版）
 class SpotService {
@@ -4777,47 +4779,86 @@ class SpotService {
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
   ),
+
+  Spot(
+    id: 's253', name: '雅砻野钓', type: '农家乐', typeEmoji: '🏕',
+    city: '攀枝花', district: '米易县', address: '四川省攀枝花市米易县白坡彝族乡若水村一社鱼坝滩',
+    latitude: 26.88, longitude: 102.03,
+    images: [
+      'assets/images/spots/spot_253_1.png',
+      'assets/images/spots/spot_253_2.jpg',
+      'assets/images/spots/spot_253_3.jpg',
+    ],
+    fishSpecies: ['鳜鱼', '翘嘴'],
+    fishPeakSeason: const <String, String>{ '鳜鱼': '5-10', '翘嘴': '6-9' },
+    lastStockingDate: null,
+    stockingCycleDays: 0,
+    price: 0, priceNote: '野钓免费；江景房住宿¥160/间（步行1分钟到钓位）', businessHours: '全天开放',
+    contactPhone: null,
+    wechat: null, ownerName: null,
+    rating: 4.3, reviewCount: 33, viewCount: 1500, favoriteCount: 900, postCount: 12,
+    description: '雅砻江二滩库区野钓基地，提供导钓鳜鱼翘嘴、住宿、餐饮一体服务。江景房开窗即见雅砻江，环境清幽，适合周末休闲钓+度假。',
+    updatedAt: DateTime.now().subtract(const Duration(days: 1)),
+    submitter: SpotSubmitter.operator,
+    hasAccommodation: true,
+    roomType: '江景房', roomCapacity: 2, hasWifi: false,
+    accommodationNote: '江景房¥160/间，步行1分钟到钓位，开窗即见雅砻江。',
+    facilities: ['餐饮', '住宿', '导钓服务'],
+  ),
   ];
 
-  static List<Spot> get all => _mockSpots;
+  // ── 云库接入层 ──────────────────────────────────────
+  // _cache 为稳定引用：原地增删改，外部捕获的引用（如发现页 _allSpots）自动可见。
+  static final List<Spot> _cache = List<Spot>.from(_mockSpots);
+
+  static final Set<void Function()> _listeners = {};
+  static void addListener(void Function() cb) => _listeners.add(cb);
+  static void removeListener(void Function() cb) => _listeners.remove(cb);
+  static void _notify() {
+    for (final cb in List.of(_listeners)) {
+      try {
+        cb();
+      } catch (_) {}
+    }
+  }
+
+  static List<Spot> get all => _cache;
 
   static List<Spot> byCity(String city) =>
-      _mockSpots.where((s) => s.city == city).toList();
+      _cache.where((s) => s.city == city).toList();
 
   static List<Spot> byType(String type) =>
-      _mockSpots.where((s) => s.type == type).toList();
+      _cache.where((s) => s.type == type).toList();
 
   static List<Spot> search(String q) {
     final lq = q.toLowerCase();
-    return _mockSpots.where((s) =>
-      s.name.contains(lq) ||
-      s.city.contains(lq) ||
+    return _cache.where((s) =>
+      s.name.toLowerCase().contains(lq) ||
+      s.city.toLowerCase().contains(lq) ||
       s.fishSpecies.any((f) => f.toLowerCase().contains(lq))
     ).toList();
   }
 
   static List<Spot> sortByHotspot([List<Spot>? spots]) {
-    final src = spots ?? _mockSpots;
+    final src = spots ?? _cache;
     final copy = List<Spot>.from(src);
-    copy.sort((a, b) {
-      final sa = a.hotspotScore;
-      final sb = b.hotspotScore;
-      return sb.compareTo(sa);
-    });
+    copy.sort((a, b) => b.hotspotScore.compareTo(a.hotspotScore));
     return copy;
   }
 
   static void addSpot(Spot spot) {
-    _mockSpots.insert(0, spot);
+    _cache.insert(0, spot);
+    _notify();
+    _pushAdd(spot);
   }
 
   static Spot? claimSpot(String id, {
     String? contactPhone, String? wechat, String? ownerName,
     String? lastStockingDate, int? stockingCycleDays,
   }) {
-    final idx = _mockSpots.indexWhere((s) => s.id == id);
+    final idx = _cache.indexWhere((s) => s.id == id);
     if (idx < 0) return null;
-    final old = _mockSpots[idx];
+    final old = _cache[idx];
     final updated = Spot(
       id: old.id, name: old.name, type: old.type, typeEmoji: old.typeEmoji,
       city: old.city, district: old.district, address: old.address,
@@ -4839,17 +4880,91 @@ class SpotService {
       claimedBy: ownerName,
       claimedAt: DateTime.now(),
     );
-    _mockSpots[idx] = updated;
+    _cache[idx] = updated;
+    _notify();
+    _pushClaim(id,
+      contactPhone: contactPhone,
+      wechat: wechat,
+      ownerName: ownerName,
+      lastStockingDate: lastStockingDate,
+      stockingCycleDays: stockingCycleDays,
+    );
     return updated;
   }
 
   static Spot? getOne(String id) {
     try {
-      return _mockSpots.firstWhere((s) => s.id == id);
+      return _cache.firstWhere((s) => s.id == id);
     } catch (_) {
       return null;
     }
   }
+
+  /// 启动后调用：从云库拉取最新钓点覆盖本地缓存；失败保留 mock，永不白屏。
+  static Future<void> refreshFromCloud() async {
+    if (!BackendConfig.cloudEnabled) return;
+    try {
+      final rows = await TcbRestClient.query('spots', params: {
+        'select': '*',
+        'limit': '1000',
+        'order': 'hotspotScore.desc',
+      });
+      if (rows.isNotEmpty) {
+        final cloud =
+            rows.map((r) => Spot.fromJson(r as Map<String, dynamic>)).toList();
+        _cache
+          ..clear()
+          ..addAll(cloud);
+        _notify();
+        print('[SpotService] 已从云库同步 ${cloud.length} 个钓点');
+      }
+    } catch (e) {
+      print('[SpotService] 云库同步失败，使用本地数据：$e');
+    }
+  }
+
+  /// 一次性：把本地 250+ mock 钓点写入云库（幂等，重复 id 忽略）。
+  static Future<void> seedFromMockToCloud() async {
+    if (!BackendConfig.cloudEnabled) return;
+    for (final s in _mockSpots) {
+      await TcbRestClient.upsert('spots', s.toJson()).catchError((e) {
+        print('[SpotService] seed 跳过 ${s.id}: $e');
+      });
+    }
+    await refreshFromCloud();
+  }
+
+  static void _pushAdd(Spot spot) {
+    if (!BackendConfig.cloudEnabled) return;
+    TcbRestClient.insert('spots', spot.toJson()).then((_) {
+      print('[SpotService] 已写入云库：${spot.id}');
+    }).catchError((e) {
+      print('[SpotService] 写入云库失败（本地已更新）：$e');
+    });
+  }
+
+  static void _pushClaim(String id, {
+    String? contactPhone, String? wechat, String? ownerName,
+    String? lastStockingDate, int? stockingCycleDays,
+  }) {
+    if (!BackendConfig.cloudEnabled) return;
+    final patch = <String, dynamic>{
+      if (contactPhone != null) 'contactPhone': contactPhone,
+      if (wechat != null) 'wechat': wechat,
+      if (ownerName != null) 'ownerName': ownerName,
+      if (lastStockingDate != null) 'lastStockingDate': lastStockingDate,
+      if (stockingCycleDays != null) 'stockingCycleDays': stockingCycleDays,
+      'submitter': SpotSubmitter.owner.name,
+      'claimedBy': ownerName,
+      'claimedAt': DateTime.now().toIso8601String(),
+    };
+    TcbRestClient.update('spots', {'id': 'eq.$id'}, patch).then((_) {
+      print('[SpotService] 已认领同步云库：$id');
+    }).catchError((e) {
+      print('[SpotService] 认领同步失败（本地已更新）：$e');
+    });
+  }
+
 
   /// 计算两点间距离（Haversine公式，单位km）
   static double distanceBetween(
