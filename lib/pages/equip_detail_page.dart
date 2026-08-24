@@ -5,24 +5,30 @@ class EquipDetailPage extends StatelessWidget {
   final String name;
   final String spec;
   final String type; // 鱼竿/鱼轮/饵料/小药
+  final String waterType; // 海水 | 淡水 | 通用
   final int rank;
   final int score; // 综合热度
   final int heat;  // 讨论热度
   final int replies;
   final List<String> tags;
   final String? imageUrl;
+  final List<String> gallery; // 详情页更多介绍图
+  final String desc; // 产品简介
 
   const EquipDetailPage({
     super.key,
     required this.name,
     required this.spec,
     required this.type,
+    this.waterType = '通用',
     required this.rank,
     required this.score,
     required this.heat,
     required this.replies,
     required this.tags,
     this.imageUrl,
+    this.gallery = const [],
+    this.desc = '',
   });
 
   // 配色
@@ -39,6 +45,12 @@ class EquipDetailPage extends StatelessWidget {
     if (rank == 2) return const Color(0xFFB0BEC5);
     if (rank == 3) return const Color(0xFFCD7F32);
     return _textWeak;
+  }
+
+  Color get _waterColor {
+    if (waterType == '海水') return const Color(0xFF1E88E5);
+    if (waterType == '淡水') return const Color(0xFF2E7D32);
+    return const Color(0xFF757575);
   }
 
   String _fmt(int n) {
@@ -169,6 +181,21 @@ class EquipDetailPage extends StatelessWidget {
                                 ),
                               ),
                             ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: _waterColor,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                waterType,
+                                style: const TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 8),
@@ -274,6 +301,53 @@ class EquipDetailPage extends StatelessWidget {
             ),
           ),
 
+          // 实景图集
+          if (gallery.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: _surface,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _primary.withValues(alpha: 0.06),
+                      blurRadius: 8, offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('实景图集', style: TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w700, color: _textMain,
+                    )),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 180,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: gallery.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 10),
+                        itemBuilder: (_, i) => ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.asset(
+                            gallery[i], width: 130, height: 180, fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              width: 130, height: 180,
+                              color: _primary.withValues(alpha: 0.08),
+                              child: const Center(child: Icon(Icons.image_outlined, color: _primary)),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
           // 规格参数
           SliverToBoxAdapter(
             child: Container(
@@ -299,12 +373,44 @@ class EquipDetailPage extends StatelessWidget {
                   _SpecRow(label: '产品名称', value: name),
                   _SpecRow(label: '规格型号', value: spec),
                   _SpecRow(label: '产品类型', value: type),
+                  _SpecRow(label: '适用水域', value: waterType),
                   _SpecRow(label: '热度排名', value: '#$rank'),
                   _SpecRow(label: '热度指数', value: _fmt(score)),
                 ],
               ),
             ),
           ),
+
+          // 产品简介
+          if (desc.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: _surface,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _primary.withValues(alpha: 0.06),
+                      blurRadius: 8, offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('产品简介', style: TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w700, color: _textMain,
+                    )),
+                    const SizedBox(height: 10),
+                    Text(desc, style: const TextStyle(
+                      fontSize: 13, color: _textMid, height: 1.6,
+                    )),
+                  ],
+                ),
+              ),
+            ),
 
           // 钓友评价
           SliverToBoxAdapter(
