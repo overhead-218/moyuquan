@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'privacy_policy_page.dart';
+import 'user_agreement_page.dart';
 
 /// 设置页
 class SettingsPage extends StatelessWidget {
@@ -144,6 +146,20 @@ class SettingsPage extends StatelessWidget {
                             onTap: () {
                               if (isDanger) {
                                 _showDangerDialog(context);
+                              } else if (item['label'] == '隐私政策') {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const PrivacyPolicyPage(),
+                                  ),
+                                );
+                              } else if (item['label'] == '用户协议') {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const UserAgreementPage(),
+                                  ),
+                                );
                               }
                             },
                           ),

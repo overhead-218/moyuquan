@@ -1,4 +1,6 @@
 import '../models/post.dart';
+import 'backend_config.dart';
+import 'tcb_rest_client.dart';
 
 /// 帖子服务（mock 版）
 ///
@@ -270,35 +272,96 @@ class PostService {
         createdAt:DateTime.now().subtract(const Duration(days:5))),
   ];
 
-  // ---------------------------------------------------------------------------
-  // 对外 API（mock 同步版 + Stream 兼容版）
-  // ---------------------------------------------------------------------------
+  // ── 云库接入层 ──────────────────────────────────────
+  // _cache 为稳定引用：原地增删改，外部捕获的引用（如 catch_page）自动可见。
+  static final List<Post> _cache = List<Post>.from(_mockPosts);
 
-  /// 同步取所有帖子（mock）
-  static List<Post> mockAll() => List.unmodifiable(_mockPosts);
+  static final Set<void Function()> _listeners = {};
+  static void addListener(void Function() cb) => _listeners.add(cb);
+  static void removeListener(void Function() cb) => _listeners.remove(cb);
+  static void _notify() {
+    for (final cb in List.of(_listeners)) {
+      try {
+        cb();
+      } catch (_) {}
+    }
+  }
+
+  /// 同步取所有帖子
+  static List<Post> mockAll() => List.unmodifiable(_cache);
 
   /// Stream 版 — 给 feed_page 的 StreamBuilder 用，立即 emit 一次
   static Stream<List<Post>> streamAll({int limit = 50}) async* {
-    final list = _mockPosts.take(limit).toList(growable: false);
+    final list = _cache.take(limit).toList(growable: false);
     yield list;
   }
 
-  /// 按 type 过滤（mock）
+  /// 按 type 过滤
   static Stream<List<Post>> streamByType(String type, {int limit = 50}) async* {
-    final list = _mockPosts
+    final list = _cache
         .where((p) => p.type == type)
         .take(limit)
         .toList(growable: false);
     yield list;
   }
 
-  /// 单帖（mock）
+  /// 单帖
   static Future<Post?> getOne(String id) async {
     try {
-      return _mockPosts.firstWhere((p) => p.id == id);
+      return _cache.firstWhere((p) => p.id == id);
     } catch (_) {
       return null;
     }
+  }
+
+  /// UGC 发帖：本地置顶 + 通知 + 异步写云库
+  static void addPost(Post post) {
+    _cache.insert(0, post);
+    _notify();
+    _pushAdd(post);
+  }
+
+  /// 启动后调用：从云库拉取最新帖子覆盖本地缓存；失败保留 mock，永不白屏。
+  static Future<void> refreshFromCloud() async {
+    if (!BackendConfig.cloudEnabled) return;
+    try {
+      final rows = await TcbRestClient.query('posts', params: {
+        'select': '*',
+        'limit': '1000',
+        'order': 'createdAt.desc',
+      });
+      if (rows.isNotEmpty) {
+        final cloud =
+            rows.map((r) => Post.fromJson(r as Map<String, dynamic>)).toList();
+        _cache
+          ..clear()
+          ..addAll(cloud);
+        _notify();
+        print('[PostService] 已从云库同步 ${cloud.length} 条帖子');
+      }
+    } catch (e) {
+      print('[PostService] 云库同步失败，使用本地数据：$e');
+    }
+  }
+
+  /// 一次性：把本地 mock 帖子写入云库（幂等，重复 id 忽略）。
+  static Future<void> seedFromMockToCloud() async {
+    if (!BackendConfig.cloudEnabled) return;
+    for (final p in _mockPosts) {
+      await TcbRestClient.upsert('posts', p.toJson()).catchError((e) {
+        print('[PostService] seed 跳过 ${p.id}: $e');
+      });
+    }
+    await refreshFromCloud();
+  }
+
+  static void _pushAdd(Post post) {
+    if (!BackendConfig.cloudEnabled) return;
+    TcbRestClient.insert('posts', post.toJson()).then((_) {
+      print('[PostService] 已写入云库：${post.id}');
+    }).catchError((e) {
+      print('[PostService] 写入云库失败（本地已更新）：$e');
+    });
   }
 
   // ===========================================================================

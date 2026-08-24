@@ -155,4 +155,133 @@ class Spot {
     if (hasWifi) s.add('WiFi');
     return s.toList();
   }
+
+  // ── 云库序列化（字段名与数据库列名 1:1，避免映射错配）────────
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'type': type,
+    'typeEmoji': typeEmoji,
+    'city': city,
+    'district': district,
+    'address': address,
+    'latitude': latitude,
+    'longitude': longitude,
+    'images': images,
+    'fishSpecies': fishSpecies,
+    'fishPeakSeason': fishPeakSeason,
+    'lastStockingDate': lastStockingDate,
+    'stockingCycleDays': stockingCycleDays,
+    'price': price,
+    'priceNote': priceNote,
+    'businessHours': businessHours,
+    'contactPhone': contactPhone,
+    'wechat': wechat,
+    'ownerName': ownerName,
+    'rating': rating,
+    'reviewCount': reviewCount,
+    'viewCount': viewCount,
+    'favoriteCount': favoriteCount,
+    'postCount': postCount,
+    'description': description,
+    'updatedAt': updatedAt?.toIso8601String(),
+    'submitter': submitter.name,
+    'claimedBy': claimedBy,
+    'claimedAt': claimedAt?.toIso8601String(),
+    'hasAccommodation': hasAccommodation,
+    'roomType': roomType,
+    'roomCapacity': roomCapacity,
+    'hasWifi': hasWifi,
+    'accommodationNote': accommodationNote,
+    'accommodationImages': accommodationImages,
+    'commonAreaImages': commonAreaImages,
+    'facilities': facilities,
+  };
+
+  static List<String> _asList(dynamic v) {
+    if (v == null) return const <String>[];
+    if (v is List) return v.map((e) => e?.toString() ?? '').toList();
+    return const <String>[];
+  }
+
+  static Map<String, String> _asMap(dynamic v) {
+    if (v == null) return const <String, String>{};
+    if (v is Map) {
+      return v.map((k, e) => MapEntry(k.toString(), e?.toString() ?? ''));
+    }
+    return const <String, String>{};
+  }
+
+  static double _asDouble(dynamic v, [double d = 0]) {
+    if (v == null) return d;
+    if (v is num) return v.toDouble();
+    return double.tryParse(v.toString()) ?? d;
+  }
+
+  static int _asInt(dynamic v, [int d = 0]) {
+    if (v == null) return d;
+    if (v is num) return v.toInt();
+    return int.tryParse(v.toString()) ?? d;
+  }
+
+  static bool _asBool(dynamic v, [bool d = false]) {
+    if (v == null) return d;
+    if (v is bool) return v;
+    if (v is num) return v != 0;
+    return d;
+  }
+
+  static String? _asStr(dynamic v) => v == null ? null : v.toString();
+
+  factory Spot.fromJson(Map<String, dynamic> json) {
+    return Spot(
+      id: _asStr(json['id']) ?? '',
+      name: _asStr(json['name']) ?? '',
+      type: _asStr(json['type']) ?? '野钓',
+      typeEmoji: _asStr(json['typeEmoji']) ?? '🐟',
+      city: _asStr(json['city']) ?? '',
+      district: _asStr(json['district']) ?? '',
+      address: _asStr(json['address']) ?? '',
+      latitude: _asDouble(json['latitude']),
+      longitude: _asDouble(json['longitude']),
+      images: _asList(json['images']),
+      fishSpecies: _asList(json['fishSpecies']),
+      fishPeakSeason: _asMap(json['fishPeakSeason']),
+      lastStockingDate: _asStr(json['lastStockingDate']),
+      stockingCycleDays: _asInt(json['stockingCycleDays']),
+      price: _asDouble(json['price']),
+      priceNote: _asStr(json['priceNote']) ?? '',
+      businessHours: _asStr(json['businessHours']) ?? '',
+      contactPhone: _asStr(json['contactPhone']),
+      wechat: _asStr(json['wechat']),
+      ownerName: _asStr(json['ownerName']),
+      rating: _asDouble(json['rating']),
+      reviewCount: _asInt(json['reviewCount']),
+      viewCount: _asInt(json['viewCount']),
+      favoriteCount: _asInt(json['favoriteCount']),
+      postCount: _asInt(json['postCount']),
+      description: _asStr(json['description']) ?? '',
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.tryParse(json['updatedAt'].toString()),
+      submitter: SpotSubmitter.values.firstWhere(
+        (e) => e.name == json['submitter'],
+        orElse: () => SpotSubmitter.operator,
+      ),
+      claimedBy: _asStr(json['claimedBy']),
+      claimedAt: json['claimedAt'] == null
+          ? null
+          : DateTime.tryParse(json['claimedAt'].toString()),
+      hasAccommodation: _asBool(json['hasAccommodation']),
+      roomType: _asStr(json['roomType']),
+      roomCapacity: json['roomCapacity'] == null
+          ? null
+          : _asInt(json['roomCapacity']),
+      hasWifi: _asBool(json['hasWifi']),
+      accommodationNote: _asStr(json['accommodationNote']),
+      accommodationImages: _asList(json['accommodationImages']),
+      commonAreaImages: _asList(json['commonAreaImages']),
+      facilities: _asList(json['facilities']),
+    );
+  }
 }

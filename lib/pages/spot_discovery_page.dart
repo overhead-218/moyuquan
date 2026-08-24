@@ -40,6 +40,8 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
   @override
   void initState() {
     super.initState();
+    // 云库同步完成后刷新列表（_allSpots 引用原地更新即可见，这里触发 rebuild）
+    SpotService.addListener(_onCloudUpdate);
     // 1. 记住的城市优先 — 记忆有效意味着用户曾经手动选过，置 _userPicked=true
     //    防止后续定位覆盖用户的明确选择
     final saved = GeoService.loadCity();
@@ -49,6 +51,16 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
     }
     // 2. 浏览器定位（刷新真实坐标 + 未手动选择时映射城市）
     _tryLocate();
+  }
+
+  void _onCloudUpdate() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    SpotService.removeListener(_onCloudUpdate);
+    super.dispose();
   }
 
   Future<void> _tryLocate() async {

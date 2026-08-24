@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 /// 帖子数据模型
 class Post {
   final String id;
@@ -32,24 +30,44 @@ class Post {
     required this.createdAt,
   });
 
-  factory Post.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final d = doc.data() ?? {};
-    return Post(
-      id: doc.id,
-      authorId: (d['authorId'] ?? '') as String,
-      authorName: (d['authorName'] ?? '') as String,
-      authorAvatar: (d['authorAvatar'] ?? '🎣') as String,
-      type: (d['type'] ?? 'spot') as String,
-      title: (d['title'] ?? '') as String,
-      content: (d['content'] ?? '') as String,
-      location: (d['location'] ?? '') as String,
-      imageUrl: (d['imageUrl'] ?? '') as String,
-      height: (d['height'] is num) ? (d['height'] as num).toDouble() : 280.0,
-      likeCount: (d['likeCount'] is num) ? (d['likeCount'] as num).toInt() : 0,
-      commentCount: (d['commentCount'] is num) ? (d['commentCount'] as num).toInt() : 0,
-      createdAt: d['createdAt'] is Timestamp
-          ? (d['createdAt'] as Timestamp).toDate()
-          : DateTime.now(),
-    );
-  }
+  // ── 云库序列化（字段名与 Postgres 列 1:1）─────────────────
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'authorId': authorId,
+    'authorName': authorName,
+    'authorAvatar': authorAvatar,
+    'type': type,
+    'title': title,
+    'content': content,
+    'location': location,
+    'imageUrl': imageUrl,
+    'height': height,
+    'likeCount': likeCount,
+    'commentCount': commentCount,
+    'createdAt': createdAt.toIso8601String(),
+  };
+
+  static String? _asStr(dynamic v) => v == null ? null : v.toString();
+  static double _asDouble(dynamic v, [double d = 0]) =>
+      v is num ? v.toDouble() : double.tryParse(v.toString()) ?? d;
+  static int _asInt(dynamic v, [int d = 0]) =>
+      v is num ? v.toInt() : int.tryParse(v.toString()) ?? d;
+
+  factory Post.fromJson(Map<String, dynamic> json) => Post(
+    id: _asStr(json['id']) ?? '',
+    authorId: _asStr(json['authorId']) ?? '',
+    authorName: _asStr(json['authorName']) ?? '',
+    authorAvatar: _asStr(json['authorAvatar']) ?? '🎣',
+    type: _asStr(json['type']) ?? 'spot',
+    title: _asStr(json['title']) ?? '',
+    content: _asStr(json['content']) ?? '',
+    location: _asStr(json['location']) ?? '',
+    imageUrl: _asStr(json['imageUrl']) ?? '',
+    height: _asDouble(json['height'], 280),
+    likeCount: _asInt(json['likeCount']),
+    commentCount: _asInt(json['commentCount']),
+    createdAt: json['createdAt'] == null
+        ? DateTime.now()
+        : DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now(),
+  );
 }

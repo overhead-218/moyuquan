@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'pages/login_page.dart';
+import 'services/spot_service.dart';
+import 'services/post_service.dart';
+import 'services/message_service.dart';
+import 'services/user_profile.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +26,12 @@ void main() async {
   }
 
   runApp(const FishingApp());
+
+  // 启动后后台拉取云库数据（失败自动回退本地 mock，不打断首屏）
+  SpotService.refreshFromCloud();
+  PostService.refreshFromCloud();
+  MessageService.refreshFromCloud();
+  UserProfile.instance.refreshFromCloud();
 }
 
 class FishingApp extends StatelessWidget {

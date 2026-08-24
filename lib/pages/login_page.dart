@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'home_shell.dart';
+import 'privacy_policy_page.dart';
+import 'user_agreement_page.dart';
 
 /// 登录页：微信授权入口 + Logo呼吸动画 + 抖动提示
 class LoginPage extends StatefulWidget {
@@ -251,12 +254,48 @@ class _LoginPageState extends State<LoginPage>
               const SizedBox(height: 32),
 
               // 协议说明
-              const Text(
-                '登录即同意《用户协议》与《隐私政策》',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Color(0xFF999999),
-                  height: 1.4,
+              RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF999999),
+                    height: 1.4,
+                  ),
+                  children: [
+                    const TextSpan(text: '登录即同意'),
+                    TextSpan(
+                      text: '《用户协议》',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF0A7C74),
+                        fontWeight: FontWeight.w600,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const UserAgreementPage(),
+                              ),
+                            ),
+                    ),
+                    const TextSpan(text: '与'),
+                    TextSpan(
+                      text: '《隐私政策》',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF0A7C74),
+                        fontWeight: FontWeight.w600,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const PrivacyPolicyPage(),
+                              ),
+                            ),
+                    ),
+                  ],
                 ),
               ),
 

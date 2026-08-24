@@ -58,6 +58,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               UserProfile.instance.bio = _bioCtrl.text.trim();
               UserProfile.instance.city = _locationCtrl.text.trim();
               UserProfile.instance.gender = _gender;
+              UserProfile.instance.save();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: const Text('资料已保存'),
