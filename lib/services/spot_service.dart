@@ -4805,7 +4805,26 @@ class SpotService {
     accommodationNote: '江景房¥160/间，步行1分钟到钓位，开窗即见雅砻江。',
     facilities: ['餐饮', '住宿', '导钓服务'],
   ),
-  ];
+
+  Spot(
+    id: 's254', name: '泷浔路亚赛事基地', type: '路亚', typeEmoji: '🎣',
+    city: '上海', district: '奉贤区', address: '上海市奉贤区海湾镇五四公路',
+    latitude: 30.92, longitude: 121.58,
+    images: [],
+    fishSpecies: ['鳜鱼', '黑鱼', '鲈鱼', '翘嘴'],
+    fishPeakSeason: {'鳜鱼': '5-10', '黑鱼': '5-9', '鲈鱼': '5-10', '翘嘴': '6-9'},
+    lastStockingDate: '2026-08-10',
+    stockingCycleDays: 7,
+    price: 598.0, priceNote: '¥598/人', businessHours: '需预约',
+    contactPhone: null,
+    wechat: null, ownerName: null,
+    hasAccommodation: false,
+    rating: 4.5, reviewCount: 28, viewCount: 1800, favoriteCount: 420, postCount: 9,
+    description: '华东路亚竞技标杆场地，上海奉贤专业船钓综合基地。',
+    updatedAt: DateTime.now(),
+    submitter: SpotSubmitter.operator,
+  ),
+];
 
   // ── 云库接入层 ──────────────────────────────────────
   // _cache 为稳定引用：原地增删改，外部捕获的引用（如发现页 _allSpots）自动可见。
