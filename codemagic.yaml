@@ -1,0 +1,39 @@
+# Codemagic 云构建配置（iOS 上线，无需本地 Mac）
+# 使用方式：Codemagic 后台连接 GitHub repo overhead-218/moyuquan，
+# 在「App settings → Environment variables」中配置下方变量（建议放进 group）
+workflows:
+  ios-release:
+    name: iOS Release
+    max_build_duration: 30
+    environment:
+      flutter: stable
+      xcode: latest
+      vars:
+        BUNDLE_ID: com.fishing.fishingApp
+      # 以下变量需在 Codemagic 后台配置（勿提交明文到仓库）：
+      # APP_STORE_CONNECT_KEY           -> App Store Connect API Key (p8 文件内容)
+      # APP_STORE_CONNECT_KEY_ID        -> Key ID (如 XXXXXXXXXX)
+      # APP_STORE_CONNECT_ISSUER_ID     -> Issuer ID (UUID)
+      groups:
+        - appstore_credentials
+    scripts:
+      - name: 安装依赖
+        script: flutter pub get
+      - name: 静态分析
+        script: flutter analyze
+      - name: 配置签名 (自动从 App Store Connect 拉取证书/描述文件)
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+      - name: 构建 IPA
+        script: flutter build ipa --release --export-options-plist=$CM_EXPORT_OPTIONS_PATH
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_KEY
+        key_id: $APP_STORE_CONNECT_KEY_ID
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: false   # 先提 TestFlight 自测，再手动转 App Store 审核

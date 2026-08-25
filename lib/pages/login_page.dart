@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'dart:io';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'home_shell.dart';
 import 'privacy_policy_page.dart';
 import 'user_agreement_page.dart';
 
-/// 登录页：微信授权入口 + Logo呼吸动画 + 抖动提示
+/// 登录页：微信授权(iOS隐藏) / Apple登录(iOS) / 游客模式
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -34,7 +36,7 @@ class _LoginPageState extends State<LoginPage>
         CurvedAnimation(parent: _logoCtrl, curve: Curves.easeInOut);
     _logoScale = Tween<double>(begin: 0.95, end: 1.05).animate(_logoFade);
 
-    // 微信按钮抖动提示
+    // 微信按钮抖动提示（仅 Android 用到）
     _shakeCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -84,6 +86,34 @@ class _LoginPageState extends State<LoginPage>
     await Future.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
     Navigator.pop(context);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const HomeShell()),
+    );
+  }
+
+  /// Apple 登录（仅 iOS 调用）
+  Future<void> _onAppleLogin() async {
+    try {
+      await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+      // TODO: 将 userIdentifier 存入本地 / 同步腾讯云用户表
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeShell()),
+      );
+    } catch (e) {
+      // 用户取消授权或发生错误，静默返回登录页
+    }
+  }
+
+  /// 游客模式：直接进入，不创建账号
+  void _onGuestLogin() {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const HomeShell()),
@@ -163,82 +193,18 @@ class _LoginPageState extends State<LoginPage>
 
               const Spacer(flex: 3),
 
-              // 微信登录按钮（带抖动提示）
-              AnimatedBuilder(
-                animation: _shake,
-                builder: (context, child) {
-                  final offset = _shake.value == 0
-                      ? 0.0
-                      : (_shake.value < 0.5
-                          ? -4 * _shake.value
-                          : 4 * (1 - (_shake.value - 0.5) * 2));
-                  return Transform.translate(
-                    offset: Offset(offset, 0),
-                    child: child,
-                  );
-                },
-                child: Container(
-                  width: 280,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-                  child: ElevatedButton(
-                    onPressed: _onWechatLogin,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF07C160),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      minimumSize: const Size(280, 52),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.wechat, size: 22),
-                        SizedBox(width: 8),
-                        Text(
-                          '微信登录',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
+              // 登录入口：iOS 显示 Apple + 游客；Android 显示微信 + 手机号 + 游客
+              if (Platform.isIOS)
+                ...[
+                  SignInWithAppleButton(
+                    onPressed: _onAppleLogin,
+                    style: SignInWithAppleButtonStyle.black,
+                    height: 52,
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // 其他登录方式
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+                  const SizedBox(height: 14),
                   TextButton(
-                    onPressed: () {},
-                    child: const Text(
-                      '手机号登录',
-                      style: TextStyle(
-                        color: Color(0xFF0A7C74),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Container(
-                    width: 1,
-                    height: 12,
-                    color: const Color(0xFFEDEAE3),
-                  ),
-                  const SizedBox(width: 16),
-                  TextButton(
-                    onPressed: () {},
+                    onPressed: _onGuestLogin,
                     child: const Text(
                       '游客模式',
                       style: TextStyle(
@@ -248,8 +214,94 @@ class _LoginPageState extends State<LoginPage>
                       ),
                     ),
                   ),
+                ]
+              else
+                ...[
+                  // 微信登录按钮（带抖动提示）
+                  AnimatedBuilder(
+                    animation: _shake,
+                    builder: (context, child) {
+                      final offset = _shake.value == 0
+                          ? 0.0
+                          : (_shake.value < 0.5
+                              ? -4 * _shake.value
+                              : 4 * (1 - (_shake.value - 0.5) * 2));
+                      return Transform.translate(
+                        offset: Offset(offset, 0),
+                        child: child,
+                      );
+                    },
+                    child: Container(
+                      width: 280,
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
+                      child: ElevatedButton(
+                        onPressed: _onWechatLogin,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF07C160),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          minimumSize: const Size(280, 52),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.wechat, size: 22),
+                            SizedBox(width: 8),
+                            Text(
+                              '微信登录',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text(
+                          '手机号登录',
+                          style: TextStyle(
+                            color: Color(0xFF0A7C74),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Container(
+                        width: 1,
+                        height: 12,
+                        color: const Color(0xFFEDEAE3),
+                      ),
+                      const SizedBox(width: 16),
+                      TextButton(
+                        onPressed: _onGuestLogin,
+                        child: const Text(
+                          '游客模式',
+                          style: TextStyle(
+                            color: Color(0xFF0A7C74),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
-              ),
 
               const SizedBox(height: 32),
 

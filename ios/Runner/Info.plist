@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Fishing App</string>
+	<string>摸鱼圈</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -43,7 +43,13 @@
 					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
 					<key>UISceneStoryboardFile</key>
 					<string>Main</string>
-				</dict>
+				  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>摸鱼圈需要您的位置以为您推荐附近的钓点与钓友</string>
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>摸鱼圈需要访问相册以上传您的钓点照片与鱼获</string>
+  <key>NSCameraUsageDescription</key>
+  <string>摸鱼圈需要调用相机以拍摄钓点与鱼获</string>
+</dict>
 			</array>
 		</dict>
 	</dict>
