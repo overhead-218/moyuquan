@@ -4808,9 +4808,17 @@ class SpotService {
 
   Spot(
     id: 's254', name: '泷浔路亚赛事基地', type: '路亚', typeEmoji: '🎣',
-    city: '上海', district: '奉贤区', address: '上海市奉贤区海湾镇五四公路',
+    city: '上海', district: '奉贤区', address: '上海市奉贤区前昇希尔顿酒店东南约460米',
     latitude: 30.92, longitude: 121.58,
-    images: [],
+    images: [
+      'assets/images/spots/spot_254_1.jpg',
+      'assets/images/spots/spot_254_2.jpg',
+      'assets/images/spots/spot_254_3.jpg',
+      'assets/images/spots/spot_254_4.jpg',
+      'assets/images/spots/spot_254_5.jpg',
+      'assets/images/spots/spot_254_6.jpg',
+      'assets/images/spots/spot_254_7.jpg',
+    ],
     fishSpecies: ['鳜鱼', '黑鱼', '鲈鱼', '翘嘴'],
     fishPeakSeason: {'鳜鱼': '5-10', '黑鱼': '5-9', '鲈鱼': '5-10', '翘嘴': '6-9'},
     lastStockingDate: '2026-08-10',
