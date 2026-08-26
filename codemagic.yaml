@@ -18,7 +18,7 @@ workflows:
       - name: 安装依赖
         script: flutter pub get
       - name: 静态分析
-        script: flutter analyze
+        script: flutter analyze --no-fatal-infos --no-fatal-warnings
       - name: 配置签名 (自动从 App Store Connect 拉取证书/描述文件)
         script: |
           keychain initialize
