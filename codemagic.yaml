@@ -24,14 +24,17 @@ workflows:
           keychain initialize
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
-            --create
+            --create \
+            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --api-key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --api-private-key "$APP_STORE_CONNECT_PRIVATE_KEY"
       - name: 构建 IPA
         script: flutter build ipa --release --export-options-plist=$CM_EXPORT_OPTIONS_PATH
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_KEY
-        key_id: $APP_STORE_CONNECT_KEY_ID
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: false   # 先提 TestFlight 自测，再手动转 App Store 审核
