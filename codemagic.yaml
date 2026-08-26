@@ -10,12 +10,10 @@ workflows:
       xcode: latest
       vars:
         BUNDLE_ID: com.fishing.fishingApp
-      # 以下变量需在 Codemagic 后台配置（勿提交明文到仓库）：
+      # 以下变量已在 Codemagic 后台「Environment variables」app 级别配置：
       # APP_STORE_CONNECT_KEY           -> App Store Connect API Key (p8 文件内容)
-      # APP_STORE_CONNECT_KEY_ID        -> Key ID (如 XXXXXXXXXX)
-      # APP_STORE_CONNECT_ISSUER_ID     -> Issuer ID (UUID)
-      groups:
-        - appstore_credentials
+      # APP_STORE_CONNECT_KEY_ID        -> Key ID (7HZ8NCSH6B)
+      # APP_STORE_CONNECT_ISSUER_ID     -> Issuer ID (a3ca74de-6ec5-44c5-a865-b5fe775d529c)
     scripts:
       - name: 安装依赖
         script: flutter pub get
