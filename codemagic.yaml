@@ -15,10 +15,6 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.fishing.fishingApp
-        provisioning_profiles:
-          - moyuquan-appstore
-        certificates:
-          - moyuquan-distribution
       groups:
         - appstore_credentials
     scripts:
