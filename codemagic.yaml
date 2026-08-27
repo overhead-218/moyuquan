@@ -13,8 +13,10 @@ workflows:
       vars:
         BUNDLE_ID: com.fishing.fishingApp
       ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.fishing.fishingApp
+        provisioning_profiles:
+          - moyuquan-appstore
+        certificates:
+          - moyuquan-distribution
       groups:
         - appstore_credentials
     scripts:
@@ -23,7 +25,7 @@ workflows:
       - name: 静态分析
         script: flutter analyze --no-fatal-infos --no-fatal-warnings
       - name: 构建 IPA
-        script: flutter build ipa --release
+        script: flutter build ipa --release --export-options-plist=$CM_EXPORT_OPTIONS_PATH
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
