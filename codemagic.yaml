@@ -25,7 +25,13 @@ workflows:
       - name: 静态分析
         script: flutter analyze --no-fatal-infos --no-fatal-warnings
       - name: 构建 IPA
-        script: flutter build ipa --release --export-options-plist=$CM_EXPORT_OPTIONS_PATH
+        script: |
+          cd $FCI_BUILD_DIR
+          echo "=== 诊断签名环境 ==="
+          env | grep -i CM_ || true
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>/dev/null || true
+          security find-identity -v -p codesigning 2>/dev/null || true
+          flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
