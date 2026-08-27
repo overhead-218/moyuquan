@@ -27,6 +27,7 @@ workflows:
       - name: 构建 IPA
         script: |
           cd $FCI_BUILD_DIR
+          node fix_ios_signing.js
           echo "=== 诊断签名环境 ==="
           env | grep -i CM_ || true
           ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>/dev/null || true
