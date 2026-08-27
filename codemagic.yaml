@@ -12,6 +12,9 @@ workflows:
       xcode: latest
       vars:
         BUNDLE_ID: com.fishing.fishingApp
+      ios_signing:
+        certificate: moyuquan-distribution
+        provisioning_profile: moyuquan-appstore
       groups:
         - appstore_credentials
     scripts:
