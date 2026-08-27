@@ -27,16 +27,28 @@ workflows:
       - name: 构建 IPA
         script: |
           cd $FCI_BUILD_DIR
-          # 关键：提前升级 iOS 工程到当前 Flutter SDK 版本。
-          # 否则 flutter build 会在 archive 阶段自动 migrate 把手动签名配置覆盖回 Automatic，
-          # 导致一直报 No development certificates。
-          flutter create --platforms=ios .
-          # migrate 后 pbxproj 已重置为 Automatic，重新注入 manual 签名 + 发布证书 + profile
-          node fix_ios_signing.js
-          echo "=== 诊断 ==="
-          echo "bundle id:"; grep PRODUCT_BUNDLE_IDENTIFIER ios/Runner.xcodeproj/project.pbxproj | head -1
-          env | grep -i CM_ || true
-          flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+          # 1) 生成 Flutter iOS 产物（--no-codesign 不签名）。
+          #    Flutter 可能在此步自动 migrate 升级工程并重置 pbxproj 签名，但我们用命令行强制签名，不受其影响。
+          flutter build ios --release --no-codesign
+          echo "=== 诊断: 已安装 profile / 证书 ==="
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>/dev/null || true
+          security find-identity -v -p codesigning 2>/dev/null || true
+          # 2) 手动 archive：命令行强制 manual 签名（彻底绕过 Flutter migrate 对 pbxproj 签名的覆盖）
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner \
+            -configuration Release \
+            -archivePath build/Runner.xcarchive \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            DEVELOPMENT_TEAM=25UKD3GY5R \
+            PROVISIONING_PROFILE_SPECIFIER=moyuquan-appstore \
+            clean archive
+          echo "=== 诊断: archive 产物 ==="
+          ls -la build/Runner.xcarchive 2>/dev/null || true
+          # 3) 导出 IPA
+          xcodebuild -exportArchive \
+            -archivePath build/Runner.xcarchive \
+            -exportOptionsPlist ios/ExportOptions.plist \
+            -exportPath build/ios/ipa
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
