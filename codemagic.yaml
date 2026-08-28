@@ -29,10 +29,10 @@ workflows:
         script: flutter analyze --no-fatal-infos --no-fatal-warnings
       - name: 构建 IPA
         script: |
+          set -e
           cd $FCI_BUILD_DIR
           echo "=== BUILD HEAD ==="
           git rev-parse HEAD
-          echo "CM_COMMIT=$CM_COMMIT"
 
           # 1) 生成 Flutter iOS 产物（--no-codesign 不签名）
           flutter build ios --release --no-codesign
@@ -40,13 +40,12 @@ workflows:
           # 2) 诊断：列出 profile 名称 + keychain 证书
           echo "=== 诊断: profile / 证书 ==="
           for f in "$HOME/Library/MobileDevice/Provisioning Profiles/"*.mobileprovision; do
-            echo "profile: $f"; security cms -D -i "$f" 2>/dev/null | grep -A1 '<key>Name</key>' | tail -1 | xargs || true
+            echo "profile: $f"
+            security cms -D -i "$f" 2>/dev/null | grep -A1 '<key>Name</key>' | tail -1 | xargs || true
           done
           security find-identity -v -p codesigning 2>/dev/null || true
 
-          # 3) Archive（用 -scheme 正确解析 SPM 依赖，但跳过签名让 SPM targets 通过）
-          #    关键：CODE_SIGNING_ALLOWED=NO 让 Flutter/ SPM targets 编译通过，
-          #    不再报 "does not support provisioning profiles"（这些包本身不需要签名）
+          # 3) Archive（CODE_SIGNING_ALLOWED=NO 跳过签名，绕过 SPM targets 签名传递问题）
           xcodebuild -workspace ios/Runner.xcworkspace \
             -scheme Runner \
             -configuration Release \
@@ -54,52 +53,30 @@ workflows:
             CODE_SIGNING_ALLOWED=NO \
             clean archive
 
-          echo "=== 诊断: archive 产物 ==="
-          ls -la build/Runner.xcarchive/Products/Applications/ 2>/dev/null || echo "archive 不存在，诊断失败"
-
-          # 4) 提取 Runner.app（archive 内 symlink 展开后路径）
+          # 4) 提取 Runner.app
           ARCHIVE_APP="build/Runner.xcarchive/Products/Applications/Runner.app"
           TEMP_APP="build/Runner.app"
           rm -rf "$TEMP_APP"
           cp -R "$ARCHIVE_APP" "$TEMP_APP"
-          echo "=== Runner.app 已提取 ==="
+          echo "Runner.app 已提取: $(ls -la "$TEMP_APP")"
 
-          # 5) 生成 entitlements（从 profile 导出 .xcentitlements）
-          PROFILE_FILE=$(ls "$HOME/Library/MobileDevice/Provisioning Profiles/"/*.mobileprovision 2>/dev/null | head -1)
-          if [ -f "$PROFILE_FILE" ]; then
-            echo "从 $PROFILE_FILE 提取 entitlements"
-            security cms -D -i "$PROFILE_FILE" > /tmp/profile.plist
-            /usr/libexec/PlistBuddy -x -c 'Print :entitlements' /tmp/profile.plist > "$TEMP_APP/Runner.app.xcentitlements" 2>/dev/null && echo "entitlements OK" || echo "entitlements 提取失败，将不带 entitlements 签名"
-          fi
+          # 5) 签名（--deep 递归签所有二进制；App Store 分发不需要手动 entitlements，
+          #    profile 已内置，codesign 自动嵌入）
+          echo "=== 开始签名 Runner.app ==="
+          codesign --force --deep \
+            --sign "$DIST_IDENTITY" \
+            "$TEMP_APP"
 
-          # 6) 对 Runner.app 单独签名
-          #    --deep：递归签名所有嵌入 dylib/binary（Flutter 产物含多个二进制）
-          #    只签 Runner.app 主 bundle，不走 -scheme，绕开 SPM targets 签名传递问题
-          echo "=== 对 Runner.app 签名 ==="
-          if [ -f "$TEMP_APP/Runner.app.xcentitlements" ]; then
-            codesign --force --deep \
-              --sign "$DIST_IDENTITY" \
-              --entitlements "$TEMP_APP/Runner.app.xcentitlements" \
-              "$TEMP_APP"
-          else
-            codesign --force --deep \
-              --sign "$DIST_IDENTITY" \
-              "$TEMP_APP"
-          fi
-
+          # 6) 签名验证
           echo "=== 签名验证 ==="
-          codesign --verify -vvvv "$TEMP_APP/Runner" 2>&1 | head -8 || true
+          codesign --verify -vvvv "$TEMP_APP/Runner" 2>&1 | head -10 || {
+            echo "签名验证失败，尝试第二种方式检查"
+            ls -la "$TEMP_APP/Runner"
+            file "$TEMP_APP/Runner"
+          }
 
           # 7) 打包 IPA（手动 zip 打包，符合 App Store 上传要求）
           mkdir -p build/ios/ipa
           (cd "$TEMP_APP/.." && zip -qr build/ios/ipa/Runner.ipa Runner.app)
           echo "=== IPA 生成完成 ==="
           ls -lh build/ios/ipa/Runner.ipa
-    artifacts:
-      - build/ios/ipa/*.ipa
-    publishing:
-      app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        submit_to_testflight: false
