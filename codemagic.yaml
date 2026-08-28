@@ -30,9 +30,12 @@ workflows:
           echo "=== BUILD HEAD ==="
           git rev-parse HEAD
           echo "CM_COMMIT=$CM_COMMIT"
-          # 1) 生成 Flutter iOS 产物（--no-codesign 不签名）。
-          #    Flutter 可能在此步自动 migrate 升级工程并重置 pbxproj 签名，但我们用命令行强制签名，不受其影响。
+
+          # 1) 生成 Flutter iOS 产物（--no-codesign 不签名）
+          #    Flutter 可能在此步自动 migrate 升级工程并重置 pbxproj 签名，
+          #    但我们用命令行强制签名，不受其影响。
           flutter build ios --release --no-codesign
+
           # 2) 诊断：列出所有已注入 profile 的真实 Name + keychain 证书
           echo "=== 诊断: profile / 证书 ==="
           ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>/dev/null || true
@@ -40,17 +43,24 @@ workflows:
             echo "-- profile Name:"; security cms -D -i "$f" 2>/dev/null | grep -A1 '<key>Name</key>' | tail -1 | sed 's/<[^>]*>//g' || true
           done
           security find-identity -v -p codesigning 2>/dev/null || true
-          # 3) 手动 archive：命令行强制 manual 签名（彻底绕过 Flutter migrate 对 pbxproj 签名的覆盖）
-          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner \
+
+          # 3) 手动 archive：-target Runner（仅主 target 手动签名，SPM 依赖targets保持Automatic）
+          #    关键：-scheme 会把签名参数下发到 Firebase/gRPC/sign_in_with_apple 等 SPM targets，
+          #    这些包不支持手动 profile，会报错 "does not support provisioning profiles"。
+          #    -target 只对 Runner 本身生效，SPM targets 用 Automatic，故可行。
+          xcodebuild -workspace ios/Runner.xcworkspace \
+            -target Runner \
             -configuration Release \
             -archivePath build/Runner.xcarchive \
             CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGN_IDENTITY="Apple Distribution: Bin Zhong (25UKD3GY5R)" \
             DEVELOPMENT_TEAM=25UKD3GY5R \
             PROVISIONING_PROFILE_SPECIFIER=moyuquan-appstore \
             clean archive
+
           echo "=== 诊断: archive 产物 ==="
-          ls -la build/Runner.xcarchive/Products/Applications/ 2>/dev/null || true
+          ls -la build/Runner.xcarchive/Products/Applications/ 2>/dev/null || echo "archive 产物不存在"
+
           # 4) 导出 IPA
           xcodebuild -exportArchive \
             -archivePath build/Runner.xcarchive \
