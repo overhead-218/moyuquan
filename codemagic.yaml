@@ -76,9 +76,9 @@ workflows:
           }
 
           # 7) 打包 IPA（手动 zip 打包，符合 App Store 上传要求）
-          #    用绝对路径避免 cd 后相对路径失效
+          #    关键：不在 subshell 里执行，避免 set -e 失效
           IPA_DIR="$FCI_BUILD_DIR/build/ios/ipa"
-          mkdir -p "$IPA_DIR"
-          zip -qr "$IPA_DIR/Runner.ipa" -r "$TEMP_APP"
-          echo "=== IPA 生成完成 ==="
+          mkdir -p "$IPA_DIR" && \
+          zip -qr "$IPA_DIR/Runner.ipa" -r "$TEMP_APP" && \
+          echo "=== IPA 生成完成 ===" && \
           ls -lh "$IPA_DIR/Runner.ipa"
