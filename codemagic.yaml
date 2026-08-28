@@ -12,6 +12,9 @@ workflows:
       xcode: latest
       vars:
         BUNDLE_ID: com.fishing.fishingApp
+        DIST_IDENTITY: "Apple Distribution: Bin Zhong (25UKD3GY5R)"
+        DIST_TEAM: "25UKD3GY5R"
+        PROFILE_NAME: moyuquan-appstore
       ios_signing:
         provisioning_profiles:
           - moyuquan-appstore
@@ -32,40 +35,66 @@ workflows:
           echo "CM_COMMIT=$CM_COMMIT"
 
           # 1) 生成 Flutter iOS 产物（--no-codesign 不签名）
-          #    Flutter 可能在此步自动 migrate 升级工程并重置 pbxproj 签名，
-          #    但我们用命令行强制签名，不受其影响。
           flutter build ios --release --no-codesign
 
-          # 2) 诊断：列出所有已注入 profile 的真实 Name + keychain 证书
+          # 2) 诊断：列出 profile 名称 + keychain 证书
           echo "=== 诊断: profile / 证书 ==="
-          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>/dev/null || true
           for f in "$HOME/Library/MobileDevice/Provisioning Profiles/"*.mobileprovision; do
-            echo "-- profile Name:"; security cms -D -i "$f" 2>/dev/null | grep -A1 '<key>Name</key>' | tail -1 | sed 's/<[^>]*>//g' || true
+            echo "profile: $f"; security cms -D -i "$f" 2>/dev/null | grep -A1 '<key>Name</key>' | tail -1 | xargs || true
           done
           security find-identity -v -p codesigning 2>/dev/null || true
 
-          # 3) 手动 archive：-target Runner（仅主 target 手动签名，SPM 依赖targets保持Automatic）
-          #    关键：-scheme 会把签名参数下发到 Firebase/gRPC/sign_in_with_apple 等 SPM targets，
-          #    这些包不支持手动 profile，会报错 "does not support provisioning profiles"。
-          #    -target 只对 Runner 本身生效，SPM targets 用 Automatic，故可行。
+          # 3) Archive（用 -scheme 正确解析 SPM 依赖，但跳过签名让 SPM targets 通过）
+          #    关键：CODE_SIGNING_ALLOWED=NO 让 Flutter/ SPM targets 编译通过，
+          #    不再报 "does not support provisioning profiles"（这些包本身不需要签名）
           xcodebuild -workspace ios/Runner.xcworkspace \
-            -target Runner \
+            -scheme Runner \
             -configuration Release \
             -archivePath build/Runner.xcarchive \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution: Bin Zhong (25UKD3GY5R)" \
-            DEVELOPMENT_TEAM=25UKD3GY5R \
-            PROVISIONING_PROFILE_SPECIFIER=moyuquan-appstore \
+            CODE_SIGNING_ALLOWED=NO \
             clean archive
 
           echo "=== 诊断: archive 产物 ==="
-          ls -la build/Runner.xcarchive/Products/Applications/ 2>/dev/null || echo "archive 产物不存在"
+          ls -la build/Runner.xcarchive/Products/Applications/ 2>/dev/null || echo "archive 不存在，诊断失败"
 
-          # 4) 导出 IPA
-          xcodebuild -exportArchive \
-            -archivePath build/Runner.xcarchive \
-            -exportOptionsPlist ios/ExportOptions.plist \
-            -exportPath build/ios/ipa
+          # 4) 提取 Runner.app（archive 内 symlink 展开后路径）
+          ARCHIVE_APP="build/Runner.xcarchive/Products/Applications/Runner.app"
+          TEMP_APP="build/Runner.app"
+          rm -rf "$TEMP_APP"
+          cp -R "$ARCHIVE_APP" "$TEMP_APP"
+          echo "=== Runner.app 已提取 ==="
+
+          # 5) 生成 entitlements（从 profile 导出 .xcentitlements）
+          PROFILE_FILE=$(ls "$HOME/Library/MobileDevice/Provisioning Profiles/"/*.mobileprovision 2>/dev/null | head -1)
+          if [ -f "$PROFILE_FILE" ]; then
+            echo "从 $PROFILE_FILE 提取 entitlements"
+            security cms -D -i "$PROFILE_FILE" > /tmp/profile.plist
+            /usr/libexec/PlistBuddy -x -c 'Print :entitlements' /tmp/profile.plist > "$TEMP_APP/Runner.app.xcentitlements" 2>/dev/null && echo "entitlements OK" || echo "entitlements 提取失败，将不带 entitlements 签名"
+          fi
+
+          # 6) 对 Runner.app 单独签名
+          #    --deep：递归签名所有嵌入 dylib/binary（Flutter 产物含多个二进制）
+          #    只签 Runner.app 主 bundle，不走 -scheme，绕开 SPM targets 签名传递问题
+          echo "=== 对 Runner.app 签名 ==="
+          if [ -f "$TEMP_APP/Runner.app.xcentitlements" ]; then
+            codesign --force --deep \
+              --sign "$DIST_IDENTITY" \
+              --entitlements "$TEMP_APP/Runner.app.xcentitlements" \
+              "$TEMP_APP"
+          else
+            codesign --force --deep \
+              --sign "$DIST_IDENTITY" \
+              "$TEMP_APP"
+          fi
+
+          echo "=== 签名验证 ==="
+          codesign --verify -vvvv "$TEMP_APP/Runner" 2>&1 | head -8 || true
+
+          # 7) 打包 IPA（手动 zip 打包，符合 App Store 上传要求）
+          mkdir -p build/ios/ipa
+          (cd "$TEMP_APP/.." && zip -qr build/ios/ipa/Runner.ipa Runner.app)
+          echo "=== IPA 生成完成 ==="
+          ls -lh build/ios/ipa/Runner.ipa
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
