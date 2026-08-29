@@ -81,10 +81,17 @@ workflows:
           security cms -D -i "$PROFILE_SRC" > /tmp/moyu_profile.plist
           /usr/libexec/PlistBuddy -x -c "Print :Entitlements" /tmp/moyu_profile.plist > /tmp/moyu_entitlements.plist
           echo "=== 开始签名 Runner.app ==="
-          codesign --force --deep \
+          # 先逐个签名所有 embedded frameworks（不带 entitlements，避免 90034 Missing or invalid signature）
+          find "$TEMP_APP/Frameworks" -name '*.framework' -type d | while read -r fw; do
+            echo "signing framework: $fw"
+            codesign --force --sign "$DIST_IDENTITY" "$fw"
+          done
+          # 再签名主 App（带 profile 的 entitlements）
+          codesign --force --sign "$DIST_IDENTITY" \
             --entitlements /tmp/moyu_entitlements.plist \
-            --sign "$DIST_IDENTITY" \
             "$TEMP_APP"
+          echo "=== 签名验证 ==="
+          codesign --verify -vvvv "$TEMP_APP" 2>&1 | head -20
 
           # 6) 签名验证
           echo "=== 签名验证 ==="
