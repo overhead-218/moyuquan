@@ -15,6 +15,15 @@ workflows:
         DIST_IDENTITY: "Apple Distribution: Bin Zhong (25UKD3GY5R)"
         DIST_TEAM: "25UKD3GY5R"
         PROFILE_NAME: moyuquan-appstore
+        ASC_KEY_ID: PU76AUPJ5N
+        ASC_ISSUER: a3ca74de-6ec5-44c5-a865-b5fe775d529c
+        ASC_P8: |
+          -----BEGIN PRIVATE KEY-----
+          MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQglYJ++TDH0D19j5md
+          sVBtJLGIm6uifG86riTobZbQ8fqgCgYIKoZIzj0DAQehRANCAATdJLxRkLXPXrCe
+          6ZRikHFJEgAwp4zp+EbaLYsxBghaq7tbB5cGfQJS/PmI5mDvY7wlG1IQkHmn/tu3
+          D14xsTKl
+          -----END PRIVATE KEY-----
       ios_signing:
         provisioning_profiles:
           - moyuquan-appstore
@@ -80,15 +89,22 @@ workflows:
           zip -qr "$IPA_DIR/Runner.ipa" -r "$TEMP_APP"
           echo "=== IPA 生成完成 ==="
           ls -lh "$IPA_DIR/Runner.ipa"
+      - name: 上传到 App Store Connect (verbose)
+        script: |
+          set -e
+          export APP_STORE_CONNECT_PUBLISHER_PRIVATE_KEY="$ASC_P8"
+          echo "=== 开始上传 (verbose) ==="
+          app-store-connect publish \
+            --path "$FCI_BUILD_DIR/build/ios/ipa/Runner.ipa" \
+            --key-id "$ASC_KEY_ID" \
+            --issuer-id "$ASC_ISSUER" \
+            --private-key @env:APP_STORE_CONNECT_PUBLISHER_PRIVATE_KEY \
+            --verbose || true
+          echo "=== 上传脚本结束 (exit captured) ==="
     artifacts:
       - build/ios/ipa/Runner.ipa
     publishing:
       email:
         recipients:
           - 543675051@qq.com
-      app_store_connect:
-        api_key: "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQglYJ++TDH0D19j5md\nsVBtJLGIm6uifG86riTobZbQ8fqgCgYIKoZIzj0DAQehRANCAATdJLxRkLXPXrCe\n6ZRikHFJEgAwp4zp+EbaLYsxBghaq7tbB5cGfQJS/PmI5mDvY7wlG1IQkHmn/tu3\nD14xsTKl\n-----END PRIVATE KEY-----"
-        key_id: PU76AUPJ5N
-        issuer_id: a3ca74de-6ec5-44c5-a865-b5fe775d529c
-        submit_to_testflight: false
-        submit_to_app_store: true
+
