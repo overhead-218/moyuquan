@@ -67,10 +67,22 @@ workflows:
           cp -R "$ARCHIVE_APP" "$TEMP_APP"
           echo "Runner.app 已提取: $(ls -la "$TEMP_APP")"
 
-          # 5) 签名（--deep 递归签所有二进制；App Store 分发不需要手动 entitlements，
-          #    profile 已内置，codesign 自动嵌入）
+          # 5) 嵌入描述文件 + 提取 entitlements + 签名
+          #    关键：手动 codesign 不会自动嵌入 mobileprovision，必须手动拷贝成 embedded.mobileprovision，
+          #    否则 altool 报 90174 Missing Provisioning Profile
+          echo "=== 查找 moyuquan-appstore 描述文件 ==="
+          PROFILE_SRC=""
+          for f in "$HOME/Library/MobileDevice/Provisioning Profiles/"*.mobileprovision; do
+            NAME=$(security cms -D -i "$f" 2>/dev/null | grep -A1 '<key>Name</key>' | tail -1 | sed 's/<[^>]*>//g' | xargs)
+            if [ "$NAME" = "moyuquan-appstore" ]; then PROFILE_SRC="$f"; break; fi
+          done
+          echo "Profile: $PROFILE_SRC"
+          cp "$PROFILE_SRC" "$TEMP_APP/embedded.mobileprovision"
+          security cms -D -i "$PROFILE_SRC" > /tmp/moyu_profile.plist
+          /usr/libexec/PlistBuddy -c "Print :Entitlements" /tmp/moyu_profile.plist > /tmp/moyu_entitlements.plist
           echo "=== 开始签名 Runner.app ==="
           codesign --force --deep \
+            --entitlements /tmp/moyu_entitlements.plist \
             --sign "$DIST_IDENTITY" \
             "$TEMP_APP"
 
