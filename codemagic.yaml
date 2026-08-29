@@ -87,14 +87,8 @@ workflows:
         recipients:
           - 543675051@qq.com
       app_store_connect:
-        api_key: |
-          -----BEGIN PRIVATE KEY-----
-          MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQglYJ++TDH0D19j5md
-          sVBtJLGIm6uifG86riTobZbQ8fqgCgYIKoZIzj0DAQehRANCAATdJLxRkLXPXrCe
-          6ZRikHFJEgAwp4zp+EbaLYsxBghaq7tbB5cGfQJS/PmI5mDvY7wlG1IQkHmn/tu3
-          D14xsTKl
-          -----END PRIVATE KEY-----
-        api_key_id: PU76AUPJ5N
+        api_key: "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQglYJ++TDH0D19j5md\nsVBtJLGIm6uifG86riTobZbQ8fqgCgYIKoZIzj0DAQehRANCAATdJLxRkLXPXrCe\n6ZRikHFJEgAwp4zp+EbaLYsxBghaq7tbB5cGfQJS/PmI5mDvY7wlG1IQkHmn/tu3\nD14xsTKl\n-----END PRIVATE KEY-----"
+        key_id: PU76AUPJ5N
         issuer_id: a3ca74de-6ec5-44c5-a865-b5fe775d529c
         submit_to_testflight: false
         submit_to_app_store: true
