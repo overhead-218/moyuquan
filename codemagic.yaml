@@ -82,29 +82,31 @@ workflows:
             file "$TEMP_APP/Runner"
           }
 
-          # 7) 打包 IPA（手动 zip 打包，符合 App Store 上传要求）
-          #    关键：不在 subshell 里执行，避免 set -e 失效
+          # 7) 打包 IPA（必须符合 Payload/Runner.app/ 结构，
+          #    否则 app-store-connect 读取不到 Info.plist 导致上传失败）
           IPA_DIR="$FCI_BUILD_DIR/build/ios/ipa"
           mkdir -p "$IPA_DIR"
-          zip -qr "$IPA_DIR/Runner.ipa" -r "$TEMP_APP"
+          cd "$FCI_BUILD_DIR"
+          rm -rf Payload
+          mkdir -p Payload
+          rm -rf Payload/Runner.app
+          cp -R "$TEMP_APP" Payload/Runner.app
+          zip -qr "$IPA_DIR/Runner.ipa" Payload
+          cd "$FCI_BUILD_DIR"
           echo "=== IPA 生成完成 ==="
+          echo "--- 内部结构校验 (首 5 行必须含 Payload/Runner.app/Info.plist) ---"
+          unzip -l "$IPA_DIR/Runner.ipa" | head -5
           ls -lh "$IPA_DIR/Runner.ipa"
-      - name: 上传到 App Store Connect (verbose)
-        script: |
-          set -e
-          export APP_STORE_CONNECT_PUBLISHER_PRIVATE_KEY="$ASC_P8"
-          echo "=== 开始上传 (verbose) ==="
-          app-store-connect publish \
-            --path "$FCI_BUILD_DIR/build/ios/ipa/Runner.ipa" \
-            --key-id "$ASC_KEY_ID" \
-            --issuer-id "$ASC_ISSUER" \
-            --private-key @env:APP_STORE_CONNECT_PUBLISHER_PRIVATE_KEY \
-            --verbose || true
-          echo "=== 上传脚本结束 (exit captured) ==="
     artifacts:
       - build/ios/ipa/Runner.ipa
     publishing:
       email:
         recipients:
           - 543675051@qq.com
+      app_store_connect:
+        api_key: "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQglYJ++TDH0D19j5md\nsVBtJLGIm6uifG86riTobZbQ8fqgCgYIKoZIzj0DAQehRANCAATdJLxRkLXPXrCe\n6ZRikHFJEgAwp4zp+EbaLYsxBghaq7tbB5cGfQJS/PmI5mDvY7wlG1IQkHmn/tu3\nD14xsTKl\n-----END PRIVATE KEY-----"
+        key_id: PU76AUPJ5N
+        issuer_id: a3ca74de-6ec5-44c5-a865-b5fe775d529c
+        submit_to_testflight: false
+        submit_to_app_store: true
 
