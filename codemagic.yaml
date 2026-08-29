@@ -88,3 +88,9 @@ workflows:
       email:
         recipients:
           - 543675051@qq.com
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        api_key_id: $APP_STORE_CONNECT_KEY
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: false
+        submit_to_app_store: true
