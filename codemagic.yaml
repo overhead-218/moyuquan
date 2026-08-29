@@ -79,7 +79,7 @@ workflows:
           echo "Profile: $PROFILE_SRC"
           cp "$PROFILE_SRC" "$TEMP_APP/embedded.mobileprovision"
           security cms -D -i "$PROFILE_SRC" > /tmp/moyu_profile.plist
-          /usr/libexec/PlistBuddy -c "Print :Entitlements" /tmp/moyu_profile.plist > /tmp/moyu_entitlements.plist
+          /usr/libexec/PlistBuddy -x -c "Print :Entitlements" /tmp/moyu_profile.plist > /tmp/moyu_entitlements.plist
           echo "=== 开始签名 Runner.app ==="
           codesign --force --deep \
             --entitlements /tmp/moyu_entitlements.plist \
