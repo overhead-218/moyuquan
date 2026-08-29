@@ -20,8 +20,6 @@ workflows:
           - moyuquan-appstore
         certificates:
           - moyuquan-distribution
-      groups:
-        - appstore_credentials
     scripts:
       - name: 安装依赖
         script: flutter pub get
@@ -89,8 +87,14 @@ workflows:
         recipients:
           - 543675051@qq.com
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        api_key_id: $APP_STORE_CONNECT_KEY
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        api_key: |
+          -----BEGIN PRIVATE KEY-----
+          MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQglYJ++TDH0D19j5md
+          sVBtJLGIm6uifG86riTobZbQ8fqgCgYIKoZIzj0DAQehRANCAATdJLxRkLXPXrCe
+          6ZRikHFJEgAwp4zp+EbaLYsxBghaq7tbB5cGfQJS/PmI5mDvY7wlG1IQkHmn/tu3
+          D14xsTKl
+          -----END PRIVATE KEY-----
+        api_key_id: PU76AUPJ5N
+        issuer_id: a3ca74de-6ec5-44c5-a865-b5fe775d529c
         submit_to_testflight: false
         submit_to_app_store: true
