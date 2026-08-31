@@ -1,17 +1,20 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../services/moderation_actions.dart';
 
 /// 聊天详情页：与某个用户的私聊界面
 /// 参考小红书：支持文字/图片/拍照/位置/相册发送
 class ChatDetailPage extends StatefulWidget {
   final String name;
   final String avatar;
+  final String userId;
 
   const ChatDetailPage({
     super.key,
     required this.name,
     required this.avatar,
+    this.userId = '',
   });
 
   @override
@@ -1028,8 +1031,28 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
         children: [
           _buildMenuItem(Icons.person_outline, '查看主页'),
           _buildMenuItem(Icons.notifications_off_outlined, '消息免打扰'),
-          _buildMenuItem(Icons.delete_outline, '清空聊天记录', isDestructive: true),
-          _buildMenuItem(Icons.block, '屏蔽此人', isDestructive: true),
+          _buildMenuItem(Icons.flag_outlined, '举报此人', isDestructive: true,
+              onTap: () {
+            Navigator.pop(context);
+            showReportSheet(
+              context,
+              targetType: 'user',
+              targetId: widget.userId.isEmpty ? widget.name : widget.userId,
+              targetUserId: widget.userId,
+              title: '举报用户',
+            );
+          }),
+          _buildMenuItem(Icons.block, '拉黑此人', isDestructive: true,
+              onTap: () {
+            Navigator.pop(context);
+            confirmBlock(
+              context,
+              userId: widget.userId.isEmpty ? widget.name : widget.userId,
+              userName: widget.name,
+            );
+          }),
+          _buildMenuItem(Icons.delete_outline, '清空聊天记录',
+              isDestructive: true),
           const Divider(height: 1),
           _buildMenuItem(null, '取消', isCancel: true),
         ],
@@ -1038,9 +1061,11 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   }
 
   Widget _buildMenuItem(IconData? icon, String text,
-      {bool isDestructive = false, bool isCancel = false}) {
+      {bool isDestructive = false,
+      bool isCancel = false,
+      VoidCallback? onTap}) {
     return InkWell(
-      onTap: () => Navigator.pop(context),
+      onTap: onTap ?? () => Navigator.pop(context),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Row(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'user_profile_page.dart';
 import 'share_card_page.dart';
+import '../services/moderation_actions.dart';
 
 /// 帖子详情页
 class PostDetailPage extends StatefulWidget {
@@ -15,6 +16,8 @@ class PostDetailPage extends StatefulWidget {
   final String location;
   final String postType;
   final int commentCount;
+  final String postId;
+  final String authorId;
 
   const PostDetailPage({
     super.key,
@@ -29,6 +32,8 @@ class PostDetailPage extends StatefulWidget {
     required this.location,
     required this.postType,
     required this.commentCount,
+    this.postId = '',
+    this.authorId = '',
   });
 
   @override
@@ -157,6 +162,26 @@ class _PostDetailPageState extends State<PostDetailPage>
                         ),
                       ),
                     ),
+                  );
+                },
+              ),
+              IconButton(
+                icon: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: _kSurface.withValues(alpha: 0.25),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.flag_outlined,
+                      color: Colors.white, size: 20),
+                ),
+                onPressed: () {
+                  showReportSheet(
+                    context,
+                    targetType: 'post',
+                    targetId: widget.postId,
+                    targetUserId: widget.authorId,
+                    title: '举报帖子',
                   );
                 },
               ),

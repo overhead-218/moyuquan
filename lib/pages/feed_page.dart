@@ -3,6 +3,8 @@ import '../models/post.dart';
 import '../services/post_service.dart';
 import '../services/spot_service.dart';
 import '../services/geo_service.dart';
+import '../services/moderation_service.dart';
+import '../services/moderation_actions.dart';
 import 'post_detail_page.dart';
 import 'search_page.dart';
 import 'map_page.dart';
@@ -25,6 +27,23 @@ class _FeedPageState extends State<FeedPage> {
   static final List<String> _allCities = SpotService.cities;
 
   static const _accent = Color(0xFFFF4458); // 小红书红
+
+  @override
+  void initState() {
+    super.initState();
+    // 拉黑后即时刷新 feed（移除被拉黑作者的帖子）
+    ModerationService.instance.addListener(_onModerationChanged);
+  }
+
+  @override
+  void dispose() {
+    ModerationService.instance.removeListener(_onModerationChanged);
+    super.dispose();
+  }
+
+  void _onModerationChanged() {
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -208,6 +227,10 @@ class _FeedPageState extends State<FeedPage> {
                   );
                 }
                 var posts = snap.data ?? const <Post>[];
+                // 过滤已拉黑作者的帖子（Guideline 1.2 合规）
+                posts = posts
+                    .where((p) => !ModerationService.instance.isBlocked(p.authorId))
+                    .toList();
                 // 同城 Tab：按选中城市过滤
                 if (_segmentIndex == 2) {
                   posts = posts
@@ -391,6 +414,49 @@ class _FeedImageCardState extends State<_FeedImageCard>
     });
   }
 
+  void _showCardMenu() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.flag_outlined),
+              title: const Text('举报帖子'),
+              onTap: () {
+                Navigator.pop(context);
+                showReportSheet(
+                  context,
+                  targetType: 'post',
+                  targetId: widget.post.id,
+                  targetUserId: widget.post.authorId,
+                  title: '举报帖子',
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.block, color: Colors.red),
+              title: const Text('拉黑作者'),
+              onTap: () {
+                Navigator.pop(context);
+                confirmBlock(
+                  context,
+                  userId: widget.post.authorId,
+                  userName: widget.post.authorName,
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final gradient = _gradientPairs[widget.index % _gradientPairs.length];
@@ -411,6 +477,8 @@ class _FeedImageCardState extends State<_FeedImageCard>
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, a, c) => PostDetailPage(
+                    postId: widget.post.id,
+                    authorId: widget.post.authorId,
                     authorName: widget.post.authorName,
                     authorAvatar: widget.post.authorAvatar,
                     imageUrl: widget.post.imageUrl,
@@ -507,7 +575,7 @@ class _FeedImageCardState extends State<_FeedImageCard>
                         // 标题（帖子正文钩子，小红书卡片核心信息）
                         if (widget.post.title.isNotEmpty)
                           Text(
-                            widget.post.title,
+                            ModerationService.filterText(widget.post.title),
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -578,6 +646,13 @@ class _FeedImageCardState extends State<_FeedImageCard>
                                   ),
                                 ],
                               ),
+                            ),
+                            const SizedBox(width: 4),
+                            GestureDetector(
+                              onTap: _showCardMenu,
+                              behavior: HitTestBehavior.opaque,
+                              child: const Icon(Icons.more_horiz,
+                                  size: 16, color: Color(0xFF999999)),
                             ),
                           ],
                         ),

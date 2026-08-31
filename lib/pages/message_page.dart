@@ -62,6 +62,7 @@ class MessagePage extends StatelessWidget {
                       builder: (_) => ChatDetailPage(
                         name: m['name'] as String,
                         avatar: m['avatar'] as String,
+                        userId: (m['userId'] as String?) ?? 'u_${m['name']}',
                       ),
                     ),
                   );

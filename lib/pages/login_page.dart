@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'dart:io';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'home_shell.dart';
 import 'privacy_policy_page.dart';
@@ -193,8 +194,8 @@ class _LoginPageState extends State<LoginPage>
 
               const Spacer(flex: 3),
 
-              // 登录入口：iOS 显示 Apple + 游客；Android 显示微信 + 手机号 + 游客
-              if (Platform.isIOS)
+              // 登录入口：iOS 显示 Apple+游客；Web/Android 显示微信+游客
+              if (!kIsWeb && Platform.isIOS)
                 ...[
                   SignInWithAppleButton(
                     onPressed: _onAppleLogin,
