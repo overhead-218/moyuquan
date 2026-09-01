@@ -195,7 +195,9 @@ class SpotService {
     description: '枯水期结构全露，是找鱼的好时机。黄颡鱼晚上活性高。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's005', name: '滁河浦口段', type: '野钓', typeEmoji: '🐟',
     city: '南京', district: '浦口', address: '浦口区三合圩泵站附近',
@@ -213,7 +215,9 @@ class SpotService {
     description: '河面宽水流缓，凌晨四点是黄金窗口。闸口下游是好标点。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's006', name: '千岛湖鳜鱼深处', type: '游钓基地', typeEmoji: '🏄',
     city: '杭州', district: '淳安', address: '淳安县千岛湖西南湖区',
@@ -286,7 +290,9 @@ class SpotService {
     description: '小潮活汛出鱼最好，青蟹用鸡肝打窝，黄鳍鲷用路亚抽停。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's009', name: '梅山岛重障碍路亚', type: '野钓', typeEmoji: '🐟',
     city: '宁波', district: '北仑', address: '北仑区梅山岛东南海岸',
@@ -304,7 +310,9 @@ class SpotService {
     description: '重障碍区强抽，一斤半海鲈常见。安全装备必备。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's010', name: '楠溪江浅滩鳜鱼', type: '野钓', typeEmoji: '🐟',
     city: '温州', district: '永嘉', address: '永嘉县楠溪江岩头镇段',
@@ -322,7 +330,9 @@ class SpotService {
     description: '水质国家一级，好标点在浅滩石头后面。早上五点到七点是窗口期。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's011', name: '洞头岛船路亚', type: '游钓基地', typeEmoji: '🏄',
     city: '温州', district: '洞头', address: '洞头区东屏街道渔港码头',
@@ -358,7 +368,9 @@ class SpotService {
     description: '小雨天龙活性极高，瓜子亮片三小时连竿。高原溪流风景极好。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's013', name: '大渡河野钓营地', type: '野钓', typeEmoji: '🐟',
     city: '乐山', district: '沙湾', address: '乐山市沙湾区大渡河畔',
@@ -376,7 +388,9 @@ class SpotService {
     description: '大回湾处鱼密度高，打完窝子半小时开始连竿。鲶鱼夜间凶猛。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's014', name: '金沙江江团基地', type: '斤塘', typeEmoji: '🎣',
     city: '宜宾', district: '翠屏', address: '宜宾市金沙江下游三江湖段',
@@ -430,7 +444,9 @@ class SpotService {
     description: '乌江水质国家二级，草鱼个体大，打完窝子等半小时来口。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's017', name: '滇池野钓湾', type: '野钓', typeEmoji: '🐟',
     city: '昆明', district: '西山区', address: '西山区滇池西岸海口镇',
@@ -448,7 +464,9 @@ class SpotService {
     description: '早上五点半到九点上六条鲤鱼，最大六斤。秋季是旺季。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's018', name: '阳宗海路亚基地', type: '游钓基地', typeEmoji: '🏄',
     city: '昆明', district: '宜良', address: '昆明市宜良县阳宗海湖畔',
@@ -530,7 +548,9 @@ class SpotService {
     description: '市区内最近的选择，早晚鱼口可以。放水日无口。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's022', name: '拉市海高原钓点', type: '野钓', typeEmoji: '🐟',
     city: '大理', district: '玉龙', address: '丽江市玉龙县拉市海高原湿地',
@@ -548,7 +568,9 @@ class SpotService {
     description: '高原湿地鱼种特殊，路亚瓜子饵效果好。风景绝美。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's023', name: '星路亚·华侨城基地', type: '路亚', typeEmoji: '🎮',
     city: '昆明', district: '宜良', address: '昆明市宜良县阳宗海华侨城滨水湿地公园',
@@ -566,7 +588,9 @@ class SpotService {
     description: '阳宗海边100亩路亚基地，云南最美路亚钓场。华侨城滨水湿地公园配套完善，餐厅/温泉/水上娱乐一应俱全，家人同游首选。鲈鱼密度高，入门友好。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's024', name: '安宁玉龙湾国际路亚基地', type: '路亚', typeEmoji: '🎮',
     city: '昆明', district: '安宁', address: '昆明市安宁市太平镇玉龙湾（导航玉龙湾高尔夫球会停车场）',
@@ -612,7 +636,9 @@ class SpotService {
     description: '宜良柴石滩，昆明钓友最爱的大物塘。青鱼二三十斤常见，水面大需船或长竿守底。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's026', name: '云鹏水库', type: '野钓', typeEmoji: '🐟',
     city: '昆明', district: '宜良', address: '昆明市宜良县竹山镇云鹏水库',
@@ -635,7 +661,9 @@ class SpotService {
     hasWifi: false,
     accommodationNote: '岸边缓坡可搭帐篷过夜，无配套设施，请自备露营装备及补给。',
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's027', name: '南盘江罗非天堂', type: '野钓', typeEmoji: '🐟',
     city: '曲靖', district: '麒麟', address: '曲靖市麒麟区南盘江三宝镇段',
@@ -653,7 +681,9 @@ class SpotService {
     description: '夏天南盘江罗非密度高手竿拉到手酸，注意防暑。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's028', name: '新安江拦河堰', type: '野钓', typeEmoji: '🐟',
     city: '黄山', district: '屯溪', address: '黄山市屯溪区新安江拦河堰下游',
@@ -671,7 +701,9 @@ class SpotService {
     description: '拦河堰下游闸口，半小时三条马口。出差路过不可错过。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's029', name: '瓦屋山原生鳟鱼', type: '野钓', typeEmoji: '🐟',
     city: '眉山', district: '洪雅', address: '眉山市洪雅县瓦屋山溪流',
@@ -694,7 +726,9 @@ class SpotService {
     hasWifi: false,
     accommodationNote: '瓦屋山农家客栈，标间/多人间，高山环境无WiFi。需提前订房。',
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's030', name: '溧水农家乐斤塘', type: '农家乐', typeEmoji: '🏕',
     city: '南京', district: '溧水', address: '溧水区东屏镇渔乐山庄',
@@ -753,7 +787,9 @@ class SpotService {
     description: '标点在大石头后面，路亚瓜子饵中斤级军鱼，贵州必刷。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's033', name: '安顺黄果树河段', type: '野钓', typeEmoji: '🐟',
     city: '安顺', district: '镇宁', address: '安顺市镇宁县黄果树景区下游',
@@ -771,7 +807,9 @@ class SpotService {
     description: '游客都在看瀑布，我在旁边钓鱼。游客走了鱼才开始开口。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's034', name: '泸州长江野钓', type: '野钓', typeEmoji: '🐟',
     city: '泸州', district: '江阳', address: '泸州市江阳区长江滨江路',
@@ -789,7 +827,9 @@ class SpotService {
     description: '长江边上一个人坐了一下午，就上一条草鱼，但风景值了。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's035', name: '楚雄青山湖水库', type: '养殖塘', typeEmoji: '🐠',
     city: '楚雄', district: '楚雄市', address: '东瓜镇青山湖水库(导航云南俏江福农庄)',
@@ -807,7 +847,9 @@ class SpotService {
     description: '楚雄近郊养殖塘，停车方便，适合周末家庭出钓。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's036', name: '德宏那目水库', type: '野钓', typeEmoji: '🐟',
     city: '德宏', district: '芒市', address: '德宏州芒市那目水库',
@@ -825,7 +867,9 @@ class SpotService {
     description: '芒市近郊水库，水质好，鲢鳙个体大，适合手竿守底。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's037', name: '贵阳百花湖', type: '野钓', typeEmoji: '🐟',
     city: '贵阳', district: '观山湖区', address: '贵阳市观山湖区百花湖乡',
@@ -843,7 +887,9 @@ class SpotService {
     description: '贵阳近郊水库，鱼种丰富，周末常有人出钓。风景好。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's038', name: '兴义万峰湖', type: '野钓', typeEmoji: '🐟',
     city: '黔西南', district: '兴义', address: '黔西南兴义市万峰湖',
@@ -861,7 +907,9 @@ class SpotService {
     description: '万峰湖渔业养殖场（企业名公开），鱼种多密度高，贵州路亚热门地。商家可后续认领。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's039', name: '毕节东风湖', type: '野钓', typeEmoji: '🐟',
     city: '毕节', district: '黔西', address: '毕节市黔西市东风湖（乌江上游渡口）',
@@ -879,7 +927,9 @@ class SpotService {
     description: '东风湖乌江上游段，水面大鱼种多，路亚台钓皆可。商家可后续认领。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's040', name: '桂林青狮潭水库', type: '野钓', typeEmoji: '🐟',
     city: '桂林', district: '灵川', address: '桂林市灵川县青狮潭水库',
@@ -897,7 +947,9 @@ class SpotService {
     description: '桂林经典野钓点，水库规模大，青鱼十几斤常见。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's041', name: '桂林漓江', type: '野钓', typeEmoji: '🐟',
     city: '桂林', district: '灵川', address: '桂林市灵川县大圩镇漓江段',
@@ -915,7 +967,9 @@ class SpotService {
     description: '漓江大圩段，鳜鱼密度高，路亚瓜子饵中鱼率高。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's042', name: '百色澄碧河水库', type: '野钓', typeEmoji: '🐟',
     city: '百色', district: '右江', address: '百色市右江区澄碧河水库',
@@ -933,7 +987,9 @@ class SpotService {
     description: '百色近郊水库，鲤鱼草鱼密度高，适合休闲野钓。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's043', name: '南宁大王滩水库', type: '野钓', typeEmoji: '🐟',
     city: '南宁', district: '良庆', address: '南宁市良庆区大王滩水库',
@@ -951,7 +1007,9 @@ class SpotService {
     description: '南宁近郊水库，钓点成熟，周末人气高。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's044', name: '柳州柳江', type: '野钓', typeEmoji: '🐟',
     city: '柳州', district: '柳南', address: '柳州市柳南区柳江沿岸',
@@ -969,7 +1027,9 @@ class SpotService {
     description: '柳江市区段，鳜鱼黄颡鱼密度高，夜钓效果好。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's045', name: '阳朔遇龙河', type: '野钓', typeEmoji: '🐟',
     city: '桂林', district: '阳朔', address: '桂林市阳朔县遇龙河白沙镇段',
@@ -987,7 +1047,9 @@ class SpotService {
     description: '遇龙河水质清澈，鳜鱼黄颡鱼密度高，划竹筏打窝效果极佳。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's046', name: '玉林苏烟水库', type: '野钓', typeEmoji: '🐟',
     city: '玉林', district: '玉州', address: '玉林市玉州区苏烟水库',
@@ -1005,7 +1067,9 @@ class SpotService {
     description: '玉林近郊水库，适合休闲野钓。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's047', name: '南部升钟湖', type: '黑坑', typeEmoji: '🏴‍☠️',
     city: '南充', district: '南部', address: '南充市南部县升钟湖',
@@ -1023,7 +1087,9 @@ class SpotService {
     description: '西南最大人工湖之一，鱼种齐全，青鱼二三十斤常见，钓鱼人朝圣地。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's048', name: '仁寿黑龙滩', type: '黑坑', typeEmoji: '🏴‍☠️',
     city: '眉山', district: '仁寿', address: '眉山市仁寿县黑龙滩水库',
@@ -1041,7 +1107,9 @@ class SpotService {
     description: '仁寿黑龙滩，成都钓友最爱的大物塘。水面大，青鱼常见。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's049', name: '简阳三岔湖', type: '野钓', typeEmoji: '🐟',
     city: '成都', district: '简阳', address: '成都市简阳市三岔湖',
@@ -1059,7 +1127,9 @@ class SpotService {
     description: '成都最大人工湖，鳜鱼翘嘴密度高，路亚台钓两相宜。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's050', name: '三台鲁班水库', type: '野钓', typeEmoji: '🐟',
     city: '绵阳', district: '三台', address: '绵阳市三台县鲁班水库',
@@ -1077,7 +1147,9 @@ class SpotService {
     description: '鲁班水库鱼种丰富，青鱼个体大，适合守底博大物。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's051', name: '中江继光水库', type: '野钓', typeEmoji: '🐟',
     city: '德阳', district: '中江', address: '德阳市中江县继光水库',
@@ -1095,7 +1167,9 @@ class SpotService {
     description: '继光水库水质好，草鱼青鱼密度高，成都钓友常去。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's052', name: '云也路亚营地', type: '路亚', typeEmoji: '🎮',
     city: '上海', district: '青浦', address: '青浦区东庆路8号',
@@ -1138,7 +1212,9 @@ class SpotService {
     description: '上海最大天然淡水湖，抖音钓友常驻路亚红尾翘嘴标点，夜钓人气高。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's054', name: '滴水湖', type: '野钓', typeEmoji: '🐟',
     city: '上海', district: '浦东新区', address: '临港新城主城区环湖西一路',
@@ -1156,7 +1232,9 @@ class SpotService {
     description: '临港人工湖，环境好，适合新手休闲野钓，周末家庭出游。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's055', name: '澜山钓场', type: '黑坑', typeEmoji: '🏴‍☠️',
     city: '上海', district: '奉贤', address: '奉贤区城大路289号',
@@ -1174,7 +1252,9 @@ class SpotService {
     description: '奉贤综合钓场，手杆塘+路亚塘，配套农家乐餐饮。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's056', name: '铁岗水库', type: '野钓', typeEmoji: '🐟',
     city: '深圳', district: '宝安', address: '宝安区铁岗水库大坝段(鲲鹏径支线)',
@@ -1192,7 +1272,9 @@ class SpotService {
     description: '深圳宝藏新开放打卡地，碧波山色，可徒步赏花兼钓鱼。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's057', name: '坪山龙江钓鱼场', type: '斤塘', typeEmoji: '🎣',
     city: '深圳', district: '坪山', address: '坪山区金田路141号',
@@ -1210,7 +1292,9 @@ class SpotService {
     description: '深圳综合黑坑路亚场，鱼种齐全，钓鱼之家热门推荐。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's058', name: '福田河', type: '野钓', typeEmoji: '🐟',
     city: '深圳', district: '福田', address: '福田区福田河沿岸(市中心段)',
@@ -1228,7 +1312,9 @@ class SpotService {
     description: '深圳市区免费野钓首选，休闲便利，鱼情一般但胜在方便。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's059', name: '大沙河', type: '野钓', typeEmoji: '🐟',
     city: '深圳', district: '南山', address: '南山区大沙河生态长廊',
@@ -1246,7 +1332,9 @@ class SpotService {
     description: '南山生态河流钓点，环境优美，适合周末轻休闲。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's060', name: '抚仙湖', type: '野钓', typeEmoji: '🐟',
     city: '玉溪', district: '澄江', address: '玉溪市澄江市抚仙湖沿湖(禄充/孤山一带)',
@@ -1264,7 +1352,9 @@ class SpotService {
     description: '中国最深淡水湖之一，特有抗浪鱼，水质极好，云南野钓圣地。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's061', name: '星云湖', type: '野钓', typeEmoji: '🐟',
     city: '玉溪', district: '江川', address: '玉溪市江川区星云湖沿湖',
@@ -1282,7 +1372,9 @@ class SpotService {
     description: '与抚仙湖一山之隔，鱼种丰富，大头鱼(大头鲤)为地方特色。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's062', name: '武汉东湖', type: '野钓', typeEmoji: '🐟',
     city: '武汉', district: '武昌', address: '武汉市武昌区东湖沿湖(听涛/磨山段)',
@@ -1300,7 +1392,9 @@ class SpotService {
     description: '千湖之省代表钓点，武汉钓友最多的城市湖库，竞技氛围浓。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's063', name: '十堰丹江口水库', type: '野钓', typeEmoji: '🐟',
     city: '十堰', district: '丹江口', address: '十堰市丹江口市丹江口水库(亚洲天池)',
@@ -1318,7 +1412,9 @@ class SpotService {
     description: '1022km²亚洲天池，南水北调水源，大鱼多，钓鱼人向往之地。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's064', name: '松原查干湖', type: '野钓', typeEmoji: '🐟',
     city: '松原', district: '前郭', address: '松原市前郭县查干湖沿湖',
@@ -1336,7 +1432,9 @@ class SpotService {
     description: '冬捕闻名全国的5A湖区，夏季野钓也宜人，胖头鱼(鳙)为特色。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's065', name: '鄱阳湖', type: '野钓', typeEmoji: '🐟',
     city: '上饶', district: '鄱阳', address: '上饶市鄱阳县鄱阳湖沿湖(枯水季草洲钓点)',
@@ -1354,7 +1452,9 @@ class SpotService {
     description: '中国第一大淡水湖，江西钓鱼资源核心，枯水季草洲钓点独特。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
     Spot(
     id: 's066', name: '鄂州梁子湖', type: '野钓', typeEmoji: '🐟',
     city: '鄂州', district: '梁子湖', address: '鄂州市梁子湖区梁子湖沿湖',
@@ -1372,7 +1472,9 @@ class SpotService {
     description: '武昌鱼(团头鲂)故乡，湖北代表性湖库，鱼鲜景美。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
-    ),
+    
+    status: SpotStatus.pending,
+  ),
 
   // ---- 昆明延伸路亚钓点 ----
   Spot(
@@ -1393,6 +1495,7 @@ class SpotService {
     description: '种养结合农场，含路亚练杆区与休闲垂钓区。露营、烧烤、采摘配套全，环境清幽适合家庭周末出行。鱼种丰富，鲈/鳜/翘嘴密度适中。',
     updatedAt: DateTime.now().subtract(const Duration(days: 5)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's068', name: '梦想路亚', type: '路亚', typeEmoji: '🎮',
@@ -1412,6 +1515,7 @@ class SpotService {
     description: '市区内路亚练杆塘，8亩水面，水深2-2.5米。鲈鱼密度高，适合新手练抛投。导航杜家营水库或搜"梦想路亚"。无半天收费，随到随钓，会员性价比高。',
     updatedAt: DateTime.now().subtract(const Duration(days: 2)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
 
   // ── 贵州 ──────────────────────────────────────────────
@@ -1431,6 +1535,7 @@ class SpotService {
     description: '水库100亩，三口地下水涌出加山泉水汇流，水质好。鱼味鲜美，可垂钓可出售，休闲娱乐于一体的垂钓圣地，可亲自下厨体验。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -1449,6 +1554,7 @@ class SpotService {
     description: '贵州罗甸高原千岛湖蒙江水域，大鱼多，罗非多。贵阳过来2小时，下高速2分钟到码头，无山路，交通便利。可路亚、筏钓、岸钓，环境优美，鱼资源丰富。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -1472,6 +1578,7 @@ class SpotService {
     description: '钓场面积约4800亩，岸钓水深约3-6米，筏钓水深约10-30米。润龙湾水上世界专业打造，可接纳40-50人。是黔西南万峰湖最成熟的游钓基地之一。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -1495,6 +1602,7 @@ class SpotService {
     description: '万峰湖下游梅家湾，水面最宽最深处之一，湖景绝美。豪华湖景房，喜得钓友热爱，是看湖景加日出的好地方。距离市区高铁站飞机场40公里左右。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
 
   // 黔西南·兴义万峰湖（补充：抖音/团购商家主页，2026-08-18）
@@ -1518,6 +1626,7 @@ class SpotService {
     roomType: null, roomCapacity: null, hasWifi: false,
     accommodationNote: '钓票含休息，豪华筏钓票含酒店式筏钓+休息；房型与订房详询商家。',
     facilities: ['免费停车', '餐厅', '充电', '休息区'],
+    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -1540,6 +1649,7 @@ class SpotService {
     roomType: null, roomCapacity: null, hasWifi: true,
     accommodationNote: '湖畔客栈民宿，房型与订房详询商家（抖音搜索「鱼多多俱乐部」）。',
     facilities: ['免费停车', '餐厅', 'WiFi', '休息区'],
+    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -1558,6 +1668,7 @@ class SpotService {
     description: '贵州野钓衢体育文化传媒有限公司旗下基地，位于贵州省会城市贵阳。国际路亚基地，结构丰富，管理规范。与长顺麦况水库国际路亚基地同属一家公司运营。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
 
   // ── 云南 ──────────────────────────────────────────────
@@ -1582,6 +1693,7 @@ class SpotService {
     description: '红河州元阳哈尼梯田水系野钓渔庄，清真。梯田灌溉渠系水质好，鱼种丰富，环境优美。游客钓友皆可，是休闲娱乐好去处。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -1600,6 +1712,7 @@ class SpotService {
     description: '2024年云南省首届路亚锦标赛总决赛举办地，位于临沧市凤庆县鲁史镇永发村浴龙岛路亚基地。云南路亚运动标志性赛事场地，水域条件优越。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
 
   // ── 四川 ──────────────────────────────────────────────
@@ -1624,6 +1737,7 @@ class SpotService {
     description: '升钟湖凤凰岛水域，湖区面积56平方公里，最深处170多米，被誉为中国钓鱼城。鱼类品种丰富：中国钓鱼节等多项国家级赛事举办地。是四川乃至全国最具影响力野钓圣地。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -1647,6 +1761,7 @@ class SpotService {
     description: '升钟湖畔冯家湾，青山绿水，环境优美，空气清新。水深3-20米，根据不同季节水位露出各钓位。可路亚、可手杆，交通便利，停车方便，住宿条件好（房间带空调独卫热水）。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -1701,6 +1816,7 @@ class SpotService {
     description: '2024年8月1日首次开塘，30亩大水库，底鱼万斤。一人一杆，限杆7.2米，鱼获自由，回鱼3元/斤。先交费后下杆。营业时间长，停车方便。是成都近郊新开的人气野钓大物塘。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -1719,6 +1835,7 @@ class SpotService {
     description: '沙坪坝中梁镇路亚基地，1号塘休闲、2号塘青鱼、3号塘路亚，鱼种丰富，配套设施齐全。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's083', name: '灯笼桥水库', type: '野钓', typeEmoji: '🐟',
@@ -1747,6 +1864,7 @@ class SpotService {
     description: '江津区仁沱镇大河沟，面积110亩水深2-5米，10多年未清塘，巨物横行，是重庆近郊知名野钓大物水库。',
     updatedAt: DateTime.now().subtract(const Duration(days: 4)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's084', name: '钻洞子水库钓场', type: '斤塘', typeEmoji: '🚫',
@@ -1764,6 +1882,7 @@ class SpotService {
     description: '万州区九池街道钻洞子水库，按斤收费，钓起的鱼可在农场加工，椒麻鱼是特色，可麻将唱歌。',
     updatedAt: DateTime.now().subtract(const Duration(days: 5)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's085', name: '猛男一号路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -1781,6 +1900,7 @@ class SpotService {
     description: '江津区龙华镇鲁能美丽乡村内，面积18亩水深1-2米，台钓混养+路亚鲈鱼鲶鱼土鲮，交通便利。',
     updatedAt: DateTime.now().subtract(const Duration(days: 6)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's086', name: '常德青年水库路亚钓场', type: '路亚', typeEmoji: '🎮',
@@ -1798,6 +1918,7 @@ class SpotService {
     description: '常德鼎城区青年水库路亚钓场，占地约50亩，专业路亚场地，对象鱼鲈鱼翘嘴鳜鱼。',
     updatedAt: DateTime.now().subtract(const Duration(days: 7)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's087', name: '常德五星水库', type: '野钓', typeEmoji: '🐟',
@@ -1824,6 +1945,7 @@ class SpotService {
     description: '临澧县四新岗镇九张冲五星水库，面积1300亩，湖库野钓，环境优美交通便利，收费低廉。',
     updatedAt: DateTime.now().subtract(const Duration(days: 8)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's088', name: '宁乡道林大荷塘钓场', type: '野钓', typeEmoji: '🐟',
@@ -1847,6 +1969,7 @@ class SpotService {
     description: '宁乡市道林镇自然水库，面积28亩水深2.5米，放有青鱼一吨草鱼四吨鲫鱼四吨，是长沙近郊人气野钓场。',
     updatedAt: DateTime.now().subtract(const Duration(days: 9)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's089', name: '长沙东湖路亚垂钓基地', type: '路亚', typeEmoji: '🎮',
@@ -1864,6 +1987,7 @@ class SpotService {
     description: '长沙开福区东湖路亚垂钓基地，大塘30亩小塘17亩，有休息区，对象鱼鲈鱼翘嘴鳜鱼。',
     updatedAt: DateTime.now().subtract(const Duration(days: 10)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's090', name: '福州华林溪水库', type: '路亚', typeEmoji: '🎮',
@@ -1881,6 +2005,7 @@ class SpotService {
     description: '福州晋安区日溪乡华林溪水库，交通便利环境优美，湖库路亚综合钓场，鱼种齐全。',
     updatedAt: DateTime.now().subtract(const Duration(days: 11)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's091', name: '厦门海沧湾船钓基地', type: '路亚', typeEmoji: '🎮',
@@ -1898,6 +2023,7 @@ class SpotService {
     description: '厦门海沧湾旅游码头船钓，面积30亩水深30-50米，需提前联系船长预约，船期紧张。',
     updatedAt: DateTime.now().subtract(const Duration(days: 12)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's092', name: '泉州宅内水库钓场', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -1915,6 +2041,7 @@ class SpotService {
     description: '晋江市宅内水库钓场，鱼塘约20亩有钓位160个水深2.5-5米，水库环境优美周边可停车。',
     updatedAt: DateTime.now().subtract(const Duration(days: 13)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's093', name: '福清阿兵路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -1932,6 +2059,7 @@ class SpotService {
     description: '福清市海口镇路亚基地，不定时放鱼，收费198-458元，专业路亚练杆场。',
     updatedAt: DateTime.now().subtract(const Duration(days: 14)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's094', name: '汉中青树镇路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -1949,6 +2077,7 @@ class SpotService {
     description: '汉中市南郑区青树镇路亚基地，水域12亩水深5米，位于南湖风景区外围，山泉水无污染，投放鲈鱼翘嘴叉尾鮰。',
     updatedAt: DateTime.now().subtract(const Duration(days: 15)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's095', name: '汉中洋县张家咀水库', type: '野钓', typeEmoji: '🐟',
@@ -1976,6 +2105,7 @@ class SpotService {
     description: '汉中洋县张家咀水库，面积200亩，湖库野钓兼农家乐，水质好老板好客，钓位多。',
     updatedAt: DateTime.now().subtract(const Duration(days: 16)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's096', name: '西安黑河水库', type: '野钓', typeEmoji: '🐟',
@@ -1998,6 +2128,7 @@ class SpotService {
     description: '周至县黑河水库，西安近郊知名野钓水库，鲤鱼草鱼鳊鱼密集，春秋季浅滩易爆护，需办环保承诺书。',
     updatedAt: DateTime.now().subtract(const Duration(days: 17)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's097', name: '安康瀛湖', type: '路亚', typeEmoji: '🎮',
@@ -2015,6 +2146,7 @@ class SpotService {
     description: '安康市瀛湖，陕南最大人工湖，翘嘴红鲌鳜鱼路亚圣地，需专业探鱼设备，强制穿戴救生衣。',
     updatedAt: DateTime.now().subtract(const Duration(days: 18)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's098', name: '北京18号路亚钓场', type: '路亚', typeEmoji: '🎮',
@@ -2049,6 +2181,7 @@ class SpotService {
     description: '房山区石楼镇路通达路亚基地，高手进阶塘面积10余亩L型，明面结构梅花桩枯树倒树水草浮岛。',
     updatedAt: DateTime.now().subtract(const Duration(days: 20)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's100', name: '天津武清天鹅湖路亚基地', type: '游钓基地', typeEmoji: '🏀',
@@ -2066,6 +2199,7 @@ class SpotService {
     description: '武清开发区天鹅湖路亚基地，面积220亩水深2-6米，距北京71公里，集路亚船钓岸钓比赛休闲专业路亚基地。',
     updatedAt: DateTime.now().subtract(const Duration(days: 21)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's101', name: '北京漕运人家逗鱼钓场', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -2083,6 +2217,7 @@ class SpotService {
     description: '通州区漕运人家逗鱼钓场，大塘6亩大物混养鲤鱼2-15斤青鱼8-30斤，是北京通州人气黑坑。',
     updatedAt: DateTime.now().subtract(const Duration(days: 22)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's102', name: '济南达鲈路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -2100,6 +2235,7 @@ class SpotService {
     description: '章丘区达鲈路亚基地，以淡水鲈鱼为主体鱼种1-2斤，另有黑鱼清江鱼3斤半以上，练杆塘全天100元带一条鲈鱼。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's103', name: '青岛少海路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -2117,6 +2253,7 @@ class SpotService {
     description: '胶州市少海路亚基地，面积20亩水深2米，黑鱼约5万尾青稍黄辣丁若干，是青岛专业路亚练杆场。',
     updatedAt: DateTime.now().subtract(const Duration(days: 4)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's104', name: '青岛黄岭水库', type: '野钓', typeEmoji: '🐟',
@@ -2143,6 +2280,7 @@ class SpotService {
     description: '胶南市大村镇黄岭水库，鱼塘约200亩水深2-3米，交通便利环境优美，是青岛近郊人气湖库野钓场。',
     updatedAt: DateTime.now().subtract(const Duration(days: 5)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's105', name: '青岛少海休闲垂钓基地', type: '游钓基地', typeEmoji: '🏀',
@@ -2160,6 +2298,7 @@ class SpotService {
     description: '胶州少海北湖东岸红枫林沿湖设302个钓位，配卫生间救生设施渔具超市露营帐篷，是休闲垂钓打卡地。',
     updatedAt: DateTime.now().subtract(const Duration(days: 6)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's106', name: '南昌瑶湖西大道钓场', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -2177,6 +2316,7 @@ class SpotService {
     description: '南昌县瑶湖西大道黑坑塘四亩水面斤塘四亩水深1-1.8米，环境优美有饮料提供。',
     updatedAt: DateTime.now().subtract(const Duration(days: 7)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's107', name: '赣州五龙客家风情园垂钓中心', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -2194,6 +2334,7 @@ class SpotService {
     description: '赣州市沙河镇五龙客家风情园4A景区生态垂钓区，高标准鱼池长110米宽24米水深1.8米，休闲竞技黑坑。',
     updatedAt: DateTime.now().subtract(const Duration(days: 8)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's108', name: '赣州上犹油石清溪钓场', type: '农家乐', typeEmoji: '🏕',
@@ -2228,6 +2369,7 @@ class SpotService {
     description: '番禺区318潜野路亚基地，一般周五六各放加州鲈500斤左右，消费有积分常办比赛。',
     updatedAt: DateTime.now().subtract(const Duration(days: 10)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's110', name: '佛山鱼多多路亚钓场', type: '路亚', typeEmoji: '🎮',
@@ -2245,6 +2387,7 @@ class SpotService {
     description: '顺德区鱼多多路亚钓场，占地18亩水面10亩水深2.5米，容80人，旁100米有农家乐土鸡鸭鹅羊美食。',
     updatedAt: DateTime.now().subtract(const Duration(days: 11)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's111', name: '广州白云强强农庄', type: '农家乐', typeEmoji: '🏕',
@@ -2262,6 +2405,7 @@ class SpotService {
     description: '白云区天鹿湖内强强农庄，水深1.5-3米，设钓鱼农家乐棋牌烧烤围炉煮茶，是亲子休闲好去处。',
     updatedAt: DateTime.now().subtract(const Duration(days: 12)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's112', name: '广州新虎塘垂钓基地', type: '路亚', typeEmoji: '🎮',
@@ -2279,6 +2423,7 @@ class SpotService {
     description: '白云区虎塘西路虎塘村路亚塘，水面积约5亩水深2米，专业路亚练杆场，对象鱼鲈鱼翘嘴鳜鱼。',
     updatedAt: DateTime.now().subtract(const Duration(days: 13)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's113', name: '状元湖混养垂钓基地', type: '路亚', typeEmoji: '🎮',
@@ -2319,6 +2464,7 @@ class SpotService {
     description: '荥阳市丁店水库南侧钓场，交通便利环境优美，湖库野钓，以草鱼青鱼为主，是郑州近郊人气钓点。',
     updatedAt: DateTime.now().subtract(const Duration(days: 15)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's115', name: '龙卧洼休闲垂钓基地', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -2336,6 +2482,7 @@ class SpotService {
     description: '荥阳市贾峪镇休闲垂钓基地，鱼塘约10亩，24小时营业可夜钓，鱼获自由回鱼3元/斤，固定每周二四六放鱼，限竿6.3米。',
     updatedAt: DateTime.now().subtract(const Duration(days: 16)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's116', name: '花园湖垂钓园', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -2353,6 +2500,7 @@ class SpotService {
     description: '新郑市八千乡花园村黑坑钓场，主钓鲤鱼，环境优美。',
     updatedAt: DateTime.now().subtract(const Duration(days: 17)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's117', name: '合肥大圩路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -2370,6 +2518,7 @@ class SpotService {
     description: '合肥包河区大圩镇，合肥南边唯一路亚基地，面积65亩水深1.8-3米，靠近滨湖湿地公园，交通便利环境宜人。',
     updatedAt: DateTime.now().subtract(const Duration(days: 18)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's118', name: '合肥四十头路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -2387,6 +2536,7 @@ class SpotService {
     description: '合肥新站区四十头村，合肥第三个路亚基地，面积20亩水深4米，有鲈鱼翘嘴鳜鱼，旁边就是水库，空气清新。',
     updatedAt: DateTime.now().subtract(const Duration(days: 19)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's119', name: '禾润农庄钓鱼基地', type: '斤塘', typeEmoji: '🚫',
@@ -2404,6 +2554,7 @@ class SpotService {
     description: '合肥庐阳区禾润农庄，斤塘+农家乐，鱼种丰富，现钓现吃可免费加工农家散养土鸡，夏季可钓龙虾。',
     updatedAt: DateTime.now().subtract(const Duration(days: 20)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's120', name: '芜湖火龙岗钓场', type: '野钓', typeEmoji: '🐟',
@@ -2428,6 +2579,7 @@ class SpotService {
     description: '芜湖市弋江区火龙岗钓场，水面约100亩水深4-5米，15年未干过，鱼种丰富，中午提供伙食20元一位。',
     updatedAt: DateTime.now().subtract(const Duration(days: 21)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's121', name: '棋盘山金海水库', type: '野钓', typeEmoji: '🐟',
@@ -2453,6 +2605,7 @@ class SpotService {
     description: '沈阳棋盘山风景区金海水库，面积50亩建库20余年从未清塘，存鱼6-7万斤，青鲤草鲢鳙银鳕武昌等10余种，高密度斤钓水库。',
     updatedAt: DateTime.now().subtract(const Duration(days: 22)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's122', name: '大兴一堂休闲垂钓园', type: '路亚', typeEmoji: '🎮',
@@ -2470,6 +2623,7 @@ class SpotService {
     description: '沈阳于洪区大兴一堂休闲垂钓园，面积20亩水深2.5-3.5米，黑坑农家乐湖库路亚综合，风景秀丽环境优美。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's123', name: '大连宇华水库', type: '野钓', typeEmoji: '🐟',
@@ -2494,6 +2648,7 @@ class SpotService {
     description: '大连旅顺口区宇华水库，野塘湖库，野生鱼密度高，钓鲫鱼30元/天、通钓100元/天，鲢鱼另计，是大连近郊野钓好去处。',
     updatedAt: DateTime.now().subtract(const Duration(days: 4)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's124', name: '大连小干岛老干垂钓园', type: '斤塘', typeEmoji: '🚫',
@@ -2511,6 +2666,7 @@ class SpotService {
     description: '大连金州区大魏家街道小干岛老干垂钓园，斤塘+路亚，主钓鲈鱼，交通便利环境优美。',
     updatedAt: DateTime.now().subtract(const Duration(days: 5)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's125', name: '三亚亚龙湾海底世界码头', type: '路亚', typeEmoji: '🎮',
@@ -2528,6 +2684,7 @@ class SpotService {
     description: '三亚吉阳区亚龙湾海底世界码头，码头海钓鱼种丰富，可路亚可筏钓可矶钓，是三亚热门海钓点。',
     updatedAt: DateTime.now().subtract(const Duration(days: 6)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's126', name: '海口子牙会钓鱼台', type: '路亚', typeEmoji: '🎮',
@@ -2545,6 +2702,7 @@ class SpotService {
     description: '海口龙华区沙坡水库子牙会钓鱼台，黑坑斤塘农家乐湖库路亚综合，鱼种齐全，导航沙坡水韵落日咖啡营地旁。',
     updatedAt: DateTime.now().subtract(const Duration(days: 7)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's127', name: '三亚胜利钓场', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -2562,6 +2720,7 @@ class SpotService {
     description: '三亚崖州区胜利钓场，娱乐钓50元/3小时罗非鲢鳙除外鱼获可带走，没鱼获送巴沙或鲢鳙，黑坑江河综合。',
     updatedAt: DateTime.now().subtract(const Duration(days: 8)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's128', name: '苏州YL路亚营地', type: '路亚', typeEmoji: '🎮',
@@ -2579,6 +2738,7 @@ class SpotService {
     description: '苏州昆山市YL路亚营地，有混养塘手杆+路亚塘练杆黑坑两种，可烧烤团建需提前电话预约。',
     updatedAt: DateTime.now().subtract(const Duration(days: 9)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's129', name: '无锡众友路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -2596,6 +2756,7 @@ class SpotService {
     description: '无锡惠山区阳山镇众友路亚基地，太湖水蜜桃之乡，占地200亩水域超150亩，黑坑斤塘路亚综合，鱼种极全。',
     updatedAt: DateTime.now().subtract(const Duration(days: 10)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's130', name: '常州爵士路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -2613,6 +2774,7 @@ class SpotService {
     description: '常州武进区礼嘉镇爵士路亚基地，7-8亩水深1.5-2米，路亚竿作钓非手竿塘，抖音粉丝福利价。',
     updatedAt: DateTime.now().subtract(const Duration(days: 11)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's131', name: '常州环太湖路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -2630,6 +2792,7 @@ class SpotService {
     description: '常州武进区雪堰镇环太湖路亚基地，约16亩水深2.5米，三面环山南面朝湖，依山傍水坐北朝南静观太湖景色。',
     updatedAt: DateTime.now().subtract(const Duration(days: 12)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's132', name: '扬州随缘钓场', type: '野钓', typeEmoji: '🐟',
@@ -2654,6 +2817,7 @@ class SpotService {
     description: '扬州江都区吴桥镇长庄村随缘钓场，面积1亩水深1-4米千岛湖水质，纯天然不喂食，内有多存塘大物。',
     updatedAt: DateTime.now().subtract(const Duration(days: 13)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's133', name: '鲲湖路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -2671,6 +2835,7 @@ class SpotService {
     description: '长春朝阳区鲲湖路亚基地，黑坑路亚，井水水质好鱼口好，可容纳15-20人无夜钓有半天票，不同鱼种价位不同。',
     updatedAt: DateTime.now().subtract(const Duration(days: 14)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's134', name: '长春卡伦湖垂钓园', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -2688,6 +2853,7 @@ class SpotService {
     description: '长春九台区卡伦湖垂钓园，面积3000多平，交通便利环境优美，是休闲垂钓好去处。',
     updatedAt: DateTime.now().subtract(const Duration(days: 15)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's135', name: '哈尔滨大鹏渔场', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -2705,6 +2871,7 @@ class SpotService {
     description: '哈尔滨道外区五星立交桥大鹏渔场，面积50亩水深3米，主营路亚大口鲈鱼雅罗，黑坑斤塘综合。',
     updatedAt: DateTime.now().subtract(const Duration(days: 16)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's136', name: '哈尔滨X032野钓场', type: '野钓', typeEmoji: '🐟',
@@ -2727,6 +2894,7 @@ class SpotService {
     description: '哈尔滨道里区X032县道旁野钓场，水面七八十亩钓位自选，松花江江叉子纯天然野钓环境，新手乐园。',
     updatedAt: DateTime.now().subtract(const Duration(days: 17)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's137', name: '遵义烂田水库', type: '野钓', typeEmoji: '🐟',
@@ -2754,6 +2922,7 @@ class SpotService {
     description: '遵义汇川区烂田水库，20年没有干过，里面很多野生鱼，鲈鱼很多大青鱼也多，是遵义近郊野钓好去处。',
     updatedAt: DateTime.now().subtract(const Duration(days: 18)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's138', name: '遵义九节滩钓场', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -2771,6 +2940,7 @@ class SpotService {
     description: '遵义汇川区九节滩钓场，面积一亩半水深1.5-1.8米，分休闲塘/练杆塘/竞技塘，限无倒刺钩。',
     updatedAt: DateTime.now().subtract(const Duration(days: 19)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's139', name: '凯里下司古镇钓场', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -2788,6 +2958,7 @@ class SpotService {
     description: '黔东南凯里市下司古镇钓场，面积约3亩水深约3米，交通便利环境优美，休闲娱乐好去处。',
     updatedAt: DateTime.now().subtract(const Duration(days: 20)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's140', name: '凯里舟溪大中村钓场', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -2805,6 +2976,7 @@ class SpotService {
     description: '黔东南凯里市舟溪镇大中村钓场，鱼塘面积大水深2米左右，交通便利环境优美。',
     updatedAt: DateTime.now().subtract(const Duration(days: 21)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's141', name: '遵义月牙湾钓鱼场', type: '路亚', typeEmoji: '🎮',
@@ -2822,6 +2994,7 @@ class SpotService {
     description: '遵义播州区三岔台湾屯月牙湾钓鱼场，面积12亩水域12亩陆地28亩，50个钓位水深1.2-2.3米，路亚+混养，樱花树236棵。',
     updatedAt: DateTime.now().subtract(const Duration(days: 22)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's142', name: '丽江半山路亚俱乐部', type: '路亚', typeEmoji: '🎮',
@@ -2839,6 +3012,7 @@ class SpotService {
     description: '丽江半山路亚俱乐部，1-2号欢乐塘，加州鲈鱼+大口鲶16-28斤+叉尾鮰罗非鳊鱼黑鱼，不允许用铁板，所有钩无倒刺。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's143', name: '大理逐鲈慢谷艇钓路亚营地', type: '路亚', typeEmoji: '🎮',
@@ -2856,6 +3030,7 @@ class SpotService {
     description: '大理逐鲈慢谷艇钓路亚营地，水域面积120亩，试营业开放单人卡亚克双人电艇，每日限6人预约，所有渔获自由。',
     updatedAt: DateTime.now().subtract(const Duration(days: 4)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's144', name: '昆明冒水洞路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -2890,6 +3065,7 @@ class SpotService {
     description: '大理洱源县茈碧湖荷花池钓场，面积50亩水深1-1.5米，按鱼获称斤收费。',
     updatedAt: DateTime.now().subtract(const Duration(days: 6)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's146', name: '曲靖海寨回归农场', type: '野钓', typeEmoji: '🐟',
@@ -2917,6 +3093,7 @@ class SpotService {
     description: '曲靖麒麟区海寨回归农场，湖库路亚，导航海寨回归农场，鲫鲤草青鲢黑鲶鲈翘鱼种丰富，水质好。',
     updatedAt: DateTime.now().subtract(const Duration(days: 7)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's147', name: '普洱墨江智渔垂钓', type: '野钓', typeEmoji: '🐟',
@@ -2942,6 +3119,7 @@ class SpotService {
     description: '普洱墨江县泗南江镇智渔垂钓，阿墨江岸钓筏钓均可，设钓位20个，吃住每人80元/天，环境优美水域宽阔。',
     updatedAt: DateTime.now().subtract(const Duration(days: 8)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's148', name: '成都大兴路亚休闲山庄', type: '路亚', typeEmoji: '🎮',
@@ -2959,6 +3137,7 @@ class SpotService {
     description: '成都双流区大兴路亚休闲山庄，罗非鲶鲈翘鳜鱼种超丰富，每天放鱼，可钓鲈鱼鳜鱼鳡鱼狗鱼翘嘴大口鲶太阳鱼。',
     updatedAt: DateTime.now().subtract(const Duration(days: 9)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's149', name: '成都喜家大堰', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -2976,6 +3155,7 @@ class SpotService {
     description: '成都龙泉驿区喜家大堰，面积约30亩水深约3米，分台钓塘和路亚塘，台钓鲫鲤草鲶，路亚鲈翘鳜，景色优美。',
     updatedAt: DateTime.now().subtract(const Duration(days: 10)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's150', name: '德阳凯州休闲垂钓中心', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -2993,6 +3173,7 @@ class SpotService {
     description: '德阳中江县凯州休闲垂钓中心，5个鱼塘占地50余亩200余钓位，1号欢乐塘2号竞技塘3号大混养4-5号巨物塘，配露营烧烤餐饮住宿。',
     updatedAt: DateTime.now().subtract(const Duration(days: 11)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's151', name: '德阳柏隆光头强垂钓', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -3010,6 +3191,7 @@ class SpotService {
     description: '德阳旌阳区柏隆光头强休闲钓场，面积40亩水深2-10米，水质清澈地下发水，鱼种丰富无杂鱼。',
     updatedAt: DateTime.now().subtract(const Duration(days: 12)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's152', name: '绵阳钓过瘾垂钓园', type: '路亚', typeEmoji: '🎮',
@@ -3027,6 +3209,7 @@ class SpotService {
     description: '绵阳钓过瘾垂钓园，黑坑塘夏天鲤鱼冬天鲫鱼，混养塘练杆50豆可路亚，内有龙虾斤塘禁用倒刺钩。',
     updatedAt: DateTime.now().subtract(const Duration(days: 13)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's153', name: '乐山东风水库', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -3044,6 +3227,7 @@ class SpotService {
     description: '乐山井研县东风水库，交通便利景色优美，26条评论口碑钓场，低价野趣型。',
     updatedAt: DateTime.now().subtract(const Duration(days: 14)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's154', name: '上海火山路亚松江店', type: '路亚', typeEmoji: '🎮',
@@ -3061,6 +3245,7 @@ class SpotService {
     description: '上海松江区火山路亚松江店，正式营业路亚基地，投放星鲈红鱼盲槽红友立鱼桂山鲳鲟鱼金红鳟黑鲷真鲷等，可回鱼。',
     updatedAt: DateTime.now().subtract(const Duration(days: 15)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's155', name: '上海溪涧原野路亚露营基地', type: '路亚', typeEmoji: '🎮',
@@ -3078,6 +3263,7 @@ class SpotService {
     description: '上海嘉定区溪涧原野路亚露营基地，生态园123亩水面40亩，路亚精致塘10亩混养塘10亩，行内首个一体化溪流路亚露营基地，野生军鱼斑鳜。',
     updatedAt: DateTime.now().subtract(const Duration(days: 16)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's156', name: '上海东林休闲钓场', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -3095,6 +3281,7 @@ class SpotService {
     description: '上海崇明区东林休闲钓场，水面6亩水深1.5-2米，现约青草鲤鲫上万斤，装修豪华提供烧烤露营麻将。',
     updatedAt: DateTime.now().subtract(const Duration(days: 17)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's157', name: '上海渔乐汇海钓场', type: '路亚', typeEmoji: '🎮',
@@ -3112,6 +3299,7 @@ class SpotService {
     description: '上海金山区渔乐汇海钓场，鱼塘约30亩空气清新，冬季营业早8晚6，组团6人以上提前联系，海鲈黑鲷等东海对象鱼。',
     updatedAt: DateTime.now().subtract(const Duration(days: 18)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's158', name: '上海青浦路亚钓场', type: '路亚', typeEmoji: '🎮',
@@ -3129,6 +3317,7 @@ class SpotService {
     description: '上海青浦区路亚钓场面积7亩左右，翘嘴鲈鱼黑鱼太阳鱼笋壳珍珠班，钓位水深2米水质优良。',
     updatedAt: DateTime.now().subtract(const Duration(days: 19)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's159', name: '上海华宇钓场', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -3146,6 +3335,7 @@ class SpotService {
     description: '上海浦东新区华宇钓场，面积15亩150钓位水深2米左右，提供餐饮，交通便利环境优美。',
     updatedAt: DateTime.now().subtract(const Duration(days: 20)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's160', name: '千岛湖艇钓路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3163,6 +3353,7 @@ class SpotService {
     description: '杭州淳安县千岛湖唯一合法的艇钓路亚钓鱼基地，面积3000亩水深3-20米，景区吃喝玩乐应有尽有，钓鱼免门票。',
     updatedAt: DateTime.now().subtract(const Duration(days: 21)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's161', name: '杭州德玛西亚路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3180,6 +3371,7 @@ class SpotService {
     description: '杭州余杭区德玛西亚路亚基地，水域面积13亩水深1.5-2米至少150个钓位，水质好环境优美空气清新。',
     updatedAt: DateTime.now().subtract(const Duration(days: 22)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's162', name: '杭州枫影路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3197,6 +3389,7 @@ class SpotService {
     description: '杭州萧山区枫影路亚基地，鱼塘占地6亩浦阳江水水质一流，预计26年5月1日正式开业，停车水电厕所齐全。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's163', name: '杭州元气路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3214,6 +3407,7 @@ class SpotService {
     description: '杭州萧山区元气路亚基地，塘口6亩水深2.5-3米方便停车，黑鱼鲮鱼鲶鱼鲈鱼鳜鱼马口鱼等。',
     updatedAt: DateTime.now().subtract(const Duration(days: 4)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's164', name: '杭州钓友汇桃源钓场', type: '路亚', typeEmoji: '🎮',
@@ -3231,6 +3425,7 @@ class SpotService {
     description: '杭州余杭区杭州钓友汇桃源钓场（会员制连锁），吴岭岗水库面积30多亩水域18亩水深2.6米，天然山泉水山塘原塘鱼。',
     updatedAt: DateTime.now().subtract(const Duration(days: 5)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's165', name: '杭州阿标农场', type: '斤塘', typeEmoji: '🚫',
@@ -3248,6 +3443,7 @@ class SpotService {
     description: '杭州西湖区阿标农场，面积60亩200个钓位，可钓鱼吃饭喝茶烧烤露营游玩一体式农场，离西湖仅12公里。',
     updatedAt: DateTime.now().subtract(const Duration(days: 6)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's166', name: '昌吉钓鱼翁垂钓中心', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -3265,6 +3461,7 @@ class SpotService {
     description: '昌吉市六工镇钓鱼翁垂钓中心，每天坚持放鱼，24小时营业鱼获自由回鱼5块/公斤，导航钓鱼翁垂钓中心直达。',
     updatedAt: DateTime.now().subtract(const Duration(days: 7)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's167', name: '昌吉野鸭湖垂钓', type: '路亚', typeEmoji: '🎮',
@@ -3282,6 +3479,7 @@ class SpotService {
     description: '昌吉市六工镇野鸭湖垂钓，斤塘农家乐路亚综合，钓场环境优美，鲫鲤草黑黄鲶鱼种丰富。',
     updatedAt: DateTime.now().subtract(const Duration(days: 8)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's168', name: '库尔勒兰干路钓场', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -3299,6 +3497,7 @@ class SpotService {
     description: '巴音郭楞库尔勒市兰干路钓场，鱼塘面积大交通便利环境优美，路亚区20元一天鱼获免费。',
     updatedAt: DateTime.now().subtract(const Duration(days: 9)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's169', name: '库尔勒杜鹃河路亚点', type: '野钓', typeEmoji: '🐟',
@@ -3321,6 +3520,7 @@ class SpotService {
     description: '库尔勒市杜鹃河横穿市区，休闲钓好去处，有当地乔尔泰鱼（五道黑）喜欢路亚，其次鲫鱼鲤鱼个体不大但不少。',
     updatedAt: DateTime.now().subtract(const Duration(days: 10)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's170', name: '阜康六运水库', type: '黑坑', typeEmoji: '🏴‍☠️',
@@ -3338,6 +3538,7 @@ class SpotService {
     description: '昌吉阜康市六运水库，鱼塘面积大交通便利环境优美，10小时长钓性价比高。',
     updatedAt: DateTime.now().subtract(const Duration(days: 11)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's171', name: '永定龙湖国际路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3356,6 +3557,7 @@ class SpotService {
     description: '龙湖国家水利风景区，抖音垂钓嘉年华主办地，天元邓刚等头部达人打卡，全网曝光极大。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's172', name: '长兴爱心湖垂钓基地', type: '游钓基地', typeEmoji: '🏀',
@@ -3374,6 +3576,7 @@ class SpotService {
     description: '废弃矿坑变身网红钓场，游艇风格网红打卡地。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's173', name: '长兴荒野路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3392,6 +3595,7 @@ class SpotService {
     description: '2025年新开网红路亚基地。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's174', name: '湖州渔歌子路亚营地', type: '路亚', typeEmoji: '🎮',
@@ -3410,6 +3614,7 @@ class SpotService {
     description: '圈内90亩水面，大鱼种全，抖音/头条钓点推荐。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's175', name: 'BIG BASS路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3428,6 +3633,7 @@ class SpotService {
     description: '湖州抖音路亚热门钓场。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's176', name: '状元湖垂钓中心', type: '游钓基地', typeEmoji: '🏀',
@@ -3446,6 +3652,7 @@ class SpotService {
     description: '已承办20+国家级/省级赛事，长三角知名垂钓目的地。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's177', name: '菱湖国际垂钓中心', type: '路亚', typeEmoji: '🎮',
@@ -3464,6 +3671,7 @@ class SpotService {
     description: '中国淡水渔都，长三角国际垂钓户外休闲运动基地。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's178', name: '象月湖国际休闲度假谷', type: '路亚', typeEmoji: '🎮',
@@ -3482,6 +3690,7 @@ class SpotService {
     description: '莫干山脚下网红钓点，竹林环绕。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's179', name: '星星哨水库', type: '野钓', typeEmoji: '🐟',
@@ -3500,6 +3709,7 @@ class SpotService {
     description: '东北钓友心中的路亚天堂，米级翘嘴出没频繁，抖音路亚圈最火东北钓场。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's180', name: '矿泉湖路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3518,6 +3728,7 @@ class SpotService {
     description: '抖音话题#辉县矿泉湖路亚基地#多条视频获赞。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's181', name: '郑州野道路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3536,6 +3747,7 @@ class SpotService {
     description: '2.0大塘放精品鳜鱼活动参与人数多，抖音高热度。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's182', name: '美峪休闲路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3554,6 +3766,7 @@ class SpotService {
     description: '抖音多期路亚vlog取景地，打卡点。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's183', name: '深圳萤火虫路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3572,6 +3785,7 @@ class SpotService {
     description: '抖音#深圳萤火虫路亚#话题，淡水GT拉力十足。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's184', name: '佛灵湖路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3590,6 +3804,7 @@ class SpotService {
     description: '东莞知名路亚钓场，抖音/钓鱼之家推荐。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's185', name: '东莞谢岗路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3608,6 +3823,7 @@ class SpotService {
     description: '常放加州鲈4000斤，抖音热门放鱼视频点赞高。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's186', name: '万绿湖', type: '野钓', typeEmoji: '🐟',
@@ -3626,6 +3842,7 @@ class SpotService {
     description: '广东知名野钓湖，广州/深圳出发约3-4小时。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's187', name: '东江博罗段', type: '野钓', typeEmoji: '🐟',
@@ -3644,6 +3861,7 @@ class SpotService {
     description: '野钓博主常去，广东钓点全攻略热门。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's188', name: '广州寅丰钓鱼场', type: '黑坑', typeEmoji: '🏴☠️',
@@ -3662,6 +3880,7 @@ class SpotService {
     description: '钓鱼之家/抖音推荐黑坑斤塘。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's189', name: '广州青月湾路亚俱乐部', type: '路亚', typeEmoji: '🎮',
@@ -3680,6 +3899,7 @@ class SpotService {
     description: '纯跑亚钓场，20亩水深4米。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's190', name: '成都享鱼湖畔垂钓基地', type: '路亚', typeEmoji: '🎮',
@@ -3698,6 +3918,7 @@ class SpotService {
     description: '国家级赛事场地，2024-2025中国休闲垂钓俱乐部超级联赛总决赛。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's191', name: '成都猫猫沟水库', type: '黑坑', typeEmoji: '🏴☠️',
@@ -3716,6 +3937,7 @@ class SpotService {
     description: '周三/周六放鱼，抖音成都野钓热门。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's192', name: '成都百工堰水库', type: '黑坑', typeEmoji: '🏴☠️',
@@ -3734,6 +3956,7 @@ class SpotService {
     description: '24小时营业，抖音成都野钓推荐。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's193', name: '成都渔人谷', type: '黑坑', typeEmoji: '🏴☠️',
@@ -3752,6 +3975,7 @@ class SpotService {
     description: '20年未干塘存鱼3-4万斤，抖音成都推荐。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's194', name: '金谷域户外路亚垂钓基地', type: '路亚', typeEmoji: '🎮',
@@ -3770,6 +3994,7 @@ class SpotService {
     description: '安仁古镇配套路亚基地。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's195', name: '成都樱桃·栖园路亚结构区', type: '路亚', typeEmoji: '🎮',
@@ -3788,6 +4013,7 @@ class SpotService {
     description: '结构障碍区特色路亚钓场。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's196', name: '成都同路路亚钓鱼基地', type: '路亚', typeEmoji: '🎮',
@@ -3806,6 +4032,7 @@ class SpotService {
     description: '放大口鲶活动参与度高，抖音成都路亚热门。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's197', name: '常熟红岸路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3824,6 +4051,7 @@ class SpotService {
     description: '多次举办赛事活动，抖音#常熟红岸路亚基地福利大师赛#。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's198', name: '上海荷风路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3842,6 +4070,7 @@ class SpotService {
     description: '上海为数不多有前控可以踩的钓场之一，口碑好。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's199', name: '昆明孔雀湾路亚钓场', type: '路亚', typeEmoji: '🎮',
@@ -3860,6 +4089,7 @@ class SpotService {
     description: '抖音#昆明路亚#孔雀湾路亚钓场#话题。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's200', name: '柳叶湖', type: '路亚', typeEmoji: '🎮',
@@ -3878,6 +4108,7 @@ class SpotService {
     description: '2026中国舟钓路亚公开赛湖南柳叶湖站举办地。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's201', name: '溱湖绿洲田园度假区', type: '游钓基地', typeEmoji: '🏀',
@@ -3896,6 +4127,7 @@ class SpotService {
     description: '溱湖国家湿地公园内，水质清澈，鱼种丰富，抖音溱湖钓鱼热门地标。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's202', name: '劲畅海钓场', type: '路亚', typeEmoji: '🎮',
@@ -3914,6 +4146,7 @@ class SpotService {
     description: '25亩海水路亚塘，分石斑龙趸塘与综合塘，含多种海鱼。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's203', name: '海宴望头码头', type: '路亚', typeEmoji: '🎮',
@@ -3932,6 +4165,7 @@ class SpotService {
     description: '台山沿海路亚钓场，水面大鱼种多。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's204', name: '东莞虎门路亚岸钓基地', type: '路亚', typeEmoji: '🎮',
@@ -3950,6 +4184,7 @@ class SpotService {
     description: '广东省钓协认证路亚岸钓基地，抖音188元6小时鱼获自由话题热度高。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's205', name: '怀化犀牛塘路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -3968,6 +4203,7 @@ class SpotService {
     description: '抖音#怀化路亚#热门，五天放鱼3400斤，鳜鱼正钓参与度高。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's206', name: '武汉阳光钓场', type: '黑坑', typeEmoji: '🏴☠️',
@@ -3986,6 +4222,7 @@ class SpotService {
     description: '江夏区17亩钓场，60钓位，13条真实评价，水质优。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's207', name: '武汉风云钓场', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4004,6 +4241,7 @@ class SpotService {
     description: '17亩60钓位，黑坑路亚综合塘。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's208', name: '宁波欢乐垂钓园', type: '路亚', typeEmoji: '🎮',
@@ -4022,6 +4260,7 @@ class SpotService {
     description: '宁波性价比最高路亚黑坑，抖音推荐，冬季30元一天。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's209', name: '溧阳长荡湖渔夫乐园', type: '游钓基地', typeEmoji: '🏀',
@@ -4040,6 +4279,7 @@ class SpotService {
     description: '长荡湖周边知名钓场，环境优美。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's210', name: '长寿摆烂生态钓场', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4058,6 +4298,7 @@ class SpotService {
     description: '30亩大水面，投放鱼超2万斤，日均爆护，抖音重庆钓场TOP3。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's211', name: '江津和平奶牛钓场', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4076,6 +4317,7 @@ class SpotService {
     description: '13亩水深1-4米，钓青鱼额外送钓场自产牛奶，抖音重庆推荐。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's212', name: '长寿湖香林山庄钓场', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4094,6 +4336,7 @@ class SpotService {
     description: '长寿湖畔，3000平米黑坑，水深2米，近邻夜钓场。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's213', name: '长寿大洪湖钓场', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4112,6 +4355,7 @@ class SpotService {
     description: '大洪湖水面大，鱼种全，性价比高。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's214', name: '酉阳向阳水库', type: '野钓', typeEmoji: '🐟',
@@ -4130,6 +4374,7 @@ class SpotService {
     description: '50亩免费野钓水库，车可至岸边，适合路亚台钓。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's215', name: '北碚龙滩子水库', type: '野钓', typeEmoji: '🐟',
@@ -4148,6 +4393,7 @@ class SpotService {
     description: '免费野钓水质清澈，适合路亚台钓，周边环境原生态。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's216', name: '都江堰白沙河', type: '野钓', typeEmoji: '🐟',
@@ -4166,6 +4412,7 @@ class SpotService {
     description: '成都周边经典溪流野钓地，浅滩密集，3.6米手竿蚯蚓即可爆护。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's217', name: '彭州蟠龙谷', type: '野钓', typeEmoji: '🐟',
@@ -4184,6 +4431,7 @@ class SpotService {
     description: '乱石底溪流，需单钩作钓，鱼密度高。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's218', name: '雅安喇叭河支流', type: '野钓', typeEmoji: '🐟',
@@ -4202,6 +4450,7 @@ class SpotService {
     description: '高海拔冷水溪流，需4.5米以上长竿探深潭。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's219', name: '常德澧县渔乐钓场', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4220,6 +4469,7 @@ class SpotService {
     description: '县城中心，分大混养和鲫鱼池路亚池。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's220', name: '汉寿汉新钓鱼场', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4238,6 +4488,7 @@ class SpotService {
     description: '40亩，4个塘（混养/小青鱼/大青鱼/路亚），水深1.7-2.5米。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's221', name: '安化永安垂钓基地', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4256,6 +4507,7 @@ class SpotService {
     description: '安化山区钓场，每周五放鱼，营业至午夜。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's222', name: '吉首岩人坪水库', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4274,6 +4526,7 @@ class SpotService {
     description: '18亩水深4米，环境优美，湘西山路亚黑坑综合。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's223', name: '沈阳新标点路亚', type: '路亚', typeEmoji: '🎮',
@@ -4292,6 +4545,7 @@ class SpotService {
     description: '北京通州经典路亚塘，鳟鱼鲈鱼鮰鱼，太阳雨。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's224', name: '北京丁各庄垂钓路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -4310,6 +4564,7 @@ class SpotService {
     description: '大物综合通玩塘，鱼种齐全，存鱼丰富。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's225', name: '北京绿洲路亚部落', type: '路亚', typeEmoji: '🎮',
@@ -4328,6 +4583,7 @@ class SpotService {
     description: '鳟鱼全天不限带，鲈鱼300斤/次，路亚热门地。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's226', name: '乌鲁木齐米东拓野休闲垂钓', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4346,6 +4602,7 @@ class SpotService {
     description: '68亩4塘分类黑坑，乌鲁木齐规模最大垂钓园之一。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's227', name: '乌鲁木齐飞驰乐钓', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4364,6 +4621,7 @@ class SpotService {
     description: '25条真实评价，乌鲁木齐经典黑坑。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's228', name: '西安周至环山路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -4382,6 +4640,7 @@ class SpotService {
     description: '陕西休闲路亚天花板，抖音周至路亚话题热门推荐地。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's229', name: '西安奥体灞河路亚标点', type: '路亚', typeEmoji: '🎮',
@@ -4400,6 +4659,7 @@ class SpotService {
     description: '西安市内经典路亚野钓标点，马口白条红鳍鲌，坐标精准。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's230', name: '昆明晋宁磷都钓鱼场', type: '斤塘', typeEmoji: '🚫',
@@ -4418,6 +4678,7 @@ class SpotService {
     description: '5亩水深2-5米，练杆塘与斤塘结合，2025年1月开业。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's231', name: '安顺三角寨垂钓园', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4436,6 +4697,7 @@ class SpotService {
     description: '三角寨垂钓园，四面环山，100钓位，每周二周五放鱼，周三周六正钓。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's232', name: '安顺新屯鱼塘', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4454,6 +4716,7 @@ class SpotService {
     description: '3塘综合黑坑，80元/8小时保底10斤，120元/6小时，回鱼4元/斤。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's233', name: '贵阳南明众星休闲垂钓园', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4472,6 +4735,7 @@ class SpotService {
     description: '2025年4月新开投放3080斤青鱼鲤鱼，鲤鱼7000斤，青鱼10-20斤3000多斤，原塘鱼4000斤。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's234', name: '贵阳花溪黑坑综合', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4490,6 +4754,7 @@ class SpotService {
     description: '花溪区黑坑汇总钓场，井水水质好，环境优美。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's235', name: '贵阳白云李静钓场', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4508,6 +4773,7 @@ class SpotService {
     description: '主钓鲟鱼，120元/4小时，贵阳鲟鱼特色钓场。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's236', name: '六盘水六枝黑坑', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4526,6 +4792,7 @@ class SpotService {
     description: '3亩30钓位，循环水质，198元/天无刺钩限杆7.2米。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's237', name: '永川禾木鱼庄钓场', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4544,6 +4811,7 @@ class SpotService {
     description: '3号塘手竿60元/天，所有鱼获免费带走，禾木鱼塘抖音永川推荐热门。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's238', name: '永川牛王沟水库', type: '野钓', typeEmoji: '🐟',
@@ -4562,6 +4830,7 @@ class SpotService {
     description: '永川低价野钓点，10元一天性价比高。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's239', name: '南宁西乡塘三美钓场', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4580,6 +4849,7 @@ class SpotService {
     description: '2.7亩沙底塘，草鱼为主，全塘3000斤，每四天加鱼一次。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's240', name: '南宁美丽南方雷公塘钓鱼场', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4598,6 +4868,7 @@ class SpotService {
     description: '美丽南方景区内8亩66钓位钓场，环境优美，停车方便。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's241', name: '南昌蒋巷福顺田园农庄钓场', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4616,6 +4887,7 @@ class SpotService {
     description: '5个垂钓区：1号草鱼塘13亩底鱼6000斤、2号鲫鱼塘1亩底鱼2000斤等。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's242', name: '南昌传奇路亚基地', type: '路亚', typeEmoji: '🎮',
@@ -4634,6 +4906,7 @@ class SpotService {
     description: '12亩水面水深2-3米，路亚综合塘，营业时间5:00-0:00。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's243', name: '南昌南城部落垂钓中心', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4652,6 +4925,7 @@ class SpotService {
     description: '南昌县大型黑坑，多分区垂钓，环境好。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's244', name: '万宁港北港海钓', type: '野钓', typeEmoji: '🐟',
@@ -4670,6 +4944,7 @@ class SpotService {
     description: '海南东海岸最佳海钓点，可岸钓可船钓，黑鲷泥猛马鲛金枪鱼。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's245', name: '三亚大隆水库', type: '野钓', typeEmoji: '🐟',
@@ -4688,6 +4963,7 @@ class SpotService {
     description: '三亚免费水库野钓，水面大鱼种丰富。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's246', name: '昆明海口黑坑', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4706,6 +4982,7 @@ class SpotService {
     description: '昆明西山区海口镇黑坑，综合鱼种。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's247', name: '个旧黄草山钓场', type: '野钓', typeEmoji: '🐟',
@@ -4724,6 +5001,7 @@ class SpotService {
     description: '个旧周边野钓点，山泉水质好。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's248', name: '楚雄青山湖水库', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4742,6 +5020,7 @@ class SpotService {
     description: '青山湖水库钓场，可停车有茶室，100元/天。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's249', name: '桂林灵川公平湖钓场', type: '黑坑', typeEmoji: '🏴☠️',
@@ -4760,6 +5039,7 @@ class SpotService {
     description: '公平湖大型黑坑，水面广鱼种全。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
   Spot(
     id: 's250', name: '柳州柳江野钓基地', type: '野钓', typeEmoji: '🐟',
@@ -4778,6 +5058,7 @@ class SpotService {
     description: '柳江沿岸经典野钓地，柳州钓友聚集。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     submitter: SpotSubmitter.operator,
+    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -4804,6 +5085,7 @@ class SpotService {
     roomType: '江景房', roomCapacity: 2, hasWifi: false,
     accommodationNote: '江景房¥160/间，步行1分钟到钓位，开窗即见雅砻江。',
     facilities: ['餐饮', '住宿', '导钓服务'],
+    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -4831,174 +5113,139 @@ class SpotService {
     description: '华东路亚竞技标杆场地，上海奉贤专业船钓综合基地。',
     updatedAt: DateTime.now(),
     submitter: SpotSubmitter.operator,
-  )
+    status: SpotStatus.pending,
+  ),
     Spot(
-    id: 's255',
-    name: '张果老钓场',
-    city: '广西西林',
-    district: '万峰湖',
-    type: '野钓',
-    typeEmoji: '🎣',
-    latitude: 24.85,
-    longitude: 104.92,
-    rating: 4.7,
-    hotspotScore: 96,
-    price: '120元/天（3天及以上100元/天）',
-    fishSpecies: ["鲫鱼","鲤鱼","草鱼","青鱼","鲢鳙","罗非鱼","翘嘴"],
-    fishPeakSeason: {'鲫鱼': [10,11,12,1,2], '鲤鱼': [3,4,5,9,10], '草鱼': [4,5,6,9], '翘嘴': [6,7,8,9,10], '罗非鱼': [5,6,7,8,9]},
+    id: 's255', name: '张果老钓场', type: '野钓', typeEmoji: '🎣',
+    city: '广西西林', district: '万峰湖', address: '广西百色市西林县万峰湖浪吉河口（围网外主河道）',
+    latitude: 24.85, longitude: 104.92,
     images: [],
-    description: '万峰湖广西岸浪吉河口围网外主河道。钓获单尾超8kg青鱼/鲤鱼/草鱼/鲢鳙免一天费，超2.5kg罗非免一天费，可同时叠加。含三餐、洗漱设备、空调。老板每天打窝，鱼情稳定。',
+    fishSpecies: ['鲫鱼', '鲤鱼', '草鱼', '青鱼', '鲢鳙', '罗非鱼', '翘嘴'],
+    fishPeakSeason: const <String, String>{'鲫鱼': '10-2', '鲤鱼': '3-5', '草鱼': '4-9', '翘嘴': '6-10', '罗非鱼': '5-9'},
+    lastStockingDate: null,
+    stockingCycleDays: 0,
+    price: 120.0, priceNote: '3天以下¥120/天；满3天¥100/天；充值5000元¥80/天', businessHours: '全天开放',
     contactPhone: '13732782995',
-    contactName: '小张',
-    openingHours: '全天',
+    wechat: '13732782995', ownerName: '小张',
+    rating: 4.7, reviewCount: 33, viewCount: 2600, favoriteCount: 480, postCount: 15,
+    description: '万峰湖广西岸浪吉河口围网外主河道。钓获单尾超8kg青鱼/鲤鱼/草鱼/鲢鳙免一天费，超2.5kg罗非免一天费，可叠加。含三餐、洗漱设备、空调，老板每天打窝。交通：三江口码头乘船约40分钟，曲靖驾车约2小时40分。',
+    updatedAt: DateTime.now(),
+    submitter: SpotSubmitter.operator,
     hasAccommodation: true,
-    accommodationType: '农家乐（含三餐）',
+    roomType: '普通间', roomCapacity: 2, hasWifi: false,
     accommodationNote: '含三餐、洗漱设备、空调',
-    transportNote: '三江口码头乘船40分钟，或驾车导航至三江口后换船',
-    permitNote: '休闲野钓，禁止锚钩爆炸钩',
-    sourceNote: '商家可认领',
-    updatedAt: DateTime.now(),
-    submitter: SpotSubmitter.operator,
+    facilities: ['餐饮', '住宿', '停车', '导钓服务'],
   ),
-    Spot(
-    id: 's256',
-    name: '幽谷钓场',
-    city: '广西西林',
-    district: '万峰湖',
-    type: '农家乐',
-    typeEmoji: '🏡',
-    latitude: 24.8,
-    longitude: 104.88,
-    rating: 4.5,
-    hotspotScore: 88,
-    price: '吃住一体80元/人/天；不住宿只吃饭40元/人/天',
-    fishSpecies: ["鲫鱼","鲤鱼","草鱼","罗非鱼","翘嘴"],
-    fishPeakSeason: {'鲫鱼': [10,11,12,1,2], '鲤鱼': [3,4,5,9,10], '草鱼': [4,5,6,9], '翘嘴': [6,7,8,9,10], '罗非鱼': [5,6,7,8,9]},
+
+  Spot(
+    id: 's256', name: '幽谷钓场', type: '农家乐', typeEmoji: '🏡',
+    city: '广西西林', district: '万峰湖', address: '广西百色市西林县S321天生桥万峰湖畔',
+    latitude: 24.80, longitude: 104.88,
     images: [],
-    description: '万峰湖畔幽静山谷，吃住钓一体。套餐优惠：10天住12天，20天住24天，25天住30天。环境清幽，适合长钓。位于S321天生桥附近。',
+    fishSpecies: ['鲫鱼', '鲤鱼', '草鱼', '罗非鱼', '翘嘴'],
+    fishPeakSeason: const <String, String>{'鲫鱼': '10-2', '鲤鱼': '3-5', '草鱼': '4-9', '翘嘴': '6-10', '罗非鱼': '5-9'},
+    lastStockingDate: null,
+    stockingCycleDays: 0,
+    price: 80.0, priceNote: '吃住一体¥80/人/天；包住不包吃¥40/人/天；套餐10天送2天/20天送4天/25天送5天', businessHours: '全天开放',
     contactPhone: '15107860687',
-    contactName: null,
-    openingHours: '全天',
-    hasAccommodation: true,
-    accommodationType: '农家乐',
-    accommodationNote: '吃住一体80元/人/天；不住宿40元/人/天；长住套餐优惠',
-    transportNote: 'S321天生桥万峰湖方向',
-    permitNote: null,
-    sourceNote: '商家可认领',
+    wechat: null, ownerName: null,
+    rating: 4.5, reviewCount: 21, viewCount: 1800, favoriteCount: 320, postCount: 10,
+    description: '万峰湖畔幽静山谷钓场，吃住钓一体。提供煤气水电炊具厨房，另供活饵虾子。长钓套餐优惠多，适合度假式连钓。',
     updatedAt: DateTime.now(),
     submitter: SpotSubmitter.operator,
-  ),
-    Spot(
-    id: 's257',
-    name: '智豪农庄',
-    city: '贵州兴义',
-    district: '万峰湖',
-    type: '农家乐',
-    typeEmoji: '🏡',
-    latitude: 24.93,
-    longitude: 104.86,
-    rating: 4.6,
-    hotspotScore: 90,
-    price: '130元/天（含空调房+三餐+钓台+停车）',
-    fishSpecies: ["鲫鱼","鲤鱼","草鱼","青鱼","鲢鳙","罗非鱼","翘嘴"],
-    fishPeakSeason: {'鲫鱼': [10,11,12,1,2], '鲤鱼': [3,4,5,9,10], '草鱼': [4,5,6,9], '翘嘴': [6,7,8,9,10], '罗非鱼': [5,6,7,8,9]},
-    images: [],
-    description: '距兴义市区/高铁/机场约40公里，车可直接开到钓位边，老板每天打窝，大小鱼资源丰富。空调标间含三餐，提供停车位。',
-    contactPhone: null,
-    contactName: null,
-    openingHours: '全天',
     hasAccommodation: true,
-    accommodationType: '农家乐（空调标间）',
+    roomType: '普通间', roomCapacity: 2, hasWifi: false,
+    accommodationNote: '吃住一体¥80/人/天；提供炊具厨房、活饵虾子',
+    facilities: ['餐饮', '住宿', '厨房'],
+  ),
+
+  Spot(
+    id: 's257', name: '智豪农庄', type: '农家乐', typeEmoji: '🏡',
+    city: '贵州兴义', district: '万峰湖', address: '贵州省黔西南州兴义市万峰湖下游（距市区约40公里）',
+    latitude: 24.93, longitude: 104.86,
+    images: [],
+    fishSpecies: ['鲫鱼', '鲤鱼', '草鱼', '青鱼', '鲢鳙', '罗非鱼', '翘嘴'],
+    fishPeakSeason: const <String, String>{'鲫鱼': '10-2', '鲤鱼': '3-5', '草鱼': '4-9', '翘嘴': '6-10', '罗非鱼': '5-9'},
+    lastStockingDate: null,
+    stockingCycleDays: 0,
+    price: 130.0, priceNote: '¥130/天（含空调房+三餐+钓台+停车）', businessHours: '全天开放',
+    contactPhone: null,
+    wechat: null, ownerName: null,
+    rating: 4.6, reviewCount: 18, viewCount: 1500, favoriteCount: 280, postCount: 8,
+    description: '万峰湖下游水面最宽最深钓场之一，车可直接开到钓位边，老板每天打窝。距兴义市区/高铁站/机场约40公里。',
+    updatedAt: DateTime.now(),
+    submitter: SpotSubmitter.operator,
+    hasAccommodation: true,
+    roomType: '空调标间', roomCapacity: 2, hasWifi: true,
     accommodationNote: '含空调房+三餐+钓台+停车',
-    transportNote: '距兴义市区/高铁站/机场约40km，车直达钓位',
-    permitNote: null,
-    sourceNote: '商家可认领',
-    updatedAt: DateTime.now(),
-    submitter: SpotSubmitter.operator,
+    facilities: ['餐饮', '住宿', '停车'],
+    status: SpotStatus.pending,
   ),
-    Spot(
-    id: 's258',
-    name: '万峰湖生态垂钓园',
-    city: '贵州兴义',
-    district: '万峰湖',
-    type: '农家乐',
-    typeEmoji: '🏡',
-    latitude: 24.95,
-    longitude: 104.83,
-    rating: 4.4,
-    hotspotScore: 85,
-    price: '100-120元/天（含吃住）',
-    fishSpecies: ["罗非鱼","鲫鱼","鲤鱼","草鱼","青鱼","鲢鳙","黑鱼","鲈鱼","翘嘴"],
-    fishPeakSeason: {'鲫鱼': [10,11,12,1,2], '鲤鱼': [3,4,5,9,10], '草鱼': [4,5,6,9], '翘嘴': [6,7,8,9,10], '罗非鱼': [5,6,7,8,9]},
+
+  Spot(
+    id: 's258', name: '万峰湖生态垂钓园', type: '农家乐', typeEmoji: '🏡',
+    city: '贵州兴义', district: '万峰湖', address: '贵州省黔西南州兴义市南盘江镇坝懒村纳明小组',
+    latitude: 24.95, longitude: 104.83,
     images: [],
-    description: '位于兴义市南盘江镇坝懒村，罗非鱼资源丰富，鱼种覆盖较全，生态养殖。',
+    fishSpecies: ['罗非鱼', '鲫鱼', '鲤鱼', '草鱼', '青鱼', '鲢鳙', '翘嘴'],
+    fishPeakSeason: const <String, String>{'鲫鱼': '10-2', '鲤鱼': '3-5', '草鱼': '4-9', '翘嘴': '6-10', '罗非鱼': '5-9'},
+    lastStockingDate: null,
+    stockingCycleDays: 0,
+    price: 120.0, priceNote: '空调房吃住¥120/天；不住空调房¥100/天', businessHours: '全天开放',
     contactPhone: null,
-    contactName: null,
-    openingHours: '全天',
-    hasAccommodation: true,
-    accommodationType: '农家乐',
-    accommodationNote: '含吃住，可选空调房',
-    transportNote: '兴义市南盘江镇坝懒村方向',
-    permitNote: null,
-    sourceNote: '商家可认领',
+    wechat: null, ownerName: null,
+    rating: 4.4, reviewCount: 25, viewCount: 1700, favoriteCount: 300, postCount: 9,
+    description: '兴义市南盘江镇坝懒村纳明小组，罗非鱼资源好，吃住钓一体，禁止使用泥鳅饵。',
     updatedAt: DateTime.now(),
     submitter: SpotSubmitter.operator,
+    hasAccommodation: true,
+    roomType: '空调标间', roomCapacity: 2, hasWifi: false,
+    accommodationNote: '空调房吃住¥120/天；不住空调房¥100/天',
+    facilities: ['餐饮', '住宿'],
+    status: SpotStatus.pending,
   ),
-    Spot(
-    id: 's259',
-    name: '万峰大鱼路亚基地',
-    city: '贵州兴义',
-    district: '万峰湖',
-    type: '路亚',
-    typeEmoji: '🐟',
-    latitude: 24.9,
-    longitude: 104.79,
-    rating: 4.5,
-    hotspotScore: 87,
-    price: '150元/天（含住宿）',
-    fishSpecies: ["翘嘴","鳜鱼","黑鱼","鲈鱼"],
-    fishPeakSeason: {'翘嘴': [6,7,8,9,10], '鳜鱼': [5,6,7,8,9], '黑鱼': [5,6,7,8,9,10], '鲈鱼': [5,6,7,8,9,10]},
+
+  Spot(
+    id: 's259', name: '万峰大鱼路亚基地', type: '路亚', typeEmoji: '🐟',
+    city: '贵州兴义', district: '万峰湖', address: '贵州省黔西南州兴义市南盘江镇坝艾村啊哩一组',
+    latitude: 24.90, longitude: 104.79,
     images: [],
-    description: '支持路亚、台钓、筏钓三种玩法，万峰湖内规模路亚基地，含住宿，适合多日连钓。',
+    fishSpecies: ['翘嘴', '鳜鱼', '黑鱼', '鲈鱼'],
+    fishPeakSeason: const <String, String>{'翘嘴': '6-10', '鳜鱼': '5-10', '黑鱼': '5-10', '鲈鱼': '5-10'},
+    lastStockingDate: null,
+    stockingCycleDays: 0,
+    price: 150.0, priceNote: '¥150/天（含住宿）', businessHours: '全天开放',
     contactPhone: null,
-    contactName: null,
-    openingHours: '全天',
-    hasAccommodation: true,
-    accommodationType: '路亚基地住宿',
-    accommodationNote: '含住宿，150元/天',
-    transportNote: '兴义市南盘江镇坝艾村啊哩方向',
-    permitNote: null,
-    sourceNote: '商家可认领',
+    wechat: null, ownerName: null,
+    rating: 4.5, reviewCount: 16, viewCount: 1400, favoriteCount: 260, postCount: 7,
+    description: '万峰湖路亚基地，支持路亚、台钓、筏钓三种玩法，含住宿，适合多日连钓。',
     updatedAt: DateTime.now(),
     submitter: SpotSubmitter.operator,
+    hasAccommodation: true,
+    roomType: '普通间', roomCapacity: 2, hasWifi: false,
+    accommodationNote: '¥150/天含住宿',
+    facilities: ['住宿', '餐饮'],
+    status: SpotStatus.pending,
   ),
-    Spot(
-    id: 's260',
-    name: '二滩水库',
-    city: '四川攀枝花',
-    district: '盐边',
-    type: '野钓',
-    typeEmoji: '🎣',
-    latitude: 26.82,
-    longitude: 101.76,
-    rating: 4.3,
-    hotspotScore: 82,
-    price: '免费',
-    fishSpecies: ["鲫鱼","鲤鱼","草鱼","鲶鱼","翘嘴","武昌鱼","罗非鱼","白条","鳜鱼"],
-    fishPeakSeason: {'鲫鱼': [10,11,12,1,2], '鲤鱼': [3,4,5,9,10], '草鱼': [4,5,6,9], '翘嘴': [5,6,7,8,9,10], '鳜鱼': [5,6,7,8,9]},
+
+  Spot(
+    id: 's260', name: '二滩水库', type: '野钓', typeEmoji: '🎣',
+    city: '四川攀枝花', district: '盐边县', address: '四川省攀枝花市盐边县雅砻江下游二滩水库',
+    latitude: 26.82, longitude: 101.76,
     images: [],
-    description: '雅砻江下游大型水库，免费野钓。鱼种丰富，翘嘴是特色体型大。注意：周围高压线多，钓鱼注意安全；水位随季节变化。',
+    fishSpecies: ['鲫鱼', '鲤鱼', '草鱼', '鲶鱼', '翘嘴', '武昌鱼', '罗非鱼', '白条', '鳜鱼'],
+    fishPeakSeason: const <String, String>{'鲫鱼': '10-2', '鲤鱼': '3-5', '草鱼': '4-9', '翘嘴': '5-10', '鳜鱼': '5-9'},
+    lastStockingDate: null,
+    stockingCycleDays: 0,
+    price: 0, priceNote: '免费野钓', businessHours: '全天开放',
     contactPhone: '15892575967',
-    contactName: null,
-    openingHours: '全天',
-    hasAccommodation: false,
-    accommodationType: null,
-    accommodationNote: '周边有欧方营地度假酒店',
-    transportNote: 'G5京昆高速盐边出口下，沿盐择路至二滩码头',
-    permitNote: '免费野钓，禁止锚钩爆炸钩；注意高压线',
-    sourceNote: '商家可认领',
+    wechat: null, ownerName: null,
+    rating: 4.3, reviewCount: 41, viewCount: 2200, favoriteCount: 350, postCount: 11,
+    description: '雅砻江下游大型水库（二滩水电站库区），免费野钓，鱼种丰富，翘嘴数量多体型大。注意周边高压线多，水位随季节变化需提前了解。',
     updatedAt: DateTime.now(),
     submitter: SpotSubmitter.operator,
+    hasAccommodation: false,
+    facilities: ['停车'],
   ),
 ];
 
@@ -5017,17 +5264,21 @@ class SpotService {
     }
   }
 
-  static List<Spot> get all => _cache;
+  static List<Spot> get all =>
+      _cache.where((s) => s.status == SpotStatus.active && s.status == SpotStatus.active).toList();
+
+  /// 含待核实（pending）的全部钓点，仅供后台/刷新流程使用
+  static List<Spot> get allIncludingPending => _cache;
 
   static List<Spot> byCity(String city) =>
-      _cache.where((s) => s.city == city).toList();
+      _cache.where((s) => s.status == SpotStatus.active && s.city == city).toList();
 
   static List<Spot> byType(String type) =>
-      _cache.where((s) => s.type == type).toList();
+      _cache.where((s) => s.status == SpotStatus.active && s.type == type).toList();
 
   static List<Spot> search(String q) {
     final lq = q.toLowerCase();
-    return _cache.where((s) =>
+    return _cache.where((s) => s.status == SpotStatus.active &&
       s.name.toLowerCase().contains(lq) ||
       s.city.toLowerCase().contains(lq) ||
       s.fishSpecies.any((f) => f.toLowerCase().contains(lq))

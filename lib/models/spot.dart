@@ -5,6 +5,12 @@ enum SpotSubmitter {
   owner,    // 商家认领后自助维护
 }
 
+/// 钓点审核状态
+enum SpotStatus {
+  active,   // 已核实：有具体联系方式/地点/在经营
+  pending,  // 待核实：缺联系方式或搜不到公开信息，先隐藏
+}
+
 /// 钓点数据模型
 /// type:野钓 | 斤塘 | 养殖塘 | 农家乐 | 游钓基地
 /// fishPeakSeason: 鱼种 → 旺季月份范围（如 '5-10'），仅野钓/游钓基地有意义
@@ -38,6 +44,7 @@ class Spot {
   final String description;       // 简介
   final DateTime? updatedAt;      // 最后更新
   final SpotSubmitter submitter; // 来源类型（operator/ugc/owner）
+  final SpotStatus status;       // 审核状态（active/pending）
   final String? claimedBy;        // 认领商家/用户昵称（null=未认领）
   final DateTime? claimedAt;      // 认领时间
 
@@ -82,6 +89,7 @@ class Spot {
     this.submitter = SpotSubmitter.operator,
     this.claimedBy,
     this.claimedAt,
+    this.status = SpotStatus.active,
     this.hasAccommodation = false,
     this.roomType,
     this.roomCapacity,
@@ -236,6 +244,7 @@ class Spot {
     'description': description,
     'updatedAt': updatedAt?.toIso8601String(),
     'submitter': submitter.name,
+    'status': status.name,
     'claimedBy': claimedBy,
     'claimedAt': claimedAt?.toIso8601String(),
     'hasAccommodation': hasAccommodation,
@@ -317,6 +326,10 @@ class Spot {
       submitter: SpotSubmitter.values.firstWhere(
         (e) => e.name == json['submitter'],
         orElse: () => SpotSubmitter.operator,
+      ),
+      status: SpotStatus.values.firstWhere(
+        (e) => e.name == json['status'],
+        orElse: () => SpotStatus.active,
       ),
       claimedBy: _asStr(json['claimedBy']),
       claimedAt: json['claimedAt'] == null
