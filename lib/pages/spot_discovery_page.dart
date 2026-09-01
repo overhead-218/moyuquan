@@ -123,7 +123,7 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
     if (_sortBy == '热度') list = SpotService.sortByHotspot(list);
     if (_sortBy == '评分') {
       list = List<Spot>.from(list);
-      list.sort((a, b) => b.rating.compareTo(a.rating));
+      list.sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
     }
     if (_sortBy == '距离') {
       list = SpotService.sortByDistance(list, _userLat, _userLon);
@@ -439,7 +439,7 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
                           children: [
                             const Icon(Icons.star, size: 10, color: _gold),
                             const SizedBox(width: 2),
-                            Text('${s.rating}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.white)),
+                            Text(s.rating?.toStringAsFixed(1) ?? '暂无', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.white)),
                             const SizedBox(width: 6),
                             Text(s.priceLabel, style: TextStyle(fontSize: 10, color: Colors.white.withValues(alpha: 0.85))),
                           ],
@@ -739,7 +739,7 @@ class _SpotCard extends StatelessWidget {
                         const Icon(Icons.star, size: 12, color: _gold),
                         const SizedBox(width: 2),
                         Text(
-                          spot.rating.toStringAsFixed(1),
+                          spot.rating?.toStringAsFixed(1) ?? '暂无',
                           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _textMain),
                         ),
                       ],

@@ -652,7 +652,7 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
           children: [
             const Icon(Icons.star, size: 15, color: _gold),
             const SizedBox(width: 3),
-            Text(spot.rating.toStringAsFixed(1),
+            Text(spot.rating?.toStringAsFixed(1) ?? '暂无',
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: _textMain)),
             const SizedBox(width: 4),
             const Text('评分', style: TextStyle(fontSize: 11, color: _textWeak)),

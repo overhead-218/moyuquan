@@ -62,7 +62,7 @@ extension SpotToShare on Spot {
   SpotShareData toShareData() => SpotShareData(
     name: name, typeEmoji: typeEmoji, typeLabel: type, city: city, district: district,
     address: address, imageUrl: images.isNotEmpty ? images.first : '',
-    priceLabel: priceLabel, priceNote: priceNote, rating: rating,
+    priceLabel: priceLabel, priceNote: priceNote, rating: rating ?? 0.0,
     reviewCount: reviewCount, hotspotScore: hotspotScore.round(),
     fishSpecies: fishSpecies, isClaimed: isClaimed,
     ownerName: ownerName, contactPhone: contactPhone, wechat: wechat,

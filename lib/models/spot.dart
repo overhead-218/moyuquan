@@ -36,7 +36,7 @@ class Spot {
   final String? contactPhone;     // 联系电话
   final String? wechat;           // 微信
   final String? ownerName;        // 老板/负责人
-  final double rating;            // 评分 0-5
+  final double? rating;           // 评分 0-5（可空：暂无评分时为 null）
   final int reviewCount;          // 评价数
   final int viewCount;            // 浏览数（热度用）
   final int favoriteCount;        // 收藏数（热度用）
@@ -79,11 +79,11 @@ class Spot {
     this.contactPhone,
     this.wechat,
     this.ownerName,
-    required this.rating,
-    required this.reviewCount,
-    required this.viewCount,
-    required this.favoriteCount,
-    required this.postCount,
+    this.rating,
+    this.reviewCount = 0,
+    this.viewCount = 0,
+    this.favoriteCount = 0,
+    this.postCount = 0,
     required this.description,
     this.updatedAt,
     this.submitter = SpotSubmitter.operator,
@@ -108,7 +108,7 @@ class Spot {
       viewCount * 0.1 +
       favoriteCount * 3.0 +
       postCount * 10.0 +
-      rating * 20.0 +
+      (rating ?? 0) * 20.0 +
       reviewCount * 5.0;
 
   /// 收费标签文字
@@ -314,11 +314,11 @@ class Spot {
       contactPhone: _asStr(json['contactPhone']),
       wechat: _asStr(json['wechat']),
       ownerName: _asStr(json['ownerName']),
-      rating: _asDouble(json['rating']),
-      reviewCount: _asInt(json['reviewCount']),
-      viewCount: _asInt(json['viewCount']),
-      favoriteCount: _asInt(json['favoriteCount']),
-      postCount: _asInt(json['postCount']),
+      rating: json['rating'] is num ? (json['rating'] as num).toDouble() : null,
+      reviewCount: _asInt(json['reviewCount']) ?? 0,
+      viewCount: _asInt(json['viewCount']) ?? 0,
+      favoriteCount: _asInt(json['favoriteCount']) ?? 0,
+      postCount: _asInt(json['postCount']) ?? 0,
       description: _asStr(json['description']) ?? '',
       updatedAt: json['updatedAt'] == null
           ? null
