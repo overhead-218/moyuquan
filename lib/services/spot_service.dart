@@ -1626,7 +1626,6 @@ class SpotService {
     roomType: null, roomCapacity: null, hasWifi: false,
     accommodationNote: '钓票含休息，豪华筏钓票含酒店式筏钓+休息；房型与订房详询商家。',
     facilities: ['免费停车', '餐厅', '充电', '休息区'],
-    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -1649,7 +1648,6 @@ class SpotService {
     roomType: null, roomCapacity: null, hasWifi: true,
     accommodationNote: '湖畔客栈民宿，房型与订房详询商家（抖音搜索「鱼多多俱乐部」）。',
     facilities: ['免费停车', '餐厅', 'WiFi', '休息区'],
-    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -5085,7 +5083,6 @@ class SpotService {
     roomType: '江景房', roomCapacity: 2, hasWifi: false,
     accommodationNote: '江景房¥160/间，步行1分钟到钓位，开窗即见雅砻江。',
     facilities: ['餐饮', '住宿', '导钓服务'],
-    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -5113,7 +5110,6 @@ class SpotService {
     description: '华东路亚竞技标杆场地，上海奉贤专业船钓综合基地。',
     updatedAt: DateTime.now(),
     submitter: SpotSubmitter.operator,
-    status: SpotStatus.pending,
   ),
     Spot(
     id: 's255', name: '张果老钓场', type: '野钓', typeEmoji: '🎣',
@@ -5179,7 +5175,6 @@ class SpotService {
     roomType: '空调标间', roomCapacity: 2, hasWifi: true,
     accommodationNote: '含空调房+三餐+钓台+停车',
     facilities: ['餐饮', '住宿', '停车'],
-    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -5202,7 +5197,6 @@ class SpotService {
     roomType: '空调标间', roomCapacity: 2, hasWifi: false,
     accommodationNote: '空调房吃住¥120/天；不住空调房¥100/天',
     facilities: ['餐饮', '住宿'],
-    status: SpotStatus.pending,
   ),
 
   Spot(
@@ -5225,7 +5219,6 @@ class SpotService {
     roomType: '普通间', roomCapacity: 2, hasWifi: false,
     accommodationNote: '¥150/天含住宿',
     facilities: ['住宿', '餐饮'],
-    status: SpotStatus.pending,
   ),
 
   Spot(
