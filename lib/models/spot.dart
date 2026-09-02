@@ -57,6 +57,7 @@ class Spot {
   final List<String> accommodationImages; // 住宿照片（客房/钓棚）
   final List<String> commonAreaImages;   // 公共区域照片（餐厅/钓位棚/庭院）
   final List<String> facilities;         // 设施服务标签（WiFi/停车场/餐厅/淋浴热水…）
+  final Map<String, String> imageCaptions; // 图片路径→分类说明（如「豪华筏钓房」「路亚艇60匹」「钓货：米级翘嘴」），详情页在图右上加 chip
 
   const Spot({
     required this.id,
@@ -98,7 +99,18 @@ class Spot {
     this.accommodationImages = const <String>[],
     this.commonAreaImages = const <String>[],
     this.facilities = const <String>[],
+    this.imageCaptions = const <String, String>{},
   });
+
+  /// 单张图获取分类说明（null = 无说明，不渲染 chip）
+  String? captionFor(String imagePath) {
+    if (imageCaptions.isEmpty) return null;
+    if (imageCaptions.containsKey(imagePath)) return imageCaptions[imagePath];
+    // 也匹配 basename（如「assets/images/spots/s251_01.png」→「s251_01.png」）
+    final base = imagePath.split('/').last;
+    if (imageCaptions.containsKey(base)) return imageCaptions[base];
+    return null;
+  }
 
   /// 是否已认领（商家自助维护）
   bool get isClaimed => claimedBy != null;
@@ -255,6 +267,7 @@ class Spot {
     'accommodationImages': accommodationImages,
     'commonAreaImages': commonAreaImages,
     'facilities': facilities,
+    'imageCaptions': imageCaptions,
   };
 
   static List<String> _asList(dynamic v) {
@@ -345,6 +358,7 @@ class Spot {
       accommodationImages: _asList(json['accommodationImages']),
       commonAreaImages: _asList(json['commonAreaImages']),
       facilities: _asList(json['facilities']),
+      imageCaptions: _asMap(json['imageCaptions']),
     );
   }
 }

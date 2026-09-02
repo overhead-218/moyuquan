@@ -317,6 +317,41 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                           ),
                         ),
                       ),
+                      // 图片分类 caption（右上，路径→分类说明）
+                      Builder(builder: (_) {
+                        if (_catImages.isEmpty || _currentImageIndex >= _catImages.length) {
+                          return const SizedBox.shrink();
+                        }
+                        final cap = spot.captionFor(_catImages[_currentImageIndex]);
+                        if (cap == null || cap.isEmpty) return const SizedBox.shrink();
+                        return Positioned(
+                          right: 16, top: 16,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.55),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 0.5),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.label_outline, size: 12, color: Colors.white),
+                                const SizedBox(width: 4),
+                                ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 180),
+                                  child: Text(
+                                    cap,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
                     ],
                   ),
                 ),
