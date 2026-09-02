@@ -4981,6 +4981,28 @@ class SpotService {
     hasAccommodation: false,
     facilities: ['停车'],
   ),
+
+  // 黔西南·兴义万峰湖（抖音 LY9988FD 老板报价，2026-09-02）
+  Spot(
+    id: 's262', name: '常娱多水上钓场', type: '游钓基地', typeEmoji: '⛵',
+    city: '黔西南', district: '兴义市', address: '贵州省黔西南布依族苗族自治州兴义市万峰湖坝尾码头',
+    latitude: 25.02, longitude: 105.05,
+    images: [],
+    fishSpecies: ['翘嘴'],
+    fishPeakSeason: const <String, String>{'翘嘴': '5-10'},
+    lastStockingDate: null,
+    stockingCycleDays: 0,
+    price: 150.0, priceNote: '老棚¥150/人/天含三餐；新棚¥560/2人/天（+1人+¥150）；路亚艇60匹¥200/天、90匹¥700/天（带3D探鱼器）；导钓+船4h¥1200保底2翘嘴；汽油¥10/升；不接待半天', businessHours: '全天开放（14:00起计）',
+    contactPhone: '17777684544',
+    wechat: '17777684544', ownerName: '常娱多',
+    description: '万峰湖坝尾码头旁综合型水上钓场，筏钓/岸钓/路亚/钓浮不限竿，老棚/新棚湖景房含三餐，路亚艇60匹/90匹含3D探鱼器，导钓4小时保底2条翘嘴。禁毒鱼电鱼钓泥鳅，禁宠物入厨房客房。',
+    updatedAt: DateTime.now(),
+    submitter: SpotSubmitter.operator,
+    hasAccommodation: true,
+    roomType: '水上棚屋', roomCapacity: 2, hasWifi: false,
+    accommodationNote: '老棚¥150/人/天，新棚¥560/2人/天，均含三餐',
+    facilities: ['路亚艇出租', '导钓', '餐饮', '停车', '免费接送', '3D探鱼器'],
+  ),
 ];
 
   // ── 云库接入层 ──────────────────────────────────────
