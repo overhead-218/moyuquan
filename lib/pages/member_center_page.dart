@@ -334,7 +334,12 @@ class _PlanCard extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('会员功能即将上线，敬请期待'),
+                    duration: const Duration(seconds: 2),
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: recommended
                       ? const Color(0xFFC49A5E)

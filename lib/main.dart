@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
+import 'pages/home_shell.dart';
 import 'services/spot_service.dart';
 import 'services/post_service.dart';
 import 'services/message_service.dart';
@@ -55,8 +56,8 @@ class FishingApp extends StatelessWidget {
           centerTitle: false,
         ),
       ),
-      // 启动显示登录页
-      home: const LoginPage(),
+      // 游客态可直接进入首页浏览；登录页改为需要时按需弹出
+      home: const HomeShell(),
     );
   }
 }
