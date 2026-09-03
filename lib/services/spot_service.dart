@@ -218,14 +218,14 @@ class SpotService {
     city: '杭州', district: '淳安', address: '淳安县千岛湖西南湖区',
     latitude: 29.608, longitude: 118.88,
     images: ['assets/images/spots/spot_006.jpg', 'assets/images/spots/wm_02.jpg', 'assets/images/spots/wm_03.jpg'],
-    fishSpecies: ["鳜鱼", "鲈鱼", "鳙鱼", "青鱼"],
+    fishSpecies: ["鳜鱼", "翘嘴", "鲈鱼", "青鱼", "鲤鱼", "草鱼"],
     fishPeakSeason: const <String, String>{},
     lastStockingDate: '2026-08-03',
     stockingCycleDays: 30,
-    price: 200, priceNote: '按天￥200，含船费，渔获另计价', businessHours: '06:00-17:00，需预约',
-    contactPhone: '13812345606',
-    wechat: 'qdh06',
-    ownerName: '千岛湖王',
+    price: 300, priceNote: '参考千岛湖垂钓基地¥300/天（台钓）；筏钓/路亚¥368起；野钓¥388/场', businessHours: '06:00-17:00，需预约',
+    contactPhone: null,
+    wechat: null,
+    ownerName: null,
     description: '国内顶级路亚目的地，水深12米鳜鱼密度极高。米级鳜鱼常有。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     hasAccommodation: true,
@@ -455,14 +455,14 @@ class SpotService {
     city: '昆明', district: '宜良', address: '昆明市宜良县阳宗海湖畔',
     latitude: 24.982, longitude: 102.998,
     images: ['assets/images/spots/spot_018.jpg', 'assets/images/spots/wm_02.jpg', 'assets/images/spots/wm_03.jpg'],
-    fishSpecies: ["大口黑鲈", "鳜鱼", "翘嘴", "罗非"],
+    fishSpecies: ["鲈鱼", "红稍", "黑鱼", "翘嘴"],
     fishPeakSeason: const <String, String>{},
     lastStockingDate: '2026-07-22',
     stockingCycleDays: 30,
-    price: 120, priceNote: '￥120/天，含船', businessHours: '07:00-17:00',
-    contactPhone: '13812345618',
-    wechat: 'yzh18',
-    ownerName: '云南路亚',
+    price: 150, priceNote: '阳宗海华侨城滨水湿地公园路亚基地约¥150/天（星路亚俱乐部，参考钓鱼之家）', businessHours: '07:00-17:00',
+    contactPhone: null,
+    wechat: null,
+    ownerName: null,
     description: '鲈鱼密度高，新手下沉系路亚上鱼很快。景色绝美。',
     updatedAt: DateTime.now().subtract(const Duration(days: 3)),
     hasAccommodation: true,
@@ -572,12 +572,12 @@ class SpotService {
     id: 's024', name: '安宁玉龙湾国际路亚基地', type: '路亚', typeEmoji: '🎮',
     city: '昆明', district: '安宁', address: '昆明市安宁市太平镇玉龙湾（导航玉龙湾高尔夫球会停车场）',
     latitude: 24.932, longitude: 102.483,
-    images: ['assets/images/spots/spot_024.jpg', 'assets/images/spots/wm_02.jpg', 'assets/images/spots/wm_03.jpg'],
-    fishSpecies: ["大口黑鲈", "鳜鱼", "翘嘴", "彩虹鳟", "金鳟"],
+    images: ['assets/images/spots/wm_05.jpg', 'assets/images/spots/wm_12.jpg', 'assets/images/spots/wm_18.jpg'],
+    fishSpecies: ["鲈鱼", "军鱼", "丁桂鱼", "黑鱼"],
     fishPeakSeason: const <String, String>{},
     lastStockingDate: '2026-08-05',
     stockingCycleDays: 30,
-    price: 280, priceNote: '￥280/天，含装备+午餐', businessHours: '08:00-17:00，需预约',
+    price: 400, priceNote: '黑坑¥400/天；路亚双人单艇全天套餐¥480；温塘¥300/人·热塘¥420/人；私人定制¥3000-4000/人', businessHours: '08:00-18:00，需预约',
     contactPhone: '0871-68630526',
     wechat: null,
     ownerName: '云南远大·玉龙湾国际路亚基地',
@@ -1535,7 +1535,8 @@ class SpotService {
 
   // 黔西南·兴义万峰湖（补充：抖音/团购商家主页，2026-08-18）
   Spot(
-    id: 's251', name: '栩烽棠垂钓乐园', type: '农家乐', typeEmoji: '🏕',
+    id: 's251', name: '栩烽棠垂钓乐园', type: '农家乐',
+    imagesVerified: true, typeEmoji: '🏕',
     city: '黔西南', district: '兴义市', address: '贵州省黔西南布依族苗族自治州兴义市万峰湖纳么村马岭河峡谷北59米',
     latitude: 25.02, longitude: 104.95,
     images: [
@@ -4834,7 +4835,8 @@ class SpotService {
   ),
 
   Spot(
-    id: 's253', name: '雅砻野钓', type: '农家乐', typeEmoji: '🏕',
+    id: 's253', name: '雅砻野钓', type: '农家乐',
+    imagesVerified: true, typeEmoji: '🏕',
     city: '攀枝花', district: '米易县', address: '四川省攀枝花市米易县白坡彝族乡若水村一社鱼坝滩',
     latitude: 26.88, longitude: 102.03,
     images: [
@@ -4864,7 +4866,8 @@ class SpotService {
   ),
 
   Spot(
-    id: 's254', name: '泷浔路亚赛事基地', type: '路亚', typeEmoji: '🎣',
+    id: 's254', name: '泷浔路亚赛事基地', type: '路亚',
+    imagesVerified: true, typeEmoji: '🎣',
     city: '上海', district: '奉贤区', address: '上海市奉贤区前昇希尔顿酒店东南约460米',
     latitude: 30.92, longitude: 121.58,
     images: [
@@ -5023,7 +5026,8 @@ class SpotService {
 
   // ── 云南·大理（澜沧江小湾水库，2026-09-02） ──────────────────────
   Spot(
-    id: 's261', name: '云上小湾·大理国际路亚基地', type: '路亚', typeEmoji: '🎣',
+    id: 's261', name: '云上小湾·大理国际路亚基地', type: '路亚',
+    imagesVerified: true, typeEmoji: '🎣',
     city: '大理', district: '南涧县', address: '云南省大理白族自治州南涧彝族自治县小湾东镇云上小湾国际路亚基地',
     latitude: 25.02, longitude: 100.32,
     images: [
@@ -5054,7 +5058,8 @@ class SpotService {
 
   // ── 黔西南·兴义万峰湖（抖音 LY9988FD 老板报价，2026-09-02） ──────────────────────
   Spot(
-    id: 's262', name: '常娱多水上钓场', type: '游钓基地', typeEmoji: '⛵',
+    id: 's262', name: '常娱多水上钓场', type: '游钓基地',
+    imagesVerified: true, typeEmoji: '⛵',
     city: '黔西南', district: '兴义市', address: '贵州省黔西南布依族苗族自治州兴义市万峰湖坝尾码头',
     latitude: 25.02, longitude: 105.05,
     images: [

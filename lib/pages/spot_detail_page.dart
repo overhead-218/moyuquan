@@ -317,6 +317,26 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                           ),
                         ),
                       ),
+                      // 示意图提示（无钓点专属实拍时）
+                      if (!spot.imagesVerified)
+                        Positioned(
+                          left: 16, bottom: 48,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.55),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.image_outlined, size: 11, color: Colors.white70),
+                                SizedBox(width: 3),
+                                Text('示意图·非实拍', style: TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.w600)),
+                              ],
+                            ),
+                          ),
+                        ),
                       // 图片分类 caption（右上，路径→分类说明）
                       Builder(builder: (_) {
                         if (_catImages.isEmpty || _currentImageIndex >= _catImages.length) {

@@ -58,6 +58,7 @@ class Spot {
   final List<String> commonAreaImages;   // 公共区域照片（餐厅/钓位棚/庭院）
   final List<String> facilities;         // 设施服务标签（WiFi/停车场/餐厅/淋浴热水…）
   final Map<String, String> imageCaptions; // 图片路径→分类说明（如「豪华筏钓房」「路亚艇60匹」「钓货：米级翘嘴」），详情页在图右上加 chip
+  final bool imagesVerified; // true=有钓点专属真实照片；false=仅用示意图/兜底图（非实景）
 
   const Spot({
     required this.id,
@@ -100,6 +101,7 @@ class Spot {
     this.commonAreaImages = const <String>[],
     this.facilities = const <String>[],
     this.imageCaptions = const <String, String>{},
+    this.imagesVerified = false,
   });
 
   /// 单张图获取分类说明（null = 无说明，不渲染 chip）
@@ -268,6 +270,7 @@ class Spot {
     'commonAreaImages': commonAreaImages,
     'facilities': facilities,
     'imageCaptions': imageCaptions,
+    'imagesVerified': imagesVerified,
   };
 
   static List<String> _asList(dynamic v) {
@@ -359,6 +362,7 @@ class Spot {
       commonAreaImages: _asList(json['commonAreaImages']),
       facilities: _asList(json['facilities']),
       imageCaptions: _asMap(json['imageCaptions']),
+      imagesVerified: _asBool(json['imagesVerified'], false),
     );
   }
 }
