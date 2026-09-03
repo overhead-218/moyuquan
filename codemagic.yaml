@@ -127,5 +127,5 @@ workflows:
         key_id: PU76AUPJ5N
         issuer_id: a3ca74de-6ec5-44c5-a865-b5fe775d529c
         submit_to_testflight: false
-        submit_to_app_store: true
+        submit_to_app_store: false
 
