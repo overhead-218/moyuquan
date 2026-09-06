@@ -1550,6 +1550,11 @@ class SpotService {
     lastStockingDate: null,
     stockingCycleDays: 0,
     price: 288.0, priceNote: '单人普通钓鱼票¥288（含餐食+休息）；豪华筏钓票¥481.5（酒店式筏钓+餐食）', businessHours: '24小时营业',
+    rating: 4.5,
+    priceTiers: const [
+      PriceTier(label: '单人普通钓鱼票', price: 288, unit: '人', note: '含餐食+休息，原价¥964（3折）'),
+      PriceTier(label: '单人豪华筏钓票', price: 481.5, unit: '人', note: '酒店式筏钓+餐食+休息，原价¥996（4.9折）'),
+    ],
     contactPhone: null,
     wechat: null, ownerName: null,
     description: '黔西南万峰湖畔农家乐垂钓乐园，筏钓+餐食+住宿一条龙。米级翘嘴出没，园区湖景绝美，适合亲子休闲与团建。',
