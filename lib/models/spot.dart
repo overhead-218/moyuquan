@@ -103,8 +103,8 @@ class Spot {
     required this.images,
     required this.fishSpecies,
     required this.fishPeakSeason,
-    required this.lastStockingDate,
-    required this.stockingCycleDays,
+    this.lastStockingDate,
+    this.stockingCycleDays = 0,
     required this.price,
     required this.priceNote,
     required this.businessHours,
@@ -327,7 +327,7 @@ class Spot {
   static List<PriceTier> _asTiers(dynamic v) {
     if (v == null) return const <PriceTier>[];
     if (v is List) {
-      return v.whereType<Map>().map((e) => PriceTier.fromJson(e)).toList();
+      return v.whereType<Map>().map((e) => PriceTier.fromJson(Map<String, dynamic>.from(e))).toList();
     }
     return const <PriceTier>[];
   }
