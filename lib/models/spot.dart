@@ -15,6 +15,35 @@ enum SpotStatus {
 /// type:野钓 | 斤塘 | 养殖塘 | 农家乐 | 游钓基地
 /// fishPeakSeason: 鱼种 → 旺季月份范围（如 '5-10'），仅野钓/游钓基地有意义
 /// lastStockingDate / stockingCycleDays: 放鱼提醒，斤塘/黑坑/农家乐等由商家维护
+/// 多档收费：同一钓点的不同房型 / 钓法价格（如老棚 / 新棚 / 筏钓 / 路亚带艇）
+class PriceTier {
+  final String label;   // 房型 / 类型，如「老棚」「新棚」「筏钓」「路亚带艇」
+  final double price;   // 价格（元），0=免费
+  final String unit;    // 计费单位，如「人/天」「位/天」「4小时」「间/晚」
+  final String? note;   // 补充说明（含三餐 / 定金 / 其他）
+
+  const PriceTier({
+    required this.label,
+    required this.price,
+    this.unit = '',
+    this.note,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'label': label,
+    'price': price,
+    'unit': unit,
+    'note': note,
+  };
+
+  factory PriceTier.fromJson(Map<String, dynamic> json) => PriceTier(
+    label: json['label']?.toString() ?? '',
+    price: json['price'] is num ? (json['price'] as num).toDouble() : 0,
+    unit: json['unit']?.toString() ?? '',
+    note: json['note']?.toString(),
+  );
+}
+
 class Spot {
   final String id;
   final String name;
@@ -59,6 +88,7 @@ class Spot {
   final List<String> facilities;         // 设施服务标签（WiFi/停车场/餐厅/淋浴热水…）
   final Map<String, String> imageCaptions; // 图片路径→分类说明（如「豪华筏钓房」「路亚艇60匹」「钓货：米级翘嘴」），详情页在图右上加 chip
   final bool imagesVerified; // true=有钓点专属真实照片；false=仅用示意图/兜底图（非实景）
+  final List<PriceTier> priceTiers; // 多档收费（房型/钓法不同价），空=用 price/priceNote 单档
 
   const Spot({
     required this.id,
@@ -102,6 +132,7 @@ class Spot {
     this.facilities = const <String>[],
     this.imageCaptions = const <String, String>{},
     this.imagesVerified = false,
+    this.priceTiers = const <PriceTier>[],
   });
 
   /// 单张图获取分类说明（null = 无说明，不渲染 chip）
@@ -125,8 +156,13 @@ class Spot {
       (rating ?? 0) * 20.0 +
       reviewCount * 5.0;
 
-  /// 收费标签文字
+  /// 收费标签文字（有多档时显示最低起价）
   String get priceLabel {
+    if (priceTiers.isNotEmpty) {
+      final min = priceTiers.map((t) => t.price).reduce((a, b) => a < b ? a : b);
+      if (min == 0) return '免费起';
+      return '¥${min.toStringAsFixed(0)}起';
+    }
     if (price == 0) return '免费';
     return '¥${price.toStringAsFixed(0)}/人';
   }
@@ -271,6 +307,7 @@ class Spot {
     'facilities': facilities,
     'imageCaptions': imageCaptions,
     'imagesVerified': imagesVerified,
+    'priceTiers': priceTiers.map((t) => t.toJson()).toList(),
   };
 
   static List<String> _asList(dynamic v) {
@@ -285,6 +322,14 @@ class Spot {
       return v.map((k, e) => MapEntry(k.toString(), e?.toString() ?? ''));
     }
     return const <String, String>{};
+  }
+
+  static List<PriceTier> _asTiers(dynamic v) {
+    if (v == null) return const <PriceTier>[];
+    if (v is List) {
+      return v.whereType<Map>().map((e) => PriceTier.fromJson(e)).toList();
+    }
+    return const <PriceTier>[];
   }
 
   static double _asDouble(dynamic v, [double d = 0]) {
@@ -363,6 +408,7 @@ class Spot {
       facilities: _asList(json['facilities']),
       imageCaptions: _asMap(json['imageCaptions']),
       imagesVerified: _asBool(json['imagesVerified'], false),
+      priceTiers: _asTiers(json['priceTiers']),
     );
   }
 }

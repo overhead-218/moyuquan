@@ -198,7 +198,7 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
             slivers: [
               // 顶部图片区
               SliverAppBar(
-                expandedHeight: 280,
+                expandedHeight: 420,
                 pinned: true,
                 backgroundColor: _primary,
                 leading: IconButton(
@@ -266,10 +266,13 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                               ),
                             );
                           }
-                          return Image(
-                            image: _imgProvider(_catImages[i]),
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _imgFallback(),
+                          return GestureDetector(
+                            onTap: () => _showFullImage(i),
+                            child: Image(
+                              image: _imgProvider(_catImages[i]),
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => _imgFallback(),
+                            ),
                           );
                         },
                       ),
@@ -299,6 +302,60 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                             child: Text(
                               '${_currentImageIndex + 1}/${_catImages.length}',
                               style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ),
+                      // 左箭头
+                      if (_catImages.length > 1)
+                        Positioned(
+                          left: 4,
+                          top: 0, bottom: 0,
+                          child: Center(
+                            child: Listener(
+                              behavior: HitTestBehavior.opaque,
+                              onPointerUp: (_) {
+                                final current = _imageController.page?.round() ?? 0;
+                                _imageController.animateToPage(
+                                  current > 0 ? current - 1 : _catImages.length - 1,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              },
+                              child: Container(
+                                width: 36, height: 36,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.35),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.chevron_left, color: Colors.white, size: 24),
+                              ),
+                            ),
+                          ),
+                        ),
+                      // 右箭头
+                      if (_catImages.length > 1)
+                        Positioned(
+                          right: 4,
+                          top: 0, bottom: 0,
+                          child: Center(
+                            child: Listener(
+                              behavior: HitTestBehavior.opaque,
+                              onPointerUp: (_) {
+                                final current = _imageController.page?.round() ?? 0;
+                                _imageController.animateToPage(
+                                  current < _catImages.length - 1 ? current + 1 : 0,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              },
+                              child: Container(
+                                width: 36, height: 36,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.35),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.chevron_right, color: Colors.white, size: 24),
+                              ),
                             ),
                           ),
                         ),
@@ -838,13 +895,32 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
   /// 模块3：服务·价格产品卡（抖音「商家」tab 风格），数据驱动
   Widget _buildServiceCards() {
     final cards = <_SvcCard>[];
-    cards.add(_SvcCard(
-      emoji: '🎣', title: '钓费',
-      price: spot.price == 0 ? '免费' : '¥${spot.price.toStringAsFixed(0)}',
-      unit: spot.price == 0 ? '' : '/人',
-      note: spot.priceNote.isEmpty ? '详情咨询商家' : spot.priceNote,
-    ));
-    if (spot.hasAccommodation) {
+    if (spot.priceTiers.isNotEmpty) {
+      for (final t in spot.priceTiers) {
+        final e = t.label.contains('住') || t.label.contains('棚') || t.label.contains('房') || t.label.contains('宿') || t.label.contains('间')
+          ? '🏠'
+          : t.label.contains('路亚') ? '🎣'
+          : t.label.contains('导钓') ? '🧭'
+          : t.label.contains('餐') ? '🍱'
+          : (t.label.contains('艇') || t.label.contains('船')) ? '🚤'
+          : '🎣';
+        cards.add(_SvcCard(
+          emoji: e,
+          title: t.label,
+          price: t.price == 0 ? '免费' : '¥${t.price.toStringAsFixed(0)}',
+          unit: t.unit,
+          note: t.note ?? '',
+        ));
+      }
+    } else {
+      cards.add(_SvcCard(
+        emoji: '🎣', title: '钓费',
+        price: spot.price == 0 ? '免费' : '¥${spot.price.toStringAsFixed(0)}',
+        unit: spot.price == 0 ? '' : '/人',
+        note: spot.priceNote.isEmpty ? '详情咨询商家' : spot.priceNote,
+      ));
+    }
+    if (spot.hasAccommodation && spot.priceTiers.isEmpty) {
       final p = _extractPrice(spot.accommodationNote);
       cards.add(_SvcCard(
         emoji: '🏠', title: spot.roomType ?? '住宿',
@@ -975,6 +1051,40 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
       _typeColors[spot.type] ?? const [Color(0xFF0A7C74), Color(0xFF148F86)];
 
   /// 轮播大图占位：渐变 + 圆底 emoji
+  void _showFullImage(int i) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.95),
+      builder: (_) => Stack(
+        children: [
+          Center(
+            child: InteractiveViewer(
+              child: Image(
+                image: _imgProvider(_catImages[i]),
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => _imgFallback(),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 16, right: 16,
+            child: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close, color: Colors.white),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _imgFallback() => Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
