@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'privacy_policy_page.dart';
 import 'user_agreement_page.dart';
+import 'login_page.dart';
 
 /// 设置页
 class SettingsPage extends StatelessWidget {
@@ -208,9 +209,10 @@ class SettingsPage extends StatelessWidget {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () {
+                  final pageContext = context;
                   showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
+                    context: pageContext,
+                    builder: (dialogContext) => AlertDialog(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -218,7 +220,7 @@ class SettingsPage extends StatelessWidget {
                       content: const Text('退出后将断开与服务器的连接'),
                       actions: [
                         TextButton(
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: () => Navigator.pop(dialogContext),
                           child: const Text(
                             '取消',
                             style: TextStyle(color: Color(0xFF999999)),
@@ -226,7 +228,14 @@ class SettingsPage extends StatelessWidget {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pop(context);
+                            Navigator.pop(dialogContext);
+                            // 真正登出：清空导航栈，回到登录页
+                            Navigator.of(pageContext).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (_) => const LoginPage(),
+                              ),
+                              (route) => false,
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _kRed,
