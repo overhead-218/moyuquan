@@ -10623,21 +10623,20 @@ Spot(
     }
   }
 
-  static List<Spot> get all =>
-      _cache.where((s) => s.status == SpotStatus.active && s.status == SpotStatus.active).toList();
+  static List<Spot> get all => List<Spot>.of(_cache);
 
-  /// 含待核实（pending）的全部钓点，仅供后台/刷新流程使用
+  /// 含待核实（pending）的全部钓点（all 已含 pending，此 getter 保留兼容）
   static List<Spot> get allIncludingPending => _cache;
 
   static List<Spot> byCity(String city) =>
-      _cache.where((s) => s.status == SpotStatus.active && s.city == city).toList();
+      _cache.where((s) => s.city == city).toList();
 
   static List<Spot> byType(String type) =>
-      _cache.where((s) => s.status == SpotStatus.active && s.type == type).toList();
+      _cache.where((s) => s.type == type).toList();
 
   static List<Spot> search(String q) {
     final lq = q.toLowerCase();
-    return _cache.where((s) => s.status == SpotStatus.active &&
+    return _cache.where((s) =>
       s.name.toLowerCase().contains(lq) ||
       s.city.toLowerCase().contains(lq) ||
       s.fishSpecies.any((f) => f.toLowerCase().contains(lq))
@@ -10717,11 +10716,14 @@ Spot(
       if (rows.isNotEmpty) {
         final cloud =
             rows.map((r) => Spot.fromJson(r as Map<String, dynamic>)).toList();
-        _cache
-          ..clear()
-          ..addAll(cloud);
+        // 本地优先合并：本地种子(420)是权威，云库仅补充本地缺失的新 id（UGC 提交）
+        final localIds = _cache.map((s) => s.id).toSet();
+        final extra = cloud.where((c) => !localIds.contains(c.id)).toList();
+        if (extra.isNotEmpty) {
+          _cache.addAll(extra);
+        }
         _notify();
-        print('[SpotService] 已从云库同步 ${cloud.length} 个钓点');
+        print('[SpotService] 云库合并完成：本地 ${_cache.length} 个，云库补 ${extra.length} 个');
       }
     } catch (e) {
       print('[SpotService] 云库同步失败，使用本地数据：$e');
