@@ -54,10 +54,16 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         actions: [
           TextButton(
             onPressed: () {
-              UserProfile.instance.name = _nicknameCtrl.text.trim();
-              UserProfile.instance.bio = _bioCtrl.text.trim();
-              UserProfile.instance.city = _locationCtrl.text.trim();
-              UserProfile.instance.gender = _gender;
+              final name = _nicknameCtrl.text.trim();
+              UserProfile.instance
+                ..name = name.isEmpty ? UserProfile.kGuestName : name
+                ..bio = _bioCtrl.text.trim()
+                ..city = _locationCtrl.text.trim()
+                ..gender = _gender;
+              // 编辑资料即建立会话内身份（游客编辑后转为本地建档）
+              if (!UserProfile.instance.isLoggedIn) {
+                UserProfile.instance.markLoggedIn(method: 'guest');
+              }
               UserProfile.instance.save();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -178,11 +184,16 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               _buildGenderSelector(),
             ]),
             const SizedBox(height: 16),
-            // 账号信息
+            // 账号信息（真实登录状态，不再展示假手机号/绑定）
             _buildFormCard([
-              _buildInfoRow('手机号', '138****8888'),
-              _buildDivider(),
-              _buildInfoRow('绑定微信', '已绑定'),
+              _buildInfoRow(
+                '登录状态',
+                !UserProfile.instance.isLoggedIn
+                    ? '游客'
+                    : (UserProfile.instance.loginMethod == 'apple'
+                        ? 'Apple 账号'
+                        : '本地档案'),
+              ),
             ]),
           ],
         ),
@@ -309,14 +320,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 value,
                 style: const TextStyle(fontSize: 14, color: _kTextPrimary),
               ),
-              if (label == '手机号')
-                TextButton(
-                  onPressed: () {},
-                  child: const Text(
-                    '更换',
-                    style: TextStyle(fontSize: 13, color: _kPrimary),
-                  ),
-                ),
             ],
           ),
         ],

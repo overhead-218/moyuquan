@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'user_profile_page.dart';
 import 'share_card_page.dart';
+import '../services/follow_service.dart';
 import '../services/moderation_actions.dart';
+import '../services/post_service.dart';
 
 /// 帖子详情页
 class PostDetailPage extends StatefulWidget {
@@ -68,6 +70,7 @@ class _PostDetailPageState extends State<PostDetailPage>
   ];
 
   static const _fishEmojis = ['🎣', '🐟', '🐠', '🦈', '🦑', '🐡'];
+
   static const _comments = [
     {'name': '海钓阿强', 'avatar': '🎣', 'text': '钓得太棒了！下次带上我！', 'time': '2小时前'},
     {'name': '钓鱼王', 'avatar': '🐟', 'text': '这个饵料配方求分享', 'time': '4小时前'},
@@ -77,7 +80,10 @@ class _PostDetailPageState extends State<PostDetailPage>
   @override
   void initState() {
     super.initState();
-    _likeCount = widget.likeCount;
+    _likeCount = widget.likeCount + PostService.deltaOf(widget.postId);
+    _liked = PostService.isLiked(widget.postId);
+    PostService.addListener(_syncLike);
+    FollowService.instance.addListener(_syncLike);
 
     _heartCtrl = AnimationController(
       vsync: this,
@@ -92,20 +98,34 @@ class _PostDetailPageState extends State<PostDetailPage>
     ));
   }
 
+  void _syncLike() {
+    if (!mounted) return;
+    setState(() {
+      _liked = PostService.isLiked(widget.postId);
+      _likeCount = widget.likeCount + PostService.deltaOf(widget.postId);
+    });
+  }
+
   @override
   void dispose() {
+    PostService.removeListener(_syncLike);
+    FollowService.instance.removeListener(_syncLike);
     _heartCtrl.dispose();
     super.dispose();
   }
 
   void _toggleLike() {
-    setState(() {
-      _liked = !_liked;
-      _likeCount += _liked ? 1 : -1;
-    });
-    if (_liked) {
+    final liked = PostService.toggleLike(widget.postId);
+    _syncLike();
+    if (liked) {
       _heartCtrl.forward(from: 0);
     }
+  }
+
+  /// 帖子作者的稳定关注 id
+  String get _authorUid {
+    if (widget.authorId.isNotEmpty) return widget.authorId;
+    return FollowService.userIdByName(widget.authorName);
   }
 
   @override
@@ -308,28 +328,44 @@ class _PostDetailPageState extends State<PostDetailPage>
                               ],
                             ),
                           ),
-                          OutlinedButton(
-                            onPressed: () {},
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: _kPrimary,
-                              side: const BorderSide(color: Color(0xFF0A7C74)),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 8,
-                              ),
-                              minimumSize: Size.zero,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                            ),
-                            child: const Text(
-                              '+ 关注',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
+                          // 关注按钮（自己的帖子不显示）
+                          if (widget.authorId != 'me')
+                            Builder(builder: (context) {
+                              final isF = FollowService.instance
+                                  .isFollowing(_authorUid);
+                              return OutlinedButton(
+                                onPressed: isF
+                                    ? () => FollowService.instance
+                                        .toggleFollow(_authorUid)
+                                    : () => FollowService.instance.toggleFollow(
+                                        _authorUid,
+                                        name: widget.authorName,
+                                        avatar: widget.authorAvatar,
+                                      ),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor:
+                                      isF ? _kTextWeak : _kPrimary,
+                                  side: BorderSide(
+                                      color:
+                                          isF ? _kTextWeak : const Color(0xFF0A7C74)),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 8,
+                                  ),
+                                  minimumSize: Size.zero,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                ),
+                                child: Text(
+                                  isF ? '已关注' : '+ 关注',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              );
+                            }),
                         ],
                       ),
                     ),

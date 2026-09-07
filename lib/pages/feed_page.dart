@@ -372,7 +372,6 @@ class _FeedImageCardState extends State<_FeedImageCard>
     with SingleTickerProviderStateMixin {
   bool _liked = false;
   int _likeCount = 0;
-
   static const _fishEmojis = ['🎣', '🐟', '🐠', '🦈', '🦑', '🐡'];
   static const _gradientPairs = <List<Color>>[
     [Color(0xFF0A7C74), Color(0xFF148F86)],
@@ -389,7 +388,9 @@ class _FeedImageCardState extends State<_FeedImageCard>
   @override
   void initState() {
     super.initState();
-    _likeCount = widget.post.likeCount;
+    _liked = PostService.isLiked(widget.post.id);
+    _likeCount = PostService.likeCountOf(widget.post);
+    PostService.addListener(_syncLike);
     _enterController = AnimationController(
       duration: const Duration(milliseconds: 350),
       vsync: this,
@@ -401,17 +402,24 @@ class _FeedImageCardState extends State<_FeedImageCard>
     _enterController.forward();
   }
 
+  void _syncLike() {
+    if (!mounted) return;
+    setState(() {
+      _liked = PostService.isLiked(widget.post.id);
+      _likeCount = PostService.likeCountOf(widget.post);
+    });
+  }
+
   @override
   void dispose() {
+    PostService.removeListener(_syncLike);
     _enterController.dispose();
     super.dispose();
   }
 
   void _toggleLike() {
-    setState(() {
-      _liked = !_liked;
-      _likeCount += _liked ? 1 : -1;
-    });
+    PostService.toggleLike(widget.post.id);
+    _syncLike();
   }
 
   void _showCardMenu() {

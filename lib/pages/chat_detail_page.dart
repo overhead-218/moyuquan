@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../services/message_service.dart';
 import '../services/moderation_actions.dart';
 
 /// 聊天详情页：与某个用户的私聊界面
@@ -47,28 +48,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   @override
   void initState() {
     super.initState();
-    _messages.addAll([
-      {
-        'isMe': false,
-        'text': '在吗？明天一起去钓鱼？',
-        'time': '12:30',
-      },
-      {
-        'isMe': true,
-        'text': '可以啊，去哪里？',
-        'time': '12:35',
-      },
-      {
-        'isMe': false,
-        'text': '老地方，东江湖那边，听说最近鱼情不错',
-        'time': '12:36',
-      },
-      {
-        'isMe': true,
-        'text': '好，几点出发？',
-        'time': '刚刚',
-      },
-    ]);
+    // 会话从空开始：历史消息由真实收发产生（当前体验版仅本机会话）
   }
 
   @override
@@ -137,19 +117,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       });
       _toolPanelVisible = false;
     });
+    _pushConversation('[图片]');
     _scrollToBottom();
-
-    // 模拟对方回复
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      setState(() {
-        _messages.add({
-          'isMe': false,
-          'text': '收到，这地方看起来不错！',
-          'time': '刚刚',
-        });
-      });
-    });
   }
 
   /// 发位置（mock）
@@ -165,18 +134,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       });
       _toolPanelVisible = false;
     });
+    _pushConversation('[位置] 东江湖·白廊镇');
     _scrollToBottom();
-
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      setState(() {
-        _messages.add({
-          'isMe': false,
-          'text': '好，我看看怎么过去',
-          'time': '刚刚',
-        });
-      });
-    });
   }
 
   /// 发渔获卡片（mock）
@@ -194,18 +153,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       });
       _toolPanelVisible = false;
     });
+    _pushConversation('[鱼获] 大翘嘴 3.8斤');
     _scrollToBottom();
-
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      setState(() {
-        _messages.add({
-          'isMe': false,
-          'text': '牛逼！下次带我',
-          'time': '刚刚',
-        });
-      });
-    });
   }
 
   void _sendMessage() {
@@ -220,19 +169,20 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       });
     });
     _controller.clear();
-
+    _pushConversation(text);
     _scrollToBottom();
+  }
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      setState(() {
-        _messages.add({
-          'isMe': false,
-          'text': '收到！明天见',
-          'time': '刚刚',
-        });
-      });
-    });
+  /// 发出消息后同步到会话列表（MessageService），并置顶该会话。
+  void _pushConversation(String summary) {
+    MessageService.upsertConversation(
+      name: widget.name,
+      avatar: widget.avatar,
+      userId: widget.userId,
+      last: summary,
+      time: '刚刚',
+      unread: 0,
+    );
   }
 
   void _scrollToBottom() {
@@ -1052,7 +1002,14 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
             );
           }),
           _buildMenuItem(Icons.delete_outline, '清空聊天记录',
-              isDestructive: true),
+              isDestructive: true, onTap: () {
+            Navigator.pop(context);
+            setState(() => _messages.clear());
+            MessageService.removeConversation(widget.name);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('聊天记录已清空'), duration: Duration(seconds: 2)),
+            );
+          }),
           const Divider(height: 1),
           _buildMenuItem(null, '取消', isCancel: true),
         ],

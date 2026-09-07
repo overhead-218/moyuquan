@@ -1,4 +1,12 @@
 import 'package:flutter/material.dart';
+import '../models/post.dart';
+import '../models/spot.dart';
+import '../services/follow_service.dart';
+import '../services/post_service.dart';
+import '../services/spot_service.dart';
+import 'post_detail_page.dart';
+import 'spot_detail_page.dart';
+import 'user_profile_page.dart';
 
 /// 搜索页：综合搜索 + 热门发现
 /// Stitch 风格：Material 3 Expressive，暖白背景、青绿主色、金色点缀
@@ -16,7 +24,9 @@ class _SearchPageState extends State<SearchPage>
   final _focusNode = FocusNode();
   String _query = '';
 
-  static const _history = ['鲤鱼 饵料', '南京 野钓', '海钓 路线', '夜钓 安全'];
+  /// 搜索历史（会话内记录）
+  final List<String> _history = [];
+
   static const _hotTopics = [
     {'tag': '🔥 本周热帖', 'title': '野钓空军的十大原因', 'count': '2.3万'},
     {'tag': '💰 活动', 'title': '摸鱼圈钓友交流会·南京站', 'count': '1568'},
@@ -25,22 +35,6 @@ class _SearchPageState extends State<SearchPage>
     {'tag': '🏆 赛事', 'title': '2026全国钓鱼锦标赛报名开启', 'count': '5431'},
     {'tag': '🌊 海钓', 'title': '舟山矶钓圣地合集', 'count': '4321'},
   ];
-  static const _users = [
-    {'name': '钓鱼王老李', 'avatar': '🎣', 'bio': '专注野钓15年，抖音粉丝12万'},
-    {'name': '海钓阿强', 'avatar': '🚤', 'bio': '舟山专业海钓船长，带队8年'},
-    {'name': '鱼妹儿', 'avatar': '🐟', 'bio': '钓鱼美食博主，爱分享渔获菜谱'},
-  ];
-  static const _posts = [
-    {'title': '周末两天狂拉20斤鲤鱼，饵料配方分享', 'author': '老李', 'likes': '892'},
-    {'title': '清晨5点出发，大板鲫连竿上岸全过程', 'author': '阿飞', 'likes': '645'},
-    {'title': '海钓初体验，石斑鱼爆箱！', 'author': '菜鸟', 'likes': '1203'},
-  ];
-  static const _places = [
-    {'name': '南京·紫金山野钓点', 'dist': '1.2km', 'stars': '★4.8'},
-    {'name': '扬州·邵伯湖休闲钓', 'dist': '38km', 'stars': '★4.5'},
-    {'name': '苏州·阳澄湖蟹塘', 'dist': '95km', 'stars': '★4.3'},
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -57,7 +51,21 @@ class _SearchPageState extends State<SearchPage>
   }
 
   void _search(String q) {
-    setState(() => _query = q.trim());
+    final query = q.trim();
+    if (query.isEmpty) return;
+    setState(() {
+      _query = query;
+      // 记录搜索历史（去重、置顶、最多 6 条）
+      _history.remove(query);
+      _history.insert(0, query);
+      if (_history.length > 6) _history.removeRange(6, _history.length);
+    });
+    _searchController.clear();
+    _focusNode.unfocus();
+  }
+
+  void _clearHistory() {
+    setState(() => _history.clear());
   }
 
   @override
@@ -205,7 +213,7 @@ class _SearchPageState extends State<SearchPage>
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {},
+                onPressed: _clearHistory,
                 child: const Text(
                   '清空历史',
                   style: TextStyle(
@@ -223,35 +231,73 @@ class _SearchPageState extends State<SearchPage>
   }
 
   Widget _buildSearchResults() {
+    final q = _query;
+    // 用户：关注池 knownUsers 中昵称匹配
+    final users = FollowService.knownUsers
+        .where((u) => (u['name'] ?? '').contains(q))
+        .toList();
+    // 帖子：标题 / 正文 / 作者 / 地点匹配
+    final posts = PostService.mockAll()
+        .where((p) =>
+            p.title.contains(q) ||
+            p.content.contains(q) ||
+            p.authorName.contains(q) ||
+            p.location.contains(q))
+        .toList();
+    // 钓点：SpotService 内置搜索（名称 / 城市 / 类型 / 鱼种）
+    final places = SpotService.search(q);
+    if (users.isEmpty && posts.isEmpty && places.isEmpty) {
+      return _buildNoResult(q);
+    }
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 用户
-          _SectionTitle('用户', Icons.person),
-          ..._users.map((u) => _UserTile(
-                name: u['name']!,
-                avatar: u['avatar']!,
-                bio: u['bio']!,
-              )),
-          const SizedBox(height: 8),
-          // 帖子
-          _SectionTitle('帖子', Icons.article),
-          ..._posts.map((p) => _PostTile(
-                title: p['title']!,
-                author: p['author']!,
-                likes: p['likes']!,
-              )),
-          const SizedBox(height: 8),
-          // 钓点
-          _SectionTitle('钓点', Icons.location_on),
-          ..._places.map((p) => _PlaceTile(
-                name: p['name']!,
-                dist: p['dist']!,
-                stars: p['stars']!,
-              )),
-          const SizedBox(height: 24),
+          if (users.isNotEmpty) ...[
+            _SectionTitle('用户', Icons.person),
+            ...users.map((u) => _UserTile(
+                  userId: u['id']!,
+                  name: u['name']!,
+                  avatar: u['avatar']!,
+                  bio: u['bio']!,
+                )),
+            const SizedBox(height: 8),
+          ],
+          if (posts.isNotEmpty) ...[
+            _SectionTitle('帖子', Icons.article),
+            ...posts.take(8).map((p) => _PostTile(post: p)),
+            const SizedBox(height: 8),
+          ],
+          if (places.isNotEmpty) ...[
+            _SectionTitle('钓点', Icons.location_on),
+            ...places.take(8).map((p) => _PlaceTile(spot: p)),
+            const SizedBox(height: 24),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildNoResult(String q) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 80),
+        child: Column(
+          children: [
+            const Text('🔍', style: TextStyle(fontSize: 44)),
+            const SizedBox(height: 12),
+            Text(
+              '没有找到与「$q」相关的内容',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 14, color: Color(0xFF999999)),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              '换个关键词试试：路亚、鲫鱼、千岛湖…',
+              style: TextStyle(fontSize: 12, color: Color(0xFFBBBBBB)),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -292,7 +338,7 @@ class _SearchPageState extends State<SearchPage>
                   ),
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: _clearHistory,
                   child: const Text(
                     '清空',
                     style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
@@ -362,237 +408,291 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-class _UserTile extends StatelessWidget {
+class _UserTile extends StatefulWidget {
+  final String userId;
   final String name, avatar, bio;
   const _UserTile({
+    required this.userId,
     required this.name,
     required this.avatar,
     required this.bio,
   });
 
   @override
+  State<_UserTile> createState() => _UserTileState();
+}
+
+class _UserTileState extends State<_UserTile> {
+  @override
+  void initState() {
+    super.initState();
+    FollowService.instance.addListener(_refresh);
+  }
+
+  @override
+  void dispose() {
+    FollowService.instance.removeListener(_refresh);
+    super.dispose();
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 16,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Text(avatar, style: const TextStyle(fontSize: 40)),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A1A),
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  bio,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF999999),
-                  ),
-                ),
-              ],
+    final following = FollowService.instance.isFollowing(widget.userId);
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => UserProfilePage(
+              name: widget.name,
+              avatar: widget.avatar,
+              bio: widget.bio,
+              userId: widget.userId,
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0A7C74).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(14),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFFFF),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 16,
+              offset: Offset(0, 4),
             ),
-            child: const Text(
-              '+ 关注',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF0A7C74),
+          ],
+        ),
+        child: Row(
+          children: [
+            Text(widget.avatar, style: const TextStyle(fontSize: 40)),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.name,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    widget.bio,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF999999),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () {
+                FollowService.instance.toggleFollow(
+                  widget.userId,
+                  name: widget.name,
+                  avatar: widget.avatar,
+                  bio: widget.bio,
+                );
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: following
+                      ? const Color(0xFFF0EEE9)
+                      : const Color(0xFF0A7C74).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Text(
+                  following ? '已关注' : '+ 关注',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: following
+                        ? const Color(0xFF999999)
+                        : const Color(0xFF0A7C74),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 class _PostTile extends StatelessWidget {
-  final String title, author, likes;
-  const _PostTile({
-    required this.title,
-    required this.author,
-    required this.likes,
-  });
+  final Post post;
+  const _PostTile({required this.post});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 16,
-            offset: Offset(0, 4),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PostDetailPage(
+              authorName: post.authorName,
+              authorAvatar: post.authorAvatar,
+              imageUrl: post.imageUrl,
+              imageHeight: 200,
+              likeCount: post.likeCount,
+              index: 0,
+              title: post.title,
+              content: post.content,
+              location: post.location,
+              postType: post.type,
+              commentCount: post.commentCount,
+              postId: post.id,
+              authorId: post.authorId,
+            ),
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1A1A),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFFFF),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 16,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE6F2F0),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
+                child: Icon(Icons.article_outlined,
+                    color: Color(0xFF0A7C74), size: 22),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    post.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1A1A1A),
+                    ),
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 7),
-                Row(
-                  children: [
-                    Text(
-                      '@$author',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF0A7C74),
-                      ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${post.authorName} · ♥ ${post.likeCount}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF999999),
                     ),
-                    const SizedBox(width: 12),
-                    const Icon(Icons.favorite,
-                        size: 12, color: Color(0xFF999999)),
-                    const SizedBox(width: 3),
-                    Text(
-                      likes,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF999999),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: const Color(0xFF0A7C74).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Center(
-              child: Text('📷', style: TextStyle(fontSize: 28)),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
 class _PlaceTile extends StatelessWidget {
-  final String name, dist, stars;
-  const _PlaceTile({
-    required this.name,
-    required this.dist,
-    required this.stars,
-  });
+  final Spot spot;
+  const _PlaceTile({required this.spot});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 16,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: const Color(0xFF0A7C74).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+    final stars = spot.rating == null
+        ? ''
+        : '★${spot.rating!.toStringAsFixed(1)}';
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => SpotDetailPage(spot: spot)),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFFFF),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 16,
+              offset: Offset(0, 4),
             ),
-            child: const Center(
-              child: Text('📍', style: TextStyle(fontSize: 24)),
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1A1A),
+          ],
+        ),
+        child: Row(
+          children: [
+            Text(spot.typeEmoji, style: const TextStyle(fontSize: 30)),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    spot.name,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1A1A1A),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 5),
-                Row(
-                  children: [
-                    Text(
-                      dist,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF999999),
-                      ),
+                  const SizedBox(height: 3),
+                  Text(
+                    '${spot.type} · ${spot.city}${spot.district}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF999999),
                     ),
-                    const SizedBox(width: 10),
-                    Text(
-                      stars,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFFC49A5E),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          const Icon(Icons.chevron_right, color: Color(0xFF999999)),
-        ],
+            if (stars.isNotEmpty)
+              Text(
+                stars,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFFC49A5E),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

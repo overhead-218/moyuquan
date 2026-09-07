@@ -6,15 +6,11 @@ import 'tcb_rest_client.dart';
 class MessageService {
   static const String _table = 'messages';
 
-  static final List<Map<String, dynamic>> _seed = [
-    {'name': '海钓阿强', 'last': '明天出发钓鱼？', 'time': '刚刚', 'avatar': '🎣', 'unread': 2},
-    {'name': '钓鱼王', 'last': '这个饵料配方很赞', 'time': '12:30', 'avatar': '🐟', 'unread': 0},
-    {'name': '野钓大叔', 'last': '[图片]', 'time': '昨天', 'avatar': '🎣', 'unread': 1},
-    {'name': '江南老饕', 'last': '好的，到时见', 'time': '昨天', 'avatar': '🦑', 'unread': 0},
-    {'name': '老李', 'last': '上次那个钓点还有?', 'time': '周一', 'avatar': '🐠', 'unread': 0},
-    {'name': '渔民小张', 'last': '今天收获不错', 'time': '周日', 'avatar': '🐟', 'unread': 0},
-    {'name': '菜鸟', 'last': '新手求带', 'time': '周日', 'avatar': '🎣', 'unread': 5},
-  ];
+  /// 会话数据源说明：
+  /// 初始为空列表——新用户没有任何预置会话。
+  /// 会话由真实动作产生：从他人主页点「私信」进入聊天并发送消息后，
+  /// 会自动创建/更新对应会话（见 upsertConversation）。
+  static const List<Map<String, dynamic>> _seed = [];
 
   // _cache 为稳定引用，外部捕获的引用（message_page 的 messages）自动可见。
   static final List<Map<String, dynamic>> _cache =
@@ -45,6 +41,44 @@ class MessageService {
     _cache[idx] = {..._cache[idx], 'unread': 0};
     _notify();
     _pushRead(name);
+  }
+
+  /// 更新/创建会话（本地）：聊天页发出消息后调用，
+  /// 让会话列表显示最后一条消息并置顶。
+  static void upsertConversation({
+    required String name,
+    required String avatar,
+    String userId = '',
+    required String last,
+    String time = '刚刚',
+    int unread = 0,
+  }) {
+    final idx = _cache.indexWhere((m) => m['name'] == name);
+    final row = <String, dynamic>{
+      'name': name,
+      'last': last,
+      'time': time,
+      'avatar': avatar,
+      'unread': unread,
+      if (userId.isNotEmpty) 'userId': userId,
+    };
+    if (idx >= 0) {
+      _cache.removeAt(idx);
+    }
+    _cache.insert(0, row);
+    _notify();
+  }
+
+  /// 清空会话（登出时调用）。
+  static void clearAll() {
+    _cache.clear();
+    _notify();
+  }
+
+  /// 删除单个会话（清空聊天记录时调用）。
+  static void removeConversation(String name) {
+    _cache.removeWhere((m) => m['name'] == name);
+    _notify();
   }
 
   /// 标记全部已读

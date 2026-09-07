@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'spot_submit_page.dart';
 
 /// 历史钓点页
 class HistoryPlacesPage extends StatelessWidget {
@@ -71,8 +72,14 @@ class HistoryPlacesPage extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_location_alt_outlined, color: _kPrimary),
-            onPressed: () {},
+            icon: const Icon(Icons.add_location_alt_outlined,
+                color: _kPrimary),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SpotSubmitPage()),
+              );
+            },
           ),
         ],
       ),

@@ -1,176 +1,156 @@
 import 'package:flutter/material.dart';
+import '../services/follow_service.dart';
+import '../widgets/post_card.dart' show EmptyView;
+import 'following_page.dart';
 
-/// 粉丝页
-class FollowersPage extends StatelessWidget {
+/// 我的粉丝（数据来自 FollowService；新用户默认无粉丝）
+class FollowersPage extends StatefulWidget {
   const FollowersPage({super.key});
 
-  static const Color _kPrimary = Color(0xFF0A7C74);
-  static const Color _kTealBg = Color(0xFFE6F2F0);
-  static const Color _kBackground = Color(0xFFF7F3EE);
-  static const Color _kSurface = Color(0xFFFFFFFF);
-  static const Color _kTextPrimary = Color(0xFF1A1A1A);
-  static const Color _kTextWeak = Color(0xFF999999);
-  static const Color _kGold = Color(0xFFC49A5E);
-  static const Color _kShadow = Color(0xFF1A1A1A);
+  @override
+  State<FollowersPage> createState() => _FollowersPageState();
+}
 
-  static const _followers = [
-    {'name': '阿飞', 'avatar': '🐠', 'bio': '钓鱼新手，求带', 'followers': '234'},
-    {'name': '菜鸟', 'avatar': '🎣', 'bio': '第一次海钓，石斑爆箱', 'followers': '567'},
-    {'name': '渔民小张', 'avatar': '🐟', 'bio': '鄱阳湖渔民，专注野钓', 'followers': '890'},
-    {'name': '老周', 'avatar': '🦈', 'bio': '夜钓爱好者', 'followers': '345'},
-  ];
+class _FollowersPageState extends State<FollowersPage> {
+  @override
+  void initState() {
+    super.initState();
+    FollowService.instance.addListener(_refresh);
+  }
+
+  @override
+  void dispose() {
+    FollowService.instance.removeListener(_refresh);
+    super.dispose();
+  }
+
+  void _refresh() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
+    final ids = FollowService.instance.followerIds;
     return Scaffold(
-      backgroundColor: _kBackground,
+      backgroundColor: const Color(0xFFF7F3EE),
       appBar: AppBar(
-        backgroundColor: _kBackground,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: _kPrimary),
+        backgroundColor: const Color(0xFFF7F3EE),
+        surfaceTintColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: Color(0xFF0A7C74)),
         title: const Text(
-          '粉丝',
+          '我的粉丝',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: _kPrimary,
+            color: Color(0xFF0A7C74),
           ),
         ),
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(20),
-        itemCount: _followers.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (context, i) {
-          final f = _followers[i];
-          return _FollowerCard(
-            name: f['name'] as String,
-            avatar: f['avatar'] as String,
-            bio: f['bio'] as String,
-            followers: f['followers'] as String,
-          );
-        },
-      ),
+      body: ids.isEmpty
+          ? const EmptyView(
+              emoji: '🐟',
+              title: '还没有粉丝',
+              subtitle: '多发布优质内容，钓友会来找你互动',
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              itemCount: ids.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, i) {
+                final id = ids[i];
+                final info = FollowService.userInfo(id);
+                return _FollowerRow(
+                  name: info['name']!,
+                  avatar: info['avatar']!,
+                  bio: info['bio'] ?? '',
+                  isFollowing: FollowService.instance.isFollowing(id),
+                  onToggle: () => FollowService.instance.toggleFollow(id),
+                );
+              },
+            ),
     );
   }
 }
 
-// Top-level constants
-const _kTealBgFwr = Color(0xFFE6F2F0);
-const _kSurfaceFwr = Color(0xFFFFFFFF);
-const _kTextPrimaryFwr = Color(0xFF1A1A1A);
-const _kTextWeakFwr = Color(0xFF999999);
-const _kGoldFwr = Color(0xFFC49A5E);
-const _kShadowFwr = Color(0xFF1A1A1A);
-
-class _FollowerCard extends StatelessWidget {
+class _FollowerRow extends StatelessWidget {
   final String name;
   final String avatar;
   final String bio;
-  final String followers;
+  final bool isFollowing;
+  final VoidCallback onToggle;
 
-  const _FollowerCard({
+  const _FollowerRow({
     required this.name,
     required this.avatar,
     required this.bio,
-    required this.followers,
+    required this.isFollowing,
+    required this.onToggle,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: _kSurfaceFwr,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            offset: const Offset(0, 4),
-            blurRadius: 16,
-            color: _kShadowFwr.withValues(alpha: 0.06),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
-          // 头像
           Container(
-            width: 52,
-            height: 52,
+            width: 46,
+            height: 46,
             decoration: const BoxDecoration(
-              color: _kTealBgFwr,
+              color: Color(0xFFE6F2F0),
               shape: BoxShape.circle,
             ),
-            child: Center(
-              child: Text(avatar, style: const TextStyle(fontSize: 26)),
-            ),
+            alignment: Alignment.center,
+            child: Text(avatar, style: const TextStyle(fontSize: 22)),
           ),
-          const SizedBox(width: 14),
-          // 信息
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: _kTextPrimaryFwr,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _kGoldFwr.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        '$followers 粉丝',
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: _kGoldFwr,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  bio,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: _kTextWeakFwr,
+                Text(name,
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w600)),
+                if (bio.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    bio,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontSize: 12, color: Color(0xFF999999)),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                ],
               ],
             ),
           ),
-          // 关注按钮
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0A7C74),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              minimumSize: Size.zero,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
+          const SizedBox(width: 8),
+          SizedBox(
+            height: 32,
+            child: FilledButton(
+              onPressed: onToggle,
+              style: FilledButton.styleFrom(
+                backgroundColor:
+                    isFollowing ? const Color(0xFFF0EEE9) : const Color(0xFF0A7C74),
+                foregroundColor:
+                    isFollowing ? const Color(0xFF666666) : Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
               ),
-            ),
-            child: const Text(
-              '+ 关注',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              child: Text(
+                isFollowing ? '已关注' : '回关',
+                style: const TextStyle(fontSize: 13),
+              ),
             ),
           ),
         ],

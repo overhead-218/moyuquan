@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'privacy_policy_page.dart';
 import 'user_agreement_page.dart';
 import 'login_page.dart';
+import 'profile_edit_page.dart';
+import '../services/user_profile.dart';
+import '../services/follow_service.dart';
+import '../services/favorite_service.dart';
+import '../services/message_service.dart';
+import '../services/post_service.dart';
 
 /// 设置页
 class SettingsPage extends StatelessWidget {
@@ -11,8 +17,6 @@ class SettingsPage extends StatelessWidget {
   static const Color _kPrimary = Color(0xFF0A7C74);
   static const Color _kBackground = Color(0xFFF7F3EE);
   static const Color _kSurface = Color(0xFFFFFFFF);
-  static const Color _kTextPrimary = Color(0xFF1A1A1A);
-  static const Color _kTextWeak = Color(0xFF999999);
   static const Color _kRed = Color(0xFFFF4757);
   static const Color _kShadow = Color(0xFF1A1A1A);
 
@@ -21,18 +25,6 @@ class SettingsPage extends StatelessWidget {
       'title': '账号设置',
       'items': [
         {'icon': Icons.person_outline, 'label': '编辑资料', 'trailing': ''},
-        {'icon': Icons.lock_outline, 'label': '修改密码', 'trailing': ''},
-        {'icon': Icons.phone_android, 'label': '更换手机', 'trailing': ''},
-        {'icon': Icons.qr_code, 'label': '微信绑定', 'trailing': '已绑定'},
-      ],
-    },
-    {
-      'title': '偏好设置',
-      'items': [
-        {'icon': Icons.notifications_outlined, 'label': '消息通知', 'trailing': '已开启'},
-        {'icon': Icons.location_on_outlined, 'label': '位置权限', 'trailing': '已授权'},
-        {'icon': Icons.palette_outlined, 'label': '深色模式', 'trailing': '关闭'},
-        {'icon': Icons.language, 'label': '语言', 'trailing': '简体中文'},
       ],
     },
     {
@@ -161,6 +153,13 @@ class SettingsPage extends StatelessWidget {
                                     builder: (_) => const UserAgreementPage(),
                                   ),
                                 );
+                              } else if (item['label'] == '编辑资料') {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const ProfileEditPage(),
+                                  ),
+                                );
                               }
                             },
                           ),
@@ -191,7 +190,14 @@ class SettingsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('已是最新版本 v1.0.0'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
                     child: const Text(
                       '检查更新',
                       style: TextStyle(
@@ -217,7 +223,7 @@ class SettingsPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       title: const Text('确认退出登录？'),
-                      content: const Text('退出后将断开与服务器的连接'),
+                      content: const Text('退出后将清除本机保存的资料、关注、收藏与消息记录'),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(dialogContext),
@@ -229,7 +235,9 @@ class SettingsPage extends StatelessWidget {
                         ElevatedButton(
                           onPressed: () {
                             Navigator.pop(dialogContext);
-                            // 真正登出：清空导航栈，回到登录页
+                            // 真登出：清空当前设备用户态（资料/关注/收藏/会话/点赞）
+                            _clearLocalUserData();
+                            // 回到登录页
                             Navigator.of(pageContext).pushAndRemoveUntil(
                               MaterialPageRoute(
                                 builder: (_) => const LoginPage(),
@@ -269,6 +277,15 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
+  /// 清除当前设备上的全部本地用户态（登出 / 注销共用）
+  static void _clearLocalUserData() {
+    UserProfile.instance.resetToGuest();
+    FollowService.instance.clearAll();
+    FavoriteService.instance.clearAll();
+    MessageService.clearAll();
+    PostService.resetMyContent();
+  }
+
   void _showDangerDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -276,7 +293,7 @@ class SettingsPage extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('注销账号'),
         content: const Text(
-          '注销后将永久删除您的账号数据，此操作不可恢复。确定要继续吗？',
+          '注销后将清除本设备上的账号资料、关注、收藏与消息记录，此操作不可恢复。确定要继续吗？',
         ),
         actions: [
           TextButton(
@@ -287,7 +304,15 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              final nav = Navigator.of(context);
+              nav.pop();
+              _clearLocalUserData();
+              nav.pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const LoginPage()),
+                (route) => false,
+              );
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: _kRed,
               foregroundColor: Colors.white,

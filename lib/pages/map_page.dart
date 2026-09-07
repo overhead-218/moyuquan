@@ -2,6 +2,7 @@
 import '../models/spot.dart';
 import 'spot_detail_page.dart';
 import 'user_profile_page.dart';
+import 'search_page.dart';
 
 /// 地图：全屏找钓点 / 钓友（小红书风）
 /// 说明：地图底图为高保真模拟占位，待接入地图 SDK 后替换 _buildMapBackground
@@ -220,8 +221,14 @@ class _MapPageState extends State<MapPage> {
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.search, color: Colors.white, size: 22),
-                  onPressed: () {},
+                  icon: const Icon(Icons.search,
+                      color: Colors.white, size: 22),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SearchPage()),
+                    );
+                  },
                 ),
               ],
             ),

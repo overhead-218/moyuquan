@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/spot.dart';
 import '../services/spot_service.dart';
+import '../services/favorite_service.dart';
+import '../services/post_service.dart';
 import 'share_card_page.dart';
 
 /// 服务·价格产品卡数据
@@ -72,12 +74,25 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
     super.initState();
     spot = widget.spot;
     _imageController = PageController();
+    _favorite = FavoriteService.instance.isSpotFav(spot.id);
+    FavoriteService.instance.addListener(_syncFav);
   }
 
   @override
   void dispose() {
+    FavoriteService.instance.removeListener(_syncFav);
     _imageController.dispose();
     super.dispose();
+  }
+
+  void _syncFav() {
+    if (!mounted) return;
+    setState(() => _favorite = FavoriteService.instance.isSpotFav(spot.id));
+  }
+
+  void _toggleFav() {
+    FavoriteService.instance.toggleSpotFav(spot.id);
+    _syncFav();
   }
 
   void _openUrl(String url) async {
@@ -226,7 +241,7 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                         size: 18,
                       ),
                     ),
-                    onPressed: () => setState(() => _favorite = !_favorite),
+                    onPressed: _toggleFav,
                   ),
                   IconButton(
                     icon: Container(
@@ -651,7 +666,7 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                 children: [
                   // 收藏
                   GestureDetector(
-                    onTap: () => setState(() => _favorite = !_favorite),
+                    onTap: _toggleFav,
                     child: Container(
                       width: 48, height: 48,
                       decoration: BoxDecoration(
@@ -1446,12 +1461,41 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
   }
 
   Widget _buildRecentPosts() {
-    final mockPosts = [
-      {'user': '海钓阿强', 'avatar': '🎣', 'fish': '草鱼 3.2kg', 'text': '今天手感不错，连竿好几条！', 'likes': 24, 'time': '2小时前'},
-      {'user': '野钓大叔', 'avatar': '🐟', 'fish': '鲫鱼 0.8kg', 'text': '这个钓点鲫鱼密度可以，建议早上去。', 'likes': 12, 'time': '昨天'},
-    ];
+    // 近期鱼情：优先取与本钓点同名 location 的渔获帖，不足则用最近全网渔获帖补齐
+    final all = PostService.mockAll();
+    final related = all
+        .where((p) =>
+            p.type == 'catch' &&
+            p.location.isNotEmpty &&
+            (p.location.contains(spot.name) || spot.name.contains(p.location)))
+        .toList();
+    final rest = all.where((p) => p.type == 'catch' && !related.contains(p)).toList();
+    final recent = [...related, ...rest].take(3).toList();
+    if (recent.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: _surface,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: const Text(
+          '还没有钓友在这里晒渔获，来发第一条吧 🎣',
+          style: TextStyle(fontSize: 13, color: Color(0xFF999999)),
+        ),
+      );
+    }
+    final displayPosts = recent
+        .map((p) => {
+              'user': p.authorName,
+              'avatar': p.authorAvatar,
+              'fish': p.title,
+              'text': p.content,
+              'likes': p.likeCount,
+              'time': _fmtRel(p.createdAt),
+            })
+        .toList();
     return Column(
-      children: mockPosts.map((p) {
+      children: displayPosts.map((p) {
         return Container(
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(14),
@@ -1507,6 +1551,16 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
         );
       }).toList(),
     );
+  }
+
+  /// 相对时间：刚刚 / N分钟前 / N小时前 / N天前 / 日期
+  String _fmtRel(DateTime t) {
+    final diff = DateTime.now().difference(t);
+    if (diff.inMinutes < 1) return '刚刚';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}分钟前';
+    if (diff.inHours < 24) return '${diff.inHours}小时前';
+    if (diff.inDays < 7) return '${diff.inDays}天前';
+    return '${t.month}月${t.day}日';
   }
 
   void _showContactSheet() {

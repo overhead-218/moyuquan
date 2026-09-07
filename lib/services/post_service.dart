@@ -335,11 +335,58 @@ class PostService {
     }
   }
 
+  // ── 点赞（会话内共享状态：feed 与详情页一致）──────────────────
+  static final Set<String> _likedIds = {};
+  static final Map<String, int> _likeDelta = {};
+
+  static bool isLiked(String postId) => _likedIds.contains(postId);
+
+  /// 会话内点赞增量（详情页初始化用：base + delta）
+  static int deltaOf(String postId) => _likeDelta[postId] ?? 0;
+
+  /// 帖子当前展示点赞数 = 原始数 + 会话内增量
+  static int likeCountOf(Post p) => p.likeCount + (_likeDelta[p.id] ?? 0);
+
+  /// 切换点赞，返回是否已点赞。
+  static bool toggleLike(String postId) {
+    if (_likedIds.contains(postId)) {
+      _likedIds.remove(postId);
+      _likeDelta[postId] = (_likeDelta[postId] ?? 0) - 1;
+    } else {
+      _likedIds.add(postId);
+      _likeDelta[postId] = (_likeDelta[postId] ?? 0) + 1;
+    }
+    _notify();
+    return _likedIds.contains(postId);
+  }
+
+  // ── 我的内容（authorId == 'me'，由发布页写入）────────────────
+  /// 我发布的全部帖子（新帖在前）
+  static List<Post> myPosts() =>
+      _cache.where((p) => p.authorId == 'me').toList();
+
+  /// 我的鱼获帖（type == 'catch'）
+  static List<Post> myCatchPosts() =>
+      _cache.where((p) => p.authorId == 'me' && p.type == 'catch').toList();
+
+  /// 某位作者（按昵称匹配）发布的帖子，用于他人主页；找不到返回空。
+  static List<Post> postsByAuthorName(String authorName) => _cache
+      .where((p) => p.authorName == authorName && p.authorId != 'me')
+      .toList();
+
   /// UGC 发帖：本地置顶 + 通知 + 异步写云库
   static void addPost(Post post) {
     _cache.insert(0, post);
     _notify();
     _pushAdd(post);
+  }
+
+  /// 登出时清空本机用户产生的内容与点赞态（回到启动游客态）。
+  static void resetMyContent() {
+    _cache.removeWhere((p) => p.authorId == 'me');
+    _likedIds.clear();
+    _likeDelta.clear();
+    _notify();
   }
 
   /// 启动后调用：从云库拉取最新帖子覆盖本地缓存；失败保留 mock，永不白屏。

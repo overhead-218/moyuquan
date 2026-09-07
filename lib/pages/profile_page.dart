@@ -5,13 +5,14 @@ import 'followers_page.dart';
 import 'following_page.dart';
 import 'my_catch_page.dart';
 import 'favorites_page.dart';
-import 'history_places_page.dart';
-import 'member_center_page.dart';
-import 'orders_page.dart';
 import 'settings_page.dart';
 import 'message_page.dart';
+import 'login_page.dart';
 import '../services/message_service.dart';
 import '../services/user_profile.dart';
+import '../services/post_service.dart';
+import '../services/follow_service.dart';
+import '../services/favorite_service.dart';
 
 /// 我的
 class ProfilePage extends StatefulWidget {
@@ -25,19 +26,43 @@ class _ProfilePageState extends State<ProfilePage> {
   String _name = UserProfile.instance.name;
   String _bio = UserProfile.instance.bio;
   String _city = UserProfile.instance.city;
+  String _avatar = UserProfile.instance.avatarEmoji;
+  bool _loggedIn = UserProfile.instance.isLoggedIn;
 
   @override
   void initState() {
     super.initState();
+    UserProfile.instance.addListener(_refresh);
+    PostService.addListener(_refresh);
+    FollowService.instance.addListener(_refresh);
+    FavoriteService.instance.addListener(_refresh);
+    MessageService.addListener(_refresh);
+    _refresh();
   }
 
-  void _load() {
+  @override
+  void dispose() {
+    UserProfile.instance.removeListener(_refresh);
+    PostService.removeListener(_refresh);
+    FollowService.instance.removeListener(_refresh);
+    FavoriteService.instance.removeListener(_refresh);
+    MessageService.removeListener(_refresh);
+    super.dispose();
+  }
+
+  void _refresh() {
+    if (!mounted) return;
     setState(() {
       _name = UserProfile.instance.name;
       _bio = UserProfile.instance.bio;
       _city = UserProfile.instance.city;
+      _avatar = UserProfile.instance.avatarEmoji;
+      _loggedIn = UserProfile.instance.isLoggedIn;
     });
   }
+
+  /// 编辑资料页返回后同步一次
+  void _load() => _refresh();
 
   @override
   Widget build(BuildContext context) {
@@ -110,8 +135,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 width: 2.5),
                           ),
                           alignment: Alignment.center,
-                          child:
-                              const Text('🎣', style: TextStyle(fontSize: 36)),
+                          child: Text(_avatar, style: const TextStyle(fontSize: 36)),
                         ),
                       ),
                       const SizedBox(width: 20),
@@ -270,7 +294,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   _StatBlock(
                     label: '帖子',
-                    value: '12',
+                    value: '${PostService.myPosts().length}',
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const MyPostsPage()),
@@ -278,7 +302,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   _StatBlock(
                     label: '粉丝',
-                    value: '356',
+                    value: '${FollowService.instance.followerCount}',
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const FollowersPage()),
@@ -286,7 +310,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   _StatBlock(
                     label: '关注',
-                    value: '89',
+                    value: '${FollowService.instance.followingCount}',
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const FollowingPage()),
@@ -296,37 +320,87 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             const SizedBox(height: 16),
-            // 等级卡片（金色渐变）
+            // 身份/等级卡片：登录态联动（无积分体系时展示真实登录状态）
             _AnimatedEntry(
               index: 3,
               child: Container(
                 padding: const EdgeInsets.all(20),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFFC49A5E), Color(0xFFE0B670)],
-                  ),
-                  borderRadius: BorderRadius.all(Radius.circular(16)),
-                ),
-                child: const Row(
+                decoration: _loggedIn
+                    ? const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFFC49A5E), Color(0xFFE0B670)],
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      )
+                    : BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF0A7C74).withValues(alpha: 0.25),
+                        ),
+                      ),
+                child: Row(
                   children: [
-                    Icon(Icons.emoji_events, color: Colors.white, size: 36),
-                    SizedBox(width: 16),
+                    Icon(
+                      _loggedIn ? Icons.verified : Icons.person_outline,
+                      color: _loggedIn
+                          ? Colors.white
+                          : const Color(0xFF0A7C74),
+                      size: 32,
+                    ),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('黄金钓手 Lv.5',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 18,
-                              )),
-                          SizedBox(height: 6),
-                          Text('距离下一级还需 1,243 经验值',
-                              style: TextStyle(color: Colors.white70, fontSize: 12)),
+                          Text(
+                            _loggedIn ? '已登录' : '游客模式',
+                            style: TextStyle(
+                              color:
+                                  _loggedIn ? Colors.white : const Color(0xFF1A1A1A),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _loggedIn
+                                ? (UserProfile.instance.loginMethod == 'apple'
+                                    ? 'Apple 登录 · 资料会话内有效'
+                                    : '资料已保存')
+                                : '登录后体验完整功能',
+                            style: TextStyle(
+                              color: _loggedIn
+                                  ? Colors.white70
+                                  : const Color(0xFF999999),
+                              fontSize: 12,
+                            ),
+                          ),
                         ],
                       ),
                     ),
+                    if (!_loggedIn)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginPage()),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0A7C74),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            '去登录',
+                            style: TextStyle(
+                                color: Colors.white, fontSize: 13),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -340,7 +414,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   _MenuItem(
                     icon: Icons.emoji_events,
                     label: '我的鱼获',
-                    trailing: '128',
+                    trailing: '${PostService.myCatchPosts().length}',
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const MyCatchPage()),
@@ -349,34 +423,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   _MenuItem(
                     icon: Icons.bookmark,
                     label: '收藏',
-                    trailing: '56',
+                    trailing: '${FavoriteService.instance.postCount}',
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const FavoritesPage()),
-                    ),
-                  ),
-                  _MenuItem(
-                    icon: Icons.history,
-                    label: '历史钓点',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const HistoryPlacesPage()),
-                    ),
-                  ),
-                  _MenuItem(
-                    icon: Icons.card_giftcard,
-                    label: '会员中心',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const MemberCenterPage()),
-                    ),
-                  ),
-                  _MenuItem(
-                    icon: Icons.shopping_bag,
-                    label: '我的订单',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const OrdersPage()),
                     ),
                   ),
                   _MenuItem(

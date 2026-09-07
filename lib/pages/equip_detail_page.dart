@@ -82,17 +82,7 @@ class EquipDetailPage extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
             actions: [
-              IconButton(
-                icon: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: _surface.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.share_outlined, color: Colors.white, size: 20),
-                ),
-                onPressed: () {},
-              ),
+              // 分享入口后续随分享卡片能力一并提供
             ],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(

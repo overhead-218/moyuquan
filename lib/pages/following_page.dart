@@ -1,187 +1,184 @@
 import 'package:flutter/material.dart';
+import '../services/follow_service.dart';
+import '../widgets/post_card.dart' show EmptyView;
+import 'user_profile_page.dart';
 
-/// 关注页
-class FollowingPage extends StatelessWidget {
+/// 我的关注（数据来自 FollowService）
+class FollowingPage extends StatefulWidget {
   const FollowingPage({super.key});
 
-  static const Color _kPrimary = Color(0xFF0A7C74);
-  static const Color _kTealBg = Color(0xFFE6F2F0);
-  static const Color _kBackground = Color(0xFFF7F3EE);
-  static const Color _kSurface = Color(0xFFFFFFFF);
-  static const Color _kTextPrimary = Color(0xFF1A1A1A);
-  static const Color _kTextWeak = Color(0xFF999999);
-  static const Color _kShadow = Color(0xFF1A1A1A);
+  @override
+  State<FollowingPage> createState() => _FollowingPageState();
+}
 
-  static const _following = [
-    {'name': '海钓阿强', 'avatar': '🎣', 'bio': '舟山专业海钓船长，带队8年', 'posts': '128'},
-    {'name': '钓鱼王', 'avatar': '🐟', 'bio': '专注野钓15年，抖音粉丝12万', 'posts': '356'},
-    {'name': '鱼妹儿', 'avatar': '🐟', 'bio': '钓鱼美食博主，爱分享渔获菜谱', 'posts': '89'},
-    {'name': '江南老饕', 'avatar': '🦑', 'bio': '资深美食达人，钓获即食', 'posts': '67'},
-    {'name': '野钓大叔', 'avatar': '🎣', 'bio': '野钓爱好者，分享每一个精彩瞬间', 'posts': '234'},
-  ];
+class _FollowingPageState extends State<FollowingPage> {
+  @override
+  void initState() {
+    super.initState();
+    FollowService.instance.addListener(_refresh);
+  }
+
+  @override
+  void dispose() {
+    FollowService.instance.removeListener(_refresh);
+    super.dispose();
+  }
+
+  void _refresh() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
+    final ids = FollowService.instance.followingIds;
     return Scaffold(
-      backgroundColor: _kBackground,
+      backgroundColor: const Color(0xFFF7F3EE),
       appBar: AppBar(
-        backgroundColor: _kBackground,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: _kPrimary),
+        backgroundColor: const Color(0xFFF7F3EE),
+        surfaceTintColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: Color(0xFF0A7C74)),
         title: const Text(
-          '关注',
+          '我的关注',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: _kPrimary,
+            color: Color(0xFF0A7C74),
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person_add_outlined, color: _kPrimary),
-            onPressed: () {},
-          ),
-        ],
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(20),
-        itemCount: _following.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (context, i) {
-          final f = _following[i];
-          return _FollowingCard(
-            name: f['name'] as String,
-            avatar: f['avatar'] as String,
-            bio: f['bio'] as String,
-            posts: f['posts'] as String,
-          );
-        },
-      ),
+      body: ids.isEmpty
+          ? const EmptyView(
+              emoji: '🫶',
+              title: '还没有关注任何人',
+              subtitle: '去刷帖子，看到喜欢的钓友点个关注吧',
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              itemCount: ids.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, i) {
+                final info = FollowService.userInfo(ids[i]);
+                return _UserCard(
+                  name: info['name']!,
+                  avatar: info['avatar']!,
+                  bio: info['bio'] ?? '',
+                  following: true,
+                  onToggle: () =>
+                      FollowService.instance.toggleFollow(ids[i]),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => UserProfilePage(
+                        name: info['name']!,
+                        avatar: info['avatar']!,
+                        bio: info['bio'] ?? '',
+                        userId: ids[i],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 }
 
-// Top-level constants
-const _kPrimaryFlw = Color(0xFF0A7C74);
-const _kTealBgFlw = Color(0xFFE6F2F0);
-const _kSurfaceFlw = Color(0xFFFFFFFF);
-const _kTextPrimaryFlw = Color(0xFF1A1A1A);
-const _kTextWeakFlw = Color(0xFF999999);
-const _kShadowFlw = Color(0xFF1A1A1A);
-
-class _FollowingCard extends StatelessWidget {
+/// 用户卡片：头像 + 昵称 + 简介 + 关注/取关按钮
+class _UserCard extends StatelessWidget {
   final String name;
   final String avatar;
   final String bio;
-  final String posts;
+  final bool following;
+  final VoidCallback onToggle;
+  final VoidCallback onTap;
 
-  const _FollowingCard({
+  const _UserCard({
     required this.name,
     required this.avatar,
     required this.bio,
-    required this.posts,
+    required this.following,
+    required this.onToggle,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: _kSurfaceFlw,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            offset: const Offset(0, 4),
-            blurRadius: 16,
-            color: _kShadowFlw.withValues(alpha: 0.06),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // 头像
-          Container(
-            width: 52,
-            height: 52,
-            decoration: const BoxDecoration(
-              color: _kTealBgFlw,
-              shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            child: Center(
-              child: Text(avatar, style: const TextStyle(fontSize: 26)),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: const BoxDecoration(
+                color: Color(0xFFE6F2F0),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(avatar, style: const TextStyle(fontSize: 22)),
             ),
-          ),
-          const SizedBox(width: 14),
-          // 信息
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                  if (bio.isNotEmpty) ...[
+                    const SizedBox(height: 2),
                     Text(
-                      name,
+                      bio,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: _kTextPrimaryFlw,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _kPrimaryFlw.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        '$posts 帖',
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: _kPrimaryFlw,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                          fontSize: 12, color: Color(0xFF999999)),
                     ),
                   ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  bio,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: _kTextWeakFlw,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          // 按钮
-          OutlinedButton(
-            onPressed: () {},
-            style: OutlinedButton.styleFrom(
-              foregroundColor: _kTextWeakFlw,
-              side: const BorderSide(color: Color(0xFFEDEAE3)),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
-              minimumSize: Size.zero,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
+                ],
               ),
             ),
-            child: const Text(
-              '已关注',
-              style: TextStyle(fontSize: 12),
+            const SizedBox(width: 8),
+            SizedBox(
+              height: 32,
+              child: FilledButton(
+                onPressed: onToggle,
+                style: following
+                    ? FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFFF0EEE9),
+                        foregroundColor: const Color(0xFF666666),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                      )
+                    : FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF0A7C74),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                      ),
+                child: Text(
+                  following ? '已关注' : '关注',
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,20 +1,35 @@
 import 'backend_config.dart';
 import 'tcb_rest_client.dart';
 
-/// 当前登录用户资料（单一数据源）。
-/// 内存单例，会话内有效；接云库后可在启动时 load()、保存时 save() 写回。
+/// 当前设备用户资料（单一数据源）。
+/// 内存单例，会话内有效；启动默认为「本地游客」（中性默认值，非 mock 账号）。
+/// 登出 = resetToGuest()：清空所有用户态数据，回到干净游客。
 class UserProfile {
   static const String _table = 'profiles';
   static const String kId = 'me';
 
+  static const String kGuestName = '钓鱼人';
+  static const String kGuestBio = '这个人很懒，什么都没留下';
+  static const String kGuestCity = '';
+  static const String kGuestGender = '';
+  static const String kGuestAvatar = '🐟';
+
   static final UserProfile instance = UserProfile._();
   UserProfile._();
 
-  String name = '老李';
-  String bio = '已钓鱼 3 年 · 钓获 128 种';
-  String city = '杭州';
-  String gender = '男';
-  String avatarEmoji = '🎣';
+  // 基本信息
+  String name = kGuestName;
+  String bio = kGuestBio;
+  String city = kGuestCity;
+  String gender = kGuestGender;
+  String avatarEmoji = kGuestAvatar;
+
+  // 登录态（仅内存，无持久化）：
+  // - 启动/登出后：isLoggedIn=false（游客浏览态）
+  // - Apple/手机号登录成功：isLoggedIn=true，loginMethod 记录来源
+  bool isLoggedIn = false;
+  String loginMethod = ''; // 'apple' | 'guest' | 'phone'
+  String loginName = ''; // 第三方返回的显示名（如 Apple 全名）
 
   final Set<void Function()> _listeners = {};
   void addListener(void Function() cb) => _listeners.add(cb);
@@ -25,6 +40,31 @@ class UserProfile {
         cb();
       } catch (_) {}
     }
+  }
+
+  /// 重置为干净游客态（登出调用）：清空所有用户数据并通知 UI。
+  void resetToGuest() {
+    name = kGuestName;
+    bio = kGuestBio;
+    city = kGuestCity;
+    gender = kGuestGender;
+    avatarEmoji = kGuestAvatar;
+    isLoggedIn = false;
+    loginMethod = '';
+    loginName = '';
+    _notify();
+  }
+
+  /// 登录成功后调用：写入登录态（保留/更新显示名）。
+  void markLoggedIn({required String method, String? displayName}) {
+    isLoggedIn = true;
+    loginMethod = method;
+    loginName = displayName ?? '';
+    if (displayName != null && displayName.trim().isNotEmpty) {
+      name = displayName.trim();
+      if (bio == kGuestBio) bio = '这个人很懒，什么都没留下';
+    }
+    _notify();
   }
 
   /// 序列化（列名与 profiles 表 1:1，主键 id 固定 'me'）
