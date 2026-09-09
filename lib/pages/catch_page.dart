@@ -977,9 +977,8 @@ class _AnglerCard extends StatelessWidget {
                   name: angler.userName,
                   avatar: '',
                   bio: '钓鱼爱好者',
-                  posts: angler.postCount,
-                  followers: 0,
-                  following: 0,
+                  // 传真实 userId，主页内帖子/粉丝/关注均动态计算
+                  userId: angler.userId,
                 ),
               ),
             ),

@@ -170,9 +170,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       children: [
                         _StatCol(value: '${works.length}', label: '帖子'),
                         _buildDivider(),
-                        const _StatCol(value: '0', label: '粉丝'),
+                        _StatCol(value: '${FollowService.instance.followerCount}', label: '粉丝'),
                         _buildDivider(),
-                        const _StatCol(value: '0', label: '关注'),
+                        _StatCol(value: '${FollowService.instance.followingCount}', label: '关注'),
                       ],
                     ),
                   ),

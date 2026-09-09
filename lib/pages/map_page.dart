@@ -147,9 +147,6 @@ class _MapPageState extends State<MapPage> {
                   name: m['name'] as String,
                   avatar: m['emoji'] as String,
                   bio: m['meta'] as String,
-                  posts: 12,
-                  followers: 230,
-                  following: 88,
                 ),
               ),
             );
@@ -359,9 +356,6 @@ class _MapPageState extends State<MapPage> {
                 name: m['name'] as String,
                 avatar: m['emoji'] as String,
                 bio: m['meta'] as String,
-                posts: 12,
-                followers: 230,
-                following: 88,
               ),
             ),
           );

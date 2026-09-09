@@ -268,9 +268,8 @@ class _PostDetailPageState extends State<PostDetailPage>
                             name: widget.authorName,
                             avatar: widget.authorAvatar,
                             bio: '专注野钓，热爱分享',
-                            posts: 12,
-                            followers: 356,
-                            following: 89,
+                            // 传真实 userId（帖子作者），主页内数据均动态计算
+                            userId: widget.authorId,
                           ),
                         ),
                       );
