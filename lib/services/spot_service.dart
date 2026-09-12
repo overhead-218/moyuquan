@@ -11848,7 +11848,15 @@ Spot(
       stockingCycleDays: 0,
       price: 186.0,
       priceNote: '抖音团购：大混养6h ¥186(原¥198,已售100+)；大混养8h回鱼4元/斤 ¥236(原¥248,已售14)；小混养6h ¥166(原¥178,已售50+)；小混养8h回鱼3.5元/斤 ¥226(原¥238,已售12)；小混养6h回鱼3.5元/斤 ¥488/3次；练竿塘 ¥28.8(原¥58.8)。共5个塘口：大混养/小混养/鲫鱼塘/练竿塘',
-      businessHours: '06:00-23:00',
+ 
+      priceTiers: const <PriceTier>[
+        PriceTier(label: '大混养6h', price: 186, unit: '6小时', note: '原¥198，已售100+'),
+        PriceTier(label: '大混养8h回鱼', price: 236, unit: '8小时', note: '回鱼4元/斤，原¥248，已售14'),
+        PriceTier(label: '小混养6h', price: 166, unit: '6小时', note: '原¥178，已售50+'),
+        PriceTier(label: '小混养8h回鱼', price: 226, unit: '8小时', note: '回鱼3.5元/斤，原¥238，已售12'),
+        PriceTier(label: '小混养6h回鱼', price: 488, unit: '3次', note: '回鱼3.5元/斤，合¥162.67/次'),
+        PriceTier(label: '练竿塘', price: 28.8, unit: '次', note: '原¥58.8'),
+      ],     businessHours: '06:00-23:00',
       contactPhone: '18217732529',
       wechat: null,
       ownerName: null,
