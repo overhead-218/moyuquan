@@ -15695,7 +15695,40 @@ Spot(
       imageCaptions: const <String, String>{},
       imagesVerified: false,
     ),
-];
+    // s574 万峰渔港钓场
+    Spot(
+      id: 's574',
+      name: '万峰渔港钓场',
+      type: '游钓基地',
+      typeEmoji: '🚤',
+      city: '兴义',
+      district: '贵州黔西南州',
+      address: '贵州省黔西南州兴义市万峰湖',
+      latitude: 25.0883,
+      longitude: 104.8511,
+      images: const <String>[],
+      fishSpecies: const <String>['鲤鱼', '草鱼', '鲢鳙', '罗非'],
+      fishPeakSeason: const <String, String>{},
+      price: 180.0,
+      priceNote: '含三餐+住宿+空调房，万峰湖公共水域浮台钓鱼',
+      businessHours: '全天开放',
+      description: '万峰湖公共水域浮台钓鱼，含三餐+住宿+空调房，万峰湖野钓配套完善的综合钓点',
+      rating: 0.0,
+      reviewCount: 0,
+      viewCount: 0,
+      favoriteCount: 0,
+      postCount: 0,
+      contactPhone: '18669006700',
+      submitter: SpotSubmitter.operator,
+      claimedBy: 'operator',
+      hasAccommodation: true,
+      facilities: const <String>['住宿', '餐饮', 'WIFI', '热水', '空调房'],
+      imagesVerified: false,
+      priceTiers: const <PriceTier>[
+        PriceTier(label: '钓鱼费', price: 180.0, unit: '人', note: '含三餐+住宿+空调房'),
+      ],
+    ),
+    ];
 
   // ── 云库接入层 ──────────────────────────────────────
   // _cache 为稳定引用：原地增删改，外部捕获的引用（如发现页 _allSpots）自动可见。
