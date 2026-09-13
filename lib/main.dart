@@ -56,8 +56,8 @@ class FishingApp extends StatelessWidget {
           centerTitle: false,
         ),
       ),
-      // 游客态可直接进入首页浏览；登录页改为需要时按需弹出
-      home: const HomeShell(),
+      // 未登录显示登录页；登录后进入首页。登录页内「立即体验」可游客浏览。
+      home: UserProfile.instance.isLoggedIn ? const HomeShell() : const LoginPage(),
     );
   }
 }

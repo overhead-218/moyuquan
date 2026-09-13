@@ -102,7 +102,7 @@ class UserProfile {
     gender = row['gender']?.toString() ?? gender;
     avatarEmoji = row['avatarEmoji']?.toString() ?? avatarEmoji;
     loginMethod = row['loginMethod']?.toString() ?? loginMethod;
-    isLoggedIn = loginMethod.isNotEmpty;
+    // 登录态仅内存，不由云库 profile 推导（避免刷新后自动续登）
     _notify();
   }
 
