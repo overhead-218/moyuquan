@@ -532,6 +532,32 @@ class _PhoneLoginSheetState extends State<_PhoneLoginSheet> {
               textAlign: TextAlign.center),
           ],
 
+          // 测试模式提示（mock 阶段显示验证码，真实发码后自动隐藏）
+          if (_codeSent && SmsService.isMockMode) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFDF3E0),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Color(0xFFC49A5E), width: 1),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('测试验证码：',
+                    style: TextStyle(fontSize: 13, color: Color(0xFF8A6D3B))),
+                  Text(_sms.mockCodeFor(_phoneCtrl.text.trim()) ?? '—',
+                    style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w800,
+                      color: Color(0xFF8A6D3B),
+                      letterSpacing: 2,
+                    )),
+                ],
+              ),
+            ),
+          ],
+
           const SizedBox(height: 20),
 
           // 登录按钮

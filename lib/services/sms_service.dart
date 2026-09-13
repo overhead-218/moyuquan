@@ -34,6 +34,12 @@ class SmsService {
   // 内存中的待验证验证码（mock 阶段用，key=手机号）
   final Map<String, _PendingCode> _pending = {};
 
+  /// 是否 mock 模式（UI 用来显示测试验证码提示，真实发码后自动隐藏）
+  static bool get isMockMode => _isMockMode;
+
+  /// 取当前手机号的 mock 验证码（仅 mock 模式，真实模式返回 null）
+  String? mockCodeFor(String phone) => _isMockMode ? _pending[phone]?.code : null;
+
   // ─────────────────────────────────────────────
   // 发送验证码
   // ─────────────────────────────────────────────
