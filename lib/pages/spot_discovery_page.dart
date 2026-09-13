@@ -383,21 +383,30 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    s.displayImages.first,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      decoration: BoxDecoration(gradient: LinearGradient(
-                        colors: [const Color(0xFF0A7C74), const Color(0xFF148F86)],
-                      )),
-                      child: Center(child: Text(s.typeEmoji, style: const TextStyle(fontSize: 48))),
-                    ),
-                    loadingBuilder: (_, child, p) => p == null ? child : Container(
-                      decoration: BoxDecoration(gradient: LinearGradient(
-                        colors: [_primary, _lightTeal],
-                      )),
-                    ),
-                  ),
+                  Builder(builder: (_) {
+                    final url = s.displayImages.first;
+                    final isHttp = url.startsWith('http');
+                    final img = isHttp
+                        ? Image.network(url, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(
+                            decoration: BoxDecoration(gradient: LinearGradient(
+                              colors: [const Color(0xFF0A7C74), const Color(0xFF148F86)],
+                            )),
+                            child: Center(child: Text(s.typeEmoji, style: const TextStyle(fontSize: 48))),
+                          ),
+                          loadingBuilder: (_, child, p) => p == null ? child : Container(
+                            decoration: BoxDecoration(gradient: LinearGradient(
+                              colors: [_primary, _lightTeal],
+                            )),
+                          ),
+                        )
+                        : Image.asset(url, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(
+                            decoration: BoxDecoration(gradient: LinearGradient(
+                              colors: [const Color(0xFF0A7C74), const Color(0xFF148F86)],
+                            )),
+                            child: Center(child: Text(s.typeEmoji, style: const TextStyle(fontSize: 48))),
+                          ));
+                    return img;
+                  }),
                   // 渐变遮罩
                   Container(
                     decoration: BoxDecoration(

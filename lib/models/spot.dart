@@ -252,10 +252,10 @@ class Spot {
     'assets/images/spots/wm_40.jpg',
   ];
 
-  /// 展示用头图：有真实图用真实图，否则按 id 稳定取一张兜底实景图
-  List<String> get displayImages => images.isNotEmpty
-      ? images
-      : [_fallbackImages[id.hashCode.abs() % _fallbackImages.length]];
+  /// 展示用头图：按 id 稳定从兜底实景图池取 1 张
+  /// （真实图全走 `assets/images/spots/wm_*.jpg` 兜底，避免 251 个 spot 引用不存在的 spot_xxx.jpg）
+  List<String> get displayImages =>
+      [_fallbackImages[id.hashCode.abs() % _fallbackImages.length]];
 
   /// 设施服务标签（合并 WiFi 标识）
   List<String> get facilityChips {
