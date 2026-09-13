@@ -1,3 +1,4 @@
+import 'dart:developer' show debugPrint;
 import 'backend_config.dart';
 import 'tcb_rest_client.dart';
 
@@ -23,6 +24,7 @@ class UserProfile {
   String city = kGuestCity;
   String gender = kGuestGender;
   String avatarEmoji = kGuestAvatar;
+  String phone = ''; // 手机号（仅登录态内存用，不对外暴露完整号）
 
   // 登录态（仅内存，无持久化）：
   // - 启动/登出后：isLoggedIn=false（游客浏览态）
@@ -49,6 +51,7 @@ class UserProfile {
     city = kGuestCity;
     gender = kGuestGender;
     avatarEmoji = kGuestAvatar;
+    phone = '';
     isLoggedIn = false;
     loginMethod = '';
     loginName = '';
@@ -56,11 +59,24 @@ class UserProfile {
   }
 
   /// 登录成功后调用：写入登录态（保留/更新显示名）。
-  void markLoggedIn({required String method, String? displayName}) {
+  /// [method] 登录方式：'apple' | 'phone'
+  /// [displayName] 第三方返回的展示名（如 Apple 全名），手机号登录时传 null
+  /// [phone] 手机号（手机号登录时传入，用于内部记录；展示名自动生成 138****xxxx 格式）
+  void markLoggedIn({
+    required String method,
+    String? displayName,
+    String? phone,
+  }) {
     isLoggedIn = true;
     loginMethod = method;
     loginName = displayName ?? '';
-    if (displayName != null && displayName.trim().isNotEmpty) {
+    if (phone != null && phone.isNotEmpty) {
+      this.phone = phone;
+      // 手机号登录时，显示名自动脱敏生成，不依赖第三方返回
+      final masked = '${phone.substring(0, 3)}****${phone.substring(7)}';
+      name = masked;
+      if (bio == kGuestBio) bio = '这个人很懒，什么都没留下';
+    } else if (displayName != null && displayName.trim().isNotEmpty) {
       name = displayName.trim();
       if (bio == kGuestBio) bio = '这个人很懒，什么都没留下';
     }
@@ -75,6 +91,7 @@ class UserProfile {
         'city': city,
         'gender': gender,
         'avatarEmoji': avatarEmoji,
+        'loginMethod': loginMethod,
       };
 
   /// 用云库行覆盖本地字段
@@ -84,6 +101,8 @@ class UserProfile {
     city = row['city']?.toString() ?? city;
     gender = row['gender']?.toString() ?? gender;
     avatarEmoji = row['avatarEmoji']?.toString() ?? avatarEmoji;
+    loginMethod = row['loginMethod']?.toString() ?? loginMethod;
+    isLoggedIn = loginMethod.isNotEmpty;
     _notify();
   }
 
@@ -92,9 +111,9 @@ class UserProfile {
     _notify();
     if (!BackendConfig.cloudEnabled) return;
     TcbRestClient.upsert(_table, toJson()).then((_) {
-      print('[UserProfile] 已保存云库');
+      debugPrint('[UserProfile] 已保存云库');
     }).catchError((e) {
-      print('[UserProfile] 保存云库失败：$e');
+      debugPrint('[UserProfile] 保存云库失败：$e');
     });
   }
 
@@ -106,10 +125,10 @@ class UserProfile {
           params: {'select': '*', 'id': 'eq.$kId', 'limit': '1'});
       if (rows.isNotEmpty) {
         applyFromCloud(rows.first);
-        print('[UserProfile] 已从云库同步资料');
+        debugPrint('[UserProfile] 已从云库同步资料');
       }
     } catch (e) {
-      print('[UserProfile] 云库同步失败，使用本地资料：$e');
+      debugPrint('[UserProfile] 云库同步失败，使用本地资料：$e');
     }
   }
 }

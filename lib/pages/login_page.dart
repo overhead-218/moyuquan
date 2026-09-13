@@ -7,6 +7,7 @@ import 'home_shell.dart';
 import 'privacy_policy_page.dart';
 import 'user_agreement_page.dart';
 import '../services/user_profile.dart';
+import '../services/sms_service.dart';
 
 /// 登录页：Apple登录(iOS) / 游客模式；微信/手机号待接入（无 SDK 不展示假按钮）
 class LoginPage extends StatefulWidget {
@@ -89,6 +90,18 @@ class _LoginPageState extends State<LoginPage>
   void _onGuestLogin() {
     UserProfile.instance.resetToGuest();
     _enterHome();
+  }
+
+  // ─────────────────────────────────────────────
+  // 手机号登录 BottomSheet
+  // ─────────────────────────────────────────────
+  void _showPhoneLoginSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _PhoneLoginSheet(onSuccess: _enterHome),
+    );
   }
 
   @override
@@ -174,6 +187,36 @@ class _LoginPageState extends State<LoginPage>
                     borderRadius: BorderRadius.circular(14),
                   ),
                   const SizedBox(height: 14),
+                  // 手机号验证码登录
+                  OutlinedButton(
+                    onPressed: _showPhoneLoginSheet,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF0A7C74),
+                      side: const BorderSide(color: Color(0xFF0A7C74), width: 1.5),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      minimumSize: const Size(280, 52),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.phone_android, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          '手机号登录',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
                   TextButton(
                     onPressed: _onGuestLogin,
                     child: const Text(
@@ -225,6 +268,19 @@ class _LoginPageState extends State<LoginPage>
                   const Text(
                     '体验版：微信/手机号登录即将开放',
                     style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
+                  ),
+                  const SizedBox(height: 12),
+                  // 手机号验证码登录（非 iOS）
+                  TextButton(
+                    onPressed: _showPhoneLoginSheet,
+                    child: const Text(
+                      '手机号登录',
+                      style: TextStyle(
+                        color: Color(0xFF0A7C74),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
 
@@ -280,6 +336,233 @@ class _LoginPageState extends State<LoginPage>
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// 手机号验证码登录浮层
+// ─────────────────────────────────────────────
+class _PhoneLoginSheet extends StatefulWidget {
+  final VoidCallback onSuccess;
+  const _PhoneLoginSheet({required this.onSuccess});
+  @override
+  State<_PhoneLoginSheet> createState() => _PhoneLoginSheetState();
+}
+
+class _PhoneLoginSheetState extends State<_PhoneLoginSheet> {
+  final _phoneCtrl = TextEditingController();
+  final _codeCtrl  = TextEditingController();
+  final _sms       = SmsService.instance;
+
+  bool _codeSent    = false;
+  bool _loading     = false;
+  bool _countingDown = false;
+  int  _countdown   = 0;
+  String? _error;
+
+  @override
+  void dispose() {
+    _phoneCtrl.dispose();
+    _codeCtrl.dispose();
+    super.dispose();
+  }
+
+  // 发送验证码
+  Future<void> _sendCode() async {
+    final phone = _phoneCtrl.text.trim();
+    if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(phone)) {
+      setState(() => _error = '请输入正确的手机号');
+      return;
+    }
+    setState(() { _loading = true; _error = null; });
+    try {
+      await _sms.sendCode(phone);
+      setState(() { _codeSent = true; _loading = false; });
+      _startCountdown();
+    } on SmsException catch (e) {
+      setState(() { _error = e.message; _loading = false; });
+    } catch (e) {
+      setState(() { _error = '发送失败，请稍后重试'; _loading = false; });
+    }
+  }
+
+  // 倒计时 60s
+  void _startCountdown() {
+    setState(() { _countingDown = true; _countdown = 60; });
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      if (!mounted) return false;
+      setState(() => _countdown--);
+      if (_countdown <= 0) {
+        setState(() => _countingDown = false);
+        return false;
+      }
+      return true;
+    });
+  }
+
+  // 验证并登录
+  Future<void> _verifyAndLogin() async {
+    final phone = _phoneCtrl.text.trim();
+    final code  = _codeCtrl.text.trim();
+    if (code.length != 6) {
+      setState(() => _error = '请输入6位验证码');
+      return;
+    }
+    setState(() { _loading = true; _error = null; });
+    try {
+      final ok = await _sms.verifyCode(phone, code);
+      if (!ok) {
+        setState(() { _error = '验证码错误或已过期'; _loading = false; });
+        return;
+      }
+      // 验证码正确，写入登录态
+      UserProfile.instance.markLoggedIn(method: 'phone', phone: phone);
+      if (!mounted) return;
+      Navigator.pop(context); // 关闭 BottomSheet
+      widget.onSuccess();
+    } catch (e) {
+      setState(() { _error = '登录失败，请稍后重试'; _loading = false; });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        24,
+        16,
+        24,
+        MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // 顶部拖动条
+          Center(
+            child: Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFDDDDDD),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          // 标题
+          const Text('手机号登录',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800,
+              color: Color(0xFF0A7C74)), textAlign: TextAlign.center),
+          const SizedBox(height: 6),
+          Text('未注册的手机号将自动创建账号',
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            textAlign: TextAlign.center),
+          const SizedBox(height: 24),
+
+          // 手机号输入
+          TextField(
+            controller: _phoneCtrl,
+            keyboardType: TextInputType.phone,
+            enabled: !_loading,
+            maxLength: 11,
+            decoration: InputDecoration(
+              labelText: '手机号',
+              hintText: '请输入手机号',
+              prefixIcon: const Icon(Icons.phone_android),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              counterText: '',
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // 验证码输入 + 发送按钮（水平排列）
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _codeCtrl,
+                  keyboardType: TextInputType.number,
+                  enabled: !_loading && _codeSent,
+                  maxLength: 6,
+                  decoration: InputDecoration(
+                    labelText: '验证码',
+                    hintText: _codeSent ? '请输入验证码' : '先获取验证码',
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    counterText: '',
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              SizedBox(
+                width: 110,
+                child: ElevatedButton(
+                  onPressed: _loading || _countingDown ? null : _sendCode,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _countingDown
+                        ? const Color(0xFFE0E0E0)
+                        : const Color(0xFF0A7C74),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    _countingDown ? '${_countdown}s' : '获取验证码',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // 错误提示
+          if (_error != null) ...[
+            const SizedBox(height: 10),
+            Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 13),
+              textAlign: TextAlign.center),
+          ],
+
+          const SizedBox(height: 20),
+
+          // 登录按钮
+          ElevatedButton(
+            onPressed: _loading || !_codeSent ? null : _verifyAndLogin,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0A7C74),
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: const Color(0xFFE0E0E0),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            child: _loading
+                ? const SizedBox(width: 20, height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('登录 / 注册',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          ),
+
+          const SizedBox(height: 12),
+
+          // 协议说明
+          Text(
+            '登录即同意《用户协议》与《隐私政策》',
+            style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
