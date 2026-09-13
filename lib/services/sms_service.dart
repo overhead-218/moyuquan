@@ -1,18 +1,18 @@
 import 'dart:convert';
-import 'dart:developer' show debugPrint;
+import 'dart:developer' show log;
 import 'package:http/http.dart' as http;
 import 'backend_config.dart';
 
 /// 短信验证码服务
 ///
-/// 阶段一（当前）：Mock 模式，验证码存 CloudBase sms_verify_codes 表（可本地测全流程）。
-/// 阶段二（凭证到位后）：切腾讯云短信 SDK，真实发码。
+/// 阶段一（当前）：Mock 模式，验证码存内存（单例），不依赖数据库表，可本地/生产直接测。
+/// 阶段二（凭证到位后）：切腾讯云短信 SDK，真实发码（验证码建议改存云函数/表，勿留客户端）。
 ///
 /// 凭证配置（腾讯云控制台 → 短信 → 应用列表）：
 ///   - SmsSdkAppId   → 腾讯云短信应用 ID
 ///   - SignName      → 短信签名「【摸鱼圈】」
 ///   - TemplateId    → 验证码模板 ID
-///   - SecretId/Key  → 云 API 密钥（放在 CloudBase 环境变量更安全）
+///   - SecretId/Key  → 云 API 密钥（放 CloudBase 环境变量更安全）
 ///
 /// 凭证到位后：backend_config.dart 加字段 + 这里改为真实发码即可，UI/登录逻辑不变。
 class SmsService {
@@ -31,6 +31,9 @@ class SmsService {
   static const String _signName   = '摸鱼圈'; // 短信签名
   static const String _templateId = ''; // TODO: 填腾讯云模板 ID
 
+  // 内存中的待验证验证码（mock 阶段用，key=手机号）
+  final Map<String, _PendingCode> _pending = {};
+
   // ─────────────────────────────────────────────
   // 发送验证码
   // ─────────────────────────────────────────────
@@ -44,9 +47,9 @@ class SmsService {
     final code = _generateCode();
 
     if (_isMockMode) {
-      // 阶段一：mock，写 CloudBase 表，真实发码时替换这段
-      await _mockSaveCode(phone, code);
-      debugPrint('[SmsService MOCK] 发送验证码 $code 到 $phone（未真实发短信）');
+      // 阶段一：mock，验证码存内存（生产切真实后改存云函数/表）
+      _pending[phone] = _PendingCode(code);
+      log('[SmsService MOCK] 发送验证码 $code 到 $phone（未真实发短信）');
     } else {
       // 阶段二：真实腾讯云短信
       await _sendRealSms(phone, code);
@@ -57,66 +60,44 @@ class SmsService {
   Future<bool> verifyCode(String phone, String code) async {
     if (!_isValidPhone(phone) || code.length != 6) return false;
 
-    final table = 'sms_verify_codes';
+    if (_isMockMode) {
+      final p = _pending[phone];
+      if (p == null) return false;
+      // 验证码 10 分钟内有效
+      if (DateTime.now().difference(p.createdAt).inMinutes > 10) {
+        _pending.remove(phone);
+        return false;
+      }
+      final ok = p.code == code;
+      if (ok) _pending.remove(phone); // 防重放
+      return ok;
+    }
 
-    // 取该手机号最新一条未使用验证码（按 created_at desc）
+    // 阶段二：从数据库查验证码（需 sms_verify_codes 表，建表 SQL 见 schema_sms_verify.sql）
+    final table = 'sms_verify_codes';
     final uri = Uri.parse(
       '${BackendConfig.restBase}/$table'
-      '?select=code,used,created_at'
+      '?select=code,used,created_at,id'
       '&phone=eq.$phone'
       '&used=eq.false'
       '&order=created_at.desc'
       '&limit=1',
     );
-
     final resp = await http.get(uri, headers: _authHeader);
     if (resp.statusCode != 200) return false;
-
     final List<dynamic> rows = jsonDecode(resp.body);
     if (rows.isEmpty) return false;
-
     final row = rows.first;
     final savedCode = row['code'] as String;
     final createdAt = DateTime.parse(row['created_at'] as String);
-
-    // 验证码 10 分钟内有效
-    if (DateTime.now().difference(createdAt).inMinutes > 10) {
-      return false;
-    }
-    if (savedCode != code) {
-      return false;
-    }
-
-    // 标记为已使用（防止重放）
+    if (DateTime.now().difference(createdAt).inMinutes > 10) return false;
+    if (savedCode != code) return false;
     await http.patch(
       Uri.parse('${BackendConfig.restBase}/$table?id=eq.${row['id']}'),
       headers: {..._authHeader, 'Content-Type': 'application/json'},
       body: jsonEncode({'used': true}),
     );
-
     return true;
-  }
-
-  // ─────────────────────────────────────────────
-  // Mock 实现：写 CloudBase 表（凭证到位前本地测试用）
-  // ─────────────────────────────────────────────
-  Future<void> _mockSaveCode(String phone, String code) async {
-    final table = 'sms_verify_codes';
-    final uri = Uri.parse('${BackendConfig.restBase}/$table');
-
-    final resp = await http.post(
-      uri,
-      headers: {..._authHeader, 'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'phone': phone,
-        'code': code,
-        'used': false,
-      }),
-    );
-
-    if (resp.statusCode != 201 && resp.statusCode != 200) {
-      throw SmsException('NetworkError', '保存验证码失败: ${resp.statusCode}');
-    }
   }
 
   // ─────────────────────────────────────────────
@@ -151,6 +132,13 @@ class SmsService {
     // 大陆手机号：1开头，11位，纯数字
     return RegExp(r'^1[3-9]\d{9}$').hasMatch(phone);
   }
+}
+
+/// 待验证验证码（内存，mock 阶段）
+class _PendingCode {
+  final String code;
+  final DateTime createdAt;
+  _PendingCode(this.code) : createdAt = DateTime.now();
 }
 
 /// 短信服务异常

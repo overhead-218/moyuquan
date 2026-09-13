@@ -1,4 +1,4 @@
-import 'dart:developer' show debugPrint;
+import 'dart:developer' show log;
 import 'backend_config.dart';
 import 'tcb_rest_client.dart';
 
@@ -111,9 +111,9 @@ class UserProfile {
     _notify();
     if (!BackendConfig.cloudEnabled) return;
     TcbRestClient.upsert(_table, toJson()).then((_) {
-      debugPrint('[UserProfile] 已保存云库');
+      log('[UserProfile] 已保存云库');
     }).catchError((e) {
-      debugPrint('[UserProfile] 保存云库失败：$e');
+      log('[UserProfile] 保存云库失败：$e');
     });
   }
 
@@ -125,10 +125,10 @@ class UserProfile {
           params: {'select': '*', 'id': 'eq.$kId', 'limit': '1'});
       if (rows.isNotEmpty) {
         applyFromCloud(rows.first);
-        debugPrint('[UserProfile] 已从云库同步资料');
+        log('[UserProfile] 已从云库同步资料');
       }
     } catch (e) {
-      debugPrint('[UserProfile] 云库同步失败，使用本地资料：$e');
+      log('[UserProfile] 云库同步失败，使用本地资料：$e');
     }
   }
 }
