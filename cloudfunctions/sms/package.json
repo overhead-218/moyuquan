@@ -1,0 +1,8 @@
+{
+  "name": "sms",
+  "version": "1.0.0",
+  "description": "摸鱼圈短信验证码云函数（send / verify / ping）",
+  "main": "index.js",
+  "private": true,
+  "license": "UNLICENSED"
+}

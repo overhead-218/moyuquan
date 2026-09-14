@@ -23,4 +23,22 @@ class BackendConfig {
 
   /// PostgREST 数据库端点
   static String get restBase => '$gatewayBase/v1/rdb/rest';
+
+  /// 地域（HTTP 云函数默认域名需要）
+  static const String region = 'ap-shanghai';
+
+  /// 腾讯云 APPID（HTTP 云函数默认域名 {envId}-{appid}.{region}.app.tcloudbase.com 需要）
+  static const String appId = '1305016020';
+
+  /// 短信验证码云函数（HTTP 访问服务）端点
+  ///
+  /// 客户端只调用这个云函数，腾讯云 SecretId/SecretKey 全部留在云函数环境变量里，
+  /// 绝不下发到 App（否则被反编译即可盗刷短信费）。
+  ///
+  /// 实测可用地址（HTTP 云函数默认域名，需带 APPID 与地域）：
+  /// https://moyuquan-d5g0pvpcw55f8a62e-1305016020.ap-shanghai.app.tcloudbase.com/sms
+  /// ⚠️ 不带 APPID 的 `{envId}.service.tcloudbase.com` 域名对 HTTP 型函数会报
+  ///    FUNCTIONS_PARAM_INVALID（FunctionType parameter is invalid），不可用。
+  static String get smsEndpoint =>
+      'https://$envId-$appId.$region.app.tcloudbase.com/sms';
 }

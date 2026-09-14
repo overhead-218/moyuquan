@@ -5,37 +5,36 @@ import 'backend_config.dart';
 
 /// 短信验证码服务
 ///
-/// 阶段一（当前）：Mock 模式，验证码存内存（单例），不依赖数据库表，可本地/生产直接测。
-/// 阶段二（凭证到位后）：切腾讯云短信 SDK，真实发码（验证码建议改存云函数/表，勿留客户端）。
+/// 阶段一（当前，_isMockMode = true）：验证码存内存（单例），不发真实短信，界面显示测试码。
+/// 阶段二（签名/模板/密钥到位后）：把 _isMockMode 改成 false ——
+///   走 CloudBase 云函数 `sms`（HTTP 访问服务），由云函数持有腾讯云 SecretId/SecretKey
+///   调 SendSms 并发码/校验。客户端永远不接触任何腾讯云密钥（防止反编译盗刷）。
 ///
-/// 凭证配置（腾讯云控制台 → 短信 → 应用列表）：
-///   - SmsSdkAppId   → 腾讯云短信应用 ID
-///   - SignName      → 短信签名「【摸鱼圈】」
-///   - TemplateId    → 验证码模板 ID
-///   - SecretId/Key  → 云 API 密钥（放 CloudBase 环境变量更安全）
-///
-/// 凭证到位后：backend_config.dart 加字段 + 这里改为真实发码即可，UI/登录逻辑不变。
+/// 上线前 checklist：
+///   1. 腾讯云短信签名「摸鱼圈」+ 验证码模板 审核通过 → 拿到 TemplateId
+///   2. CAM 新建 SecretId / SecretKey
+///   3. 填进 cloudbaserc.json 的 functions[].envVariables
+///      （TC_SECRET_ID / TC_SECRET_KEY / TC_SMS_TEMPLATE_ID）
+///   4. 部署云函数：tcb fn deploy sms --env-id <envId> --force --httpFn
+///      ⚠️ HTTP 型函数的访问域名必须带 APPID+地域：
+///      https://{envId}-{appid}.{region}.app.tcloudbase.com/sms
+///      （不带 APPID 的 {envId}.service.tcloudbase.com 对 HTTP 型函数会报 FUNCTIONS_PARAM_INVALID）
+///   5. cloudbaserc.json 的 envVariables 里填 CODE_PEPPER（随机 64 位 hex，验证码哈希用盐）
+///   6. 控制台执行 sql/schema_sms_grants_v2.sql（列类型升级 + anon 表级授权）
+///   7. _isMockMode 改 false，重新构建前端
 class SmsService {
   SmsService._();
 
   static final SmsService instance = SmsService._();
 
-  // ─────────────────────────────────────────────
-  // 凭证（凭证到位前先留空，isMockMode = true）
-  // ─────────────────────────────────────────────
-  static const bool _isMockMode = true; // 切 false 即切真实腾讯云短信
+  /// 总开关：true = mock（内存验证码 + 界面显示测试码）；false = 走云函数真实发码。
+  static const bool _isMockMode = true;
 
-  static const String _secretId  = ''; // TODO: 填腾讯云 SecretId
-  static const String _secretKey = ''; // TODO: 填腾讯云 SecretKey
-  static const String _smsSdkAppId = ''; // TODO: 填短信 SdkAppId
-  static const String _signName   = '摸鱼圈'; // 短信签名
-  static const String _templateId = ''; // TODO: 填腾讯云模板 ID
-
-  // 内存中的待验证验证码（mock 阶段用，key=手机号）
-  final Map<String, _PendingCode> _pending = {};
-
-  /// 是否 mock 模式（UI 用来显示测试验证码提示，真实发码后自动隐藏）
+  /// 界面用来判断是否显示「测试验证码」提示条（真实发码后自动消失）
   static bool get isMockMode => _isMockMode;
+
+  // 内存中的待验证验证码（仅 mock 阶段用）
+  final Map<String, _PendingCode> _pending = {};
 
   /// 取当前手机号的 mock 验证码（仅 mock 模式，真实模式返回 null）
   String? mockCodeFor(String phone) => _isMockMode ? _pending[phone]?.code : null;
@@ -43,26 +42,32 @@ class SmsService {
   // ─────────────────────────────────────────────
   // 发送验证码
   // ─────────────────────────────────────────────
-  /// 发送手机号验证码，返回 true 表示发送成功（mock/真实均返回 true）
-  /// 失败时抛异常：QuotaExceeded（限流）/ InvalidPhone（号码格式错）/ NetworkError
+  /// 失败抛 SmsException：InvalidPhone / TOO_FREQUENT / DAILY_LIMIT /
+  /// SMS_NOT_CONFIGURED / SMS_API_ERROR / NetworkError
   Future<void> sendCode(String phone) async {
     if (!_isValidPhone(phone)) {
       throw SmsException('InvalidPhone', '手机号格式不正确');
     }
 
-    final code = _generateCode();
-
     if (_isMockMode) {
-      // 阶段一：mock，验证码存内存（生产切真实后改存云函数/表）
+      final code = _generateCode();
       _pending[phone] = _PendingCode(code);
       log('[SmsService MOCK] 发送验证码 $code 到 $phone（未真实发短信）');
-    } else {
-      // 阶段二：真实腾讯云短信
-      await _sendRealSms(phone, code);
+      return;
+    }
+
+    final data = await _call({'action': 'send', 'phone': phone});
+    if (data['ok'] != true) {
+      throw SmsException(
+        data['error']?.toString() ?? 'NetworkError',
+        data['message']?.toString() ?? '验证码发送失败',
+      );
     }
   }
 
-  /// 验证验证码是否正确，正确返回 true，错误/过期返回 false
+  // ─────────────────────────────────────────────
+  // 校验验证码
+  // ─────────────────────────────────────────────
   Future<bool> verifyCode(String phone, String code) async {
     if (!_isValidPhone(phone) || code.length != 6) return false;
 
@@ -79,63 +84,45 @@ class SmsService {
       return ok;
     }
 
-    // 阶段二：从数据库查验证码（需 sms_verify_codes 表，建表 SQL 见 schema_sms_verify.sql）
-    final table = 'sms_verify_codes';
-    final uri = Uri.parse(
-      '${BackendConfig.restBase}/$table'
-      '?select=code,used,created_at,id'
-      '&phone=eq.$phone'
-      '&used=eq.false'
-      '&order=created_at.desc'
-      '&limit=1',
-    );
-    final resp = await http.get(uri, headers: _authHeader);
-    if (resp.statusCode != 200) return false;
-    final List<dynamic> rows = jsonDecode(resp.body);
-    if (rows.isEmpty) return false;
-    final row = rows.first;
-    final savedCode = row['code'] as String;
-    final createdAt = DateTime.parse(row['created_at'] as String);
-    if (DateTime.now().difference(createdAt).inMinutes > 10) return false;
-    if (savedCode != code) return false;
-    await http.patch(
-      Uri.parse('${BackendConfig.restBase}/$table?id=eq.${row['id']}'),
-      headers: {..._authHeader, 'Content-Type': 'application/json'},
-      body: jsonEncode({'used': true}),
-    );
-    return true;
+    final data = await _call({'action': 'verify', 'phone': phone, 'code': code});
+    return data['ok'] == true;
   }
 
   // ─────────────────────────────────────────────
-  // 真实腾讯云短信（凭证到位后替换这里）
+  // 调用云函数（真实模式唯一通路；密钥都在云函数侧）
   // ─────────────────────────────────────────────
-  Future<void> _sendRealSms(String phone, String code) async {
-    // TODO: 填入真实腾讯云短信 API 调用
-    // 腾讯云 SMS API: POST https://sms.tencentcloudapi.com/
-    // Action: SendSms, PhoneNumberSet: ['+86$phone'],
-    // TemplateId: _templateId, SignName: _signName,
-    // TemplateParamSet: [code]（验证码填入模板参数）
-    // 签名使用 HMAC-SHA256，凭证在 CloudBase 环境变量或 backend_config.dart
-    throw UnimplementedError(
-      '请在 backend_config.dart 配置腾讯云 SecretId/SecretKey/SmsSdkAppId/TemplateId 后替换 _sendRealSms 实现',
-    );
+  Future<Map<String, dynamic>> _call(Map<String, dynamic> payload) async {
+    try {
+      final resp = await http
+          .post(
+            Uri.parse(BackendConfig.smsEndpoint),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(payload),
+          )
+          .timeout(const Duration(seconds: 15));
+      final decoded = jsonDecode(resp.body);
+      if (decoded is Map<String, dynamic>) return decoded;
+      return <String, dynamic>{'ok': false, 'error': 'BadResponse'};
+    } catch (e) {
+      log('[SmsService] 云函数调用失败: $e');
+      return <String, dynamic>{
+        'ok': false,
+        'error': 'NetworkError',
+        'message': '网络异常，请稍后重试',
+      };
+    }
   }
 
   // ─────────────────────────────────────────────
   // 工具
   // ─────────────────────────────────────────────
-  Map<String, String> get _authHeader => {
-    'Authorization': 'Bearer ${BackendConfig.publishableKey}',
-    'Content-Type': 'application/json',
-  };
-
   String _generateCode() {
     final r = DateTime.now().millisecondsSinceEpoch % 1000000;
     return r.toString().padLeft(6, '0');
   }
 
   bool _isValidPhone(String phone) {
-    // 大陆手机号：1开头，11位，纯数字
+    // 大陆手机号：1 开头，11 位纯数字
     return RegExp(r'^1[3-9]\d{9}$').hasMatch(phone);
   }
 }

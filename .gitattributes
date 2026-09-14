@@ -1,0 +1,7 @@
+# Git 换行策略
+#
+# CloudBase HTTP 云函数的启动脚本必须是 LF 换行，
+# 否则换行符污染会导致云端无法执行（scf_bootstrap 解析失败）。
+# 仓库 core.autocrlf=true，必须在此显式钉住。
+cloudfunctions/**/scf_bootstrap text eol=lf
+cloudfunctions/**/*.js text eol=lf

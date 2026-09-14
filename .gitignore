@@ -46,3 +46,7 @@ app.*.map.json
 
 # stray output file (do not commit)
 /0
+
+# CloudBase deploy config (SMS secrets live here - never commit)
+cloudbaserc.json
+.env
