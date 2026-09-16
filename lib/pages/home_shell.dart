@@ -5,11 +5,14 @@ import 'profile_page.dart';
 import 'spot_discovery_page.dart';
 import 'spot_submit_page.dart';
 import 'post_publish_page.dart';
+import 'spot_detail_page.dart';
+import '../services/spot_service.dart';
 
 /// 主 Shell：小红书风底部导航
 /// 顺序：首页 / 钓点 / ➕(发布) / 榜单 / 我（➕ 居中）
 class HomeShell extends StatefulWidget {
-  const HomeShell({super.key});
+  final String? initialSpotId;
+  const HomeShell({super.key, this.initialSpotId});
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -17,6 +20,23 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // 深链直达：分享链接 ?spot=id 打开对应钓点详情（游客可浏览）
+    if (widget.initialSpotId != null && widget.initialSpotId!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final spot = SpotService.getOne(widget.initialSpotId!);
+        if (spot != null && mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => SpotDetailPage(spot: spot)),
+          );
+        }
+      });
+    }
+  }
 
   static const _kAccent = Color(0xFFFF4458); // 小红书红
 

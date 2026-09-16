@@ -177,7 +177,9 @@ class _LoginPageState extends State<LoginPage>
 
               const Spacer(flex: 3),
 
-              // 登录入口：iOS 显示 Apple+游客；Web/Android 显示「立即体验」
+              // 登录入口：
+              //   iOS → Apple 登录 + 游客模式（不显示手机号，规避 Apple 隐私问答变化）
+              //   Web/Android → 「立即体验」+ 手机号登录
               if (!kIsWeb && Platform.isIOS)
                 ...[
                   SignInWithAppleButton(
@@ -185,36 +187,6 @@ class _LoginPageState extends State<LoginPage>
                     style: SignInWithAppleButtonStyle.black,
                     height: 52,
                     borderRadius: BorderRadius.circular(14),
-                  ),
-                  const SizedBox(height: 14),
-                  // 手机号验证码登录
-                  OutlinedButton(
-                    onPressed: _showPhoneLoginSheet,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF0A7C74),
-                      side: const BorderSide(color: Color(0xFF0A7C74), width: 1.5),
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      minimumSize: const Size(280, 52),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.phone_android, size: 20),
-                        SizedBox(width: 8),
-                        Text(
-                          '手机号登录',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
                   const SizedBox(height: 14),
                   TextButton(

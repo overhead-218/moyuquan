@@ -13,3 +13,17 @@ Future<void> webDownloadImpl(Uint8List png, String filename) async {
   anchor.click();
   anchor.remove();
 }
+
+/// Web 平台：复制文本到剪贴板（安全上下文用 Clipboard API，否则 execCommand 兜底）
+Future<void> webCopyText(String text) async {
+  try {
+    await html.window.navigator.clipboard?.writeText(text);
+  } catch (_) {
+    final ta = html.document.createElement('textarea') as html.TextAreaElement;
+    ta.value = text;
+    html.document.body?.append(ta);
+    ta.select();
+    html.document.execCommand('copy');
+    ta.remove();
+  }
+}

@@ -41,7 +41,7 @@ class PostShareData {
 }
 
 class SpotShareData {
-  final String name, typeEmoji, typeLabel, city, district, address, imageUrl;
+  final String name, id, typeEmoji, typeLabel, city, district, address, imageUrl;
   final String priceLabel, priceNote;
   final double rating;
   final int reviewCount, hotspotScore;
@@ -49,7 +49,7 @@ class SpotShareData {
   final bool isClaimed;
   final String? ownerName, contactPhone, wechat;
   const SpotShareData({
-    required this.name, required this.typeEmoji, required this.typeLabel,
+    required this.name, required this.id, required this.typeEmoji, required this.typeLabel,
     required this.city, required this.district, required this.address,
     required this.imageUrl, required this.priceLabel, required this.priceNote,
     required this.rating, required this.reviewCount, required this.hotspotScore,
@@ -60,8 +60,8 @@ class SpotShareData {
 
 extension SpotToShare on Spot {
   SpotShareData toShareData() => SpotShareData(
-    name: name, typeEmoji: typeEmoji, typeLabel: type, city: city, district: district,
-    address: address, imageUrl: images.isNotEmpty ? images.first : '',
+    name: name, id: id, typeEmoji: typeEmoji, typeLabel: type, city: city, district: district,
+    address: address, imageUrl: displayImages.where((u) => u.startsWith('http')).isNotEmpty ? displayImages.firstWhere((u) => u.startsWith('http')) : '',
     priceLabel: priceLabel, priceNote: priceNote, rating: rating ?? 0.0,
     reviewCount: reviewCount, hotspotScore: hotspotScore.round(),
     fishSpecies: fishSpecies, isClaimed: isClaimed,
@@ -112,7 +112,7 @@ class ShareCardPage extends StatefulWidget {
 
 class _ShareCardPageState extends State<ShareCardPage> {
   final GlobalKey _cardKey = GlobalKey();
-  bool _saving = false, _sharing = false, _saved = false;
+  bool _saving = false, _sharing = false, _saved = false, _copying = false;
 
   String get _shareText {
     switch (widget.kind) {
@@ -158,6 +158,25 @@ class _ShareCardPageState extends State<ShareCardPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
+  }
+
+  Future<void> _onCopyLink() async {
+    if (_copying) return;
+    final id = (widget.data as SpotShareData).id;
+    final url = '${Uri.base.origin}/?spot=$id';
+    setState(() => _copying = true);
+    final isWeb = Uri.base.isScheme('http') || Uri.base.isScheme('https');
+    if (isWeb) {
+      await webCopyText(url);
+      _showMsg('链接已复制，去微信粘贴发给钓友');
+    } else {
+      try {
+        await Share.share(url);
+      } catch (_) {
+        _showMsg('复制失败，请手动复制链接');
+      }
+    }
+    if (mounted) setState(() => _copying = false);
   }
 
   @override
@@ -230,6 +249,12 @@ class _ShareCardPageState extends State<ShareCardPage> {
                 ),
                 child: Row(
                   children: [
+                    if (widget.kind == ShareKind.spot) ...[
+                      Expanded(
+                        child: _BottomBtn(icon: Icons.link, label: '复制链接', loading: _copying, onTap: _onCopyLink, primary: false, primaryColor: _kPrimary),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
                     Expanded(
                       child: _BottomBtn(icon: _saved ? Icons.check_circle : Icons.download_rounded, label: _saved ? '已保存' : '保存图片', loading: _saving, onTap: _saved ? null : _onSave, primary: false, primaryColor: _kPrimary),
                     ),

@@ -38,6 +38,8 @@ class FishingApp extends StatelessWidget {
       brightness: Brightness.light,
     );
 
+    final deepSpot = Uri.base.queryParameters['spot'];
+
     return MaterialApp(
       title: '摸鱼圈',
       debugShowCheckedModeBanner: false,
@@ -57,7 +59,10 @@ class FishingApp extends StatelessWidget {
         ),
       ),
       // 未登录显示登录页；登录后进入首页。登录页内「立即体验」可游客浏览。
-      home: UserProfile.instance.isLoggedIn ? const HomeShell() : const LoginPage(),
+      // 深链 ?spot=id：分享链接直达钓点详情，跳过登录门禁（游客可直接浏览）。
+      home: deepSpot != null && deepSpot.isNotEmpty
+          ? HomeShell(initialSpotId: deepSpot)
+          : (UserProfile.instance.isLoggedIn ? const HomeShell() : const LoginPage()),
     );
   }
 }
