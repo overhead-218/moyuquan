@@ -11,6 +11,9 @@ void main() async {
 
   // Firebase 已移除，改用腾讯云开发后端。
 
+  // 先从 SharedPreferences 恢复本地登录态（防杀进程丢失，不读云库避免自动续登）
+  await UserProfile.hydrate();
+
   runApp(const FishingApp());
 
   // 启动后后台拉取云库数据（失败自动回退本地 mock，不打断首屏）

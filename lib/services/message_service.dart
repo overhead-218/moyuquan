@@ -93,18 +93,17 @@ class MessageService {
   }
 
   /// 启动后调用：从云库拉取会话覆盖本地；失败保留 mock，永不白屏。
+  /// 重要：即使云库为空也要清空本地，避免旧的 mock 数据永远残留。
   static Future<void> refreshFromCloud() async {
     if (!BackendConfig.cloudEnabled) return;
     try {
       final rows = await TcbRestClient.query(_table,
           params: {'select': '*', 'limit': '100'});
-      if (rows.isNotEmpty) {
-        _cache
-          ..clear()
-          ..addAll(rows.map(_rowToMsg));
-        _notify();
-        print('[MessageService] 已从云库同步 ${_cache.length} 条会话');
-      }
+      _cache
+        ..clear()
+        ..addAll(rows.map(_rowToMsg));
+      _notify();
+      print('[MessageService] 已从云库同步 ${_cache.length} 条会话');
     } catch (e) {
       print('[MessageService] 云库同步失败，使用本地数据：$e');
     }

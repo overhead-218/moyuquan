@@ -1,4 +1,5 @@
 import 'dart:developer' show log;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'backend_config.dart';
 import 'tcb_rest_client.dart';
 
@@ -17,6 +18,31 @@ class UserProfile {
 
   static final UserProfile instance = UserProfile._();
   UserProfile._();
+
+  // 本地持久化键（登录态同步，不发云库，避免多设备覆盖）
+  static const _kIsLoggedIn = 'up_isLoggedIn';
+  static const _kLoginMethod = 'up_loginMethod';
+  static const _kLoginName = 'up_loginName';
+  static const _kPhone = 'up_phone';
+
+  /// 启动时调用：从本地 SharedPreferences 恢复登录态。
+  /// 不读云库，避免刷新后自动续登/被云库 mock profile 覆盖。
+  static Future<void> hydrate() async {
+    final p = await SharedPreferences.getInstance();
+    instance.isLoggedIn = p.getBool(_kIsLoggedIn) ?? false;
+    instance.loginMethod = p.getString(_kLoginMethod) ?? '';
+    instance.loginName = p.getString(_kLoginName) ?? '';
+    instance.phone = p.getString(_kPhone) ?? '';
+    log('[UserProfile] hydrate: isLoggedIn=${instance.isLoggedIn} method=${instance.loginMethod}');
+  }
+
+  Future<void> _persistLogin() async {
+    final p = await SharedPreferences.getInstance();
+    await p.setBool(_kIsLoggedIn, isLoggedIn);
+    await p.setString(_kLoginMethod, loginMethod);
+    await p.setString(_kLoginName, loginName);
+    await p.setString(_kPhone, phone);
+  }
 
   // 基本信息
   String name = kGuestName;
@@ -56,9 +82,10 @@ class UserProfile {
     loginMethod = '';
     loginName = '';
     _notify();
+    _persistLogin(); // fire-and-forget
   }
 
-  /// 登录成功后调用：写入登录态（保留/更新显示名）。
+  /// 登录成功后调用：写入登录态（保留/更新显示名），并立即同步到云库覆盖旧数据。
   /// [method] 登录方式：'apple' | 'phone'
   /// [displayName] 第三方返回的展示名（如 Apple 全名），手机号登录时传 null
   /// [phone] 手机号（手机号登录时传入，用于内部记录；展示名自动生成 138****xxxx 格式）
@@ -81,6 +108,8 @@ class UserProfile {
       if (bio == kGuestBio) bio = '这个人很懒，什么都没留下';
     }
     _notify();
+    _persistLogin(); // 持久化登录态（防杀进程丢失）
+    save(); // 同步到云库（覆盖老李等 mock profile）
   }
 
   /// 序列化（列名与 profiles 表 1:1，主键 id 固定 'me'）
