@@ -9,7 +9,7 @@ import 'user_agreement_page.dart';
 import '../services/user_profile.dart';
 import '../services/sms_service.dart';
 
-/// 登录页：Apple登录(iOS) / 游客模式；微信/手机号待接入（无 SDK 不展示假按钮）
+/// 登录页：Apple登录 / 手机号登录（自有账号体系）/ 游客模式
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -178,8 +178,9 @@ class _LoginPageState extends State<LoginPage>
               const Spacer(flex: 3),
 
               // 登录入口：
-              //   iOS → Apple 登录 + 游客模式（不显示手机号，规避 Apple 隐私问答变化）
+              //   iOS → Apple 登录 + 手机号登录 + 游客模式
               //   Web/Android → 「立即体验」+ 手机号登录
+              //   短信为你自有账号体系（非第三方社交登录），Apple 规则不限制唯一登录方式
               if (!kIsWeb && Platform.isIOS)
                 ...[
                   SignInWithAppleButton(
@@ -187,6 +188,29 @@ class _LoginPageState extends State<LoginPage>
                     style: SignInWithAppleButtonStyle.black,
                     height: 52,
                     borderRadius: BorderRadius.circular(14),
+                  ),
+                  const SizedBox(height: 14),
+                  // 手机号验证码登录（iOS 同样提供，不限制 Apple 用户）
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: OutlinedButton(
+                      onPressed: _showPhoneLoginSheet,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF0A7C74),
+                        side: const BorderSide(color: Color(0xFF0A7C74), width: 1.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: const Text(
+                        '手机号登录',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 14),
                   TextButton(
