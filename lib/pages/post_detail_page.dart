@@ -4,6 +4,7 @@ import 'share_card_page.dart';
 import '../services/follow_service.dart';
 import '../services/moderation_actions.dart';
 import '../services/post_service.dart';
+import '../models/post.dart';
 
 /// 帖子详情页
 class PostDetailPage extends StatefulWidget {
@@ -20,6 +21,7 @@ class PostDetailPage extends StatefulWidget {
   final int commentCount;
   final String postId;
   final String authorId;
+  final List<PostSection> sections;
 
   const PostDetailPage({
     super.key,
@@ -36,6 +38,7 @@ class PostDetailPage extends StatefulWidget {
     required this.commentCount,
     this.postId = '',
     this.authorId = '',
+    this.sections = const <PostSection>[],
   });
 
   @override
@@ -120,6 +123,51 @@ class _PostDetailPageState extends State<PostDetailPage>
     if (liked) {
       _heartCtrl.forward(from: 0);
     }
+  }
+
+  List<Widget> _buildGuide(List<PostSection> sections) {
+    final toc = Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _kSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF0A7C74).withValues(alpha: 0.15)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('讲解目录',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF0A7C74))),
+          const SizedBox(height: 10),
+          ...sections.map((s) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(children: [
+                  const Icon(Icons.menu_rounded, size: 14, color: Color(0xFF0A7C74)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                      child: Text(s.title,
+                          style: const TextStyle(fontSize: 13, color: _kTextPrimary))),
+                ]),
+              )),
+        ],
+      ),
+    );
+    final bodies = sections
+        .map((s) => Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(s.title,
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700, color: _kTextPrimary)),
+                const SizedBox(height: 6),
+                Text(s.body,
+                    style: const TextStyle(
+                        fontSize: 14, color: _kTextPrimary, height: 1.6)),
+              ]),
+            ))
+        .toList();
+    return [toc, ...bodies];
   }
 
   /// 帖子作者的稳定关注 id
@@ -416,6 +464,7 @@ class _PostDetailPageState extends State<PostDetailPage>
                     ),
                   ),
                   const SizedBox(height: 12),
+                  if (widget.sections.isNotEmpty) ..._buildGuide(widget.sections),
                   // 标签
                   if (widget.location.isNotEmpty)
                     Wrap(

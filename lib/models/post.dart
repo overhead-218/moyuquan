@@ -13,6 +13,7 @@ class Post {
   final int likeCount;
   final int commentCount;
   final DateTime createdAt;
+  final List<PostSection> sections;
 
   const Post({
     required this.id,
@@ -28,6 +29,7 @@ class Post {
     required this.likeCount,
     required this.commentCount,
     required this.createdAt,
+    this.sections = const <PostSection>[],
   });
 
   // ── 云库序列化（字段名与 Postgres 列 1:1）─────────────────
@@ -45,6 +47,7 @@ class Post {
     'likeCount': likeCount,
     'commentCount': commentCount,
     'createdAt': createdAt.toIso8601String(),
+    'sections': sections.map((e) => e.toJson()).toList(),
   };
 
   static String? _asStr(dynamic v) => v == null ? null : v.toString();
@@ -69,5 +72,21 @@ class Post {
     createdAt: json['createdAt'] == null
         ? DateTime.now()
         : DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now(),
+    sections: (json['sections'] as List?)
+            ?.map((e) => PostSection.fromJson(Map<String, dynamic>.from(e)))
+            .toList() ??
+        const <PostSection>[],
+  );
+}
+
+/// 帖子章节（讲解目录用）
+class PostSection {
+  final String title;
+  final String body;
+  const PostSection({required this.title, required this.body});
+  Map<String, dynamic> toJson() => {'title': title, 'body': body};
+  factory PostSection.fromJson(Map<String, dynamic> json) => PostSection(
+    title: json['title']?.toString() ?? '',
+    body: json['body']?.toString() ?? '',
   );
 }

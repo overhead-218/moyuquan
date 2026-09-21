@@ -498,6 +498,7 @@ class _FeedImageCardState extends State<_FeedImageCard>
                     location: widget.post.location,
                     postType: widget.post.type,
                     commentCount: widget.post.commentCount,
+                    sections: widget.post.sections,
                   ),
                   transitionsBuilder: (context, animation, t, child) {
                     return FadeTransition(
