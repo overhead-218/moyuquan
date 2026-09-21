@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/spot.dart';
 import '../services/spot_service.dart';
+import '../services/spot_submission_service.dart';
+import '../services/user_profile.dart';
 
 /// 添加钓点 / 钓友投稿
 class SpotSubmitPage extends StatefulWidget {
@@ -46,6 +51,10 @@ class _SpotSubmitPageState extends State<SpotSubmitPage> {
   final _accImgCtrl = TextEditingController();
   final _commonImgCtrl = TextEditingController();
 
+  /// 用户从相机/相册选择的真实照片（base64 data URI）。
+  final List<String> _photos = [];
+  bool _submitting = false;
+
   bool _hasLodging = false;
   final Set<String> _facilities = {};
 
@@ -74,12 +83,36 @@ class _SpotSubmitPageState extends State<SpotSubmitPage> {
     super.dispose();
   }
 
+  Future<void> _pickPhotos() async {
+    try {
+      final picked = await ImagePicker().pickMultiImage(
+        imageQuality: 70,
+        maxWidth: 1280,
+        maxHeight: 1280,
+      );
+      if (picked.isEmpty) return;
+      final uris = <String>[];
+      for (final f in picked) {
+        final bytes = await File(f.path).readAsBytes();
+        final b64 = base64Encode(bytes);
+        uris.add('data:image/jpeg;base64,$b64');
+      }
+      setState(() => _photos.addAll(uris));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('选择图片失败：$e')),
+        );
+      }
+    }
+  }
+
   String get _typeEmoji {
     final i = _types.indexOf(_type);
     return i >= 0 && i < _typeEmojis.length ? _typeEmojis[i] : '🎣';
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -109,14 +142,18 @@ class _SpotSubmitPageState extends State<SpotSubmitPage> {
 
     final imgRaw = _imageCtrl.text.trim();
     final List<String> images;
-    if (imgRaw.isEmpty) {
-      images = ['https://picsum.photos/seed/u${DateTime.now().millisecondsSinceEpoch}/800/500'];
-    } else {
+    if (_photos.isNotEmpty) {
+      // 用户上传的真实照片（base64 data URI）优先
+      images = List<String>.from(_photos);
+    } else if (imgRaw.isNotEmpty) {
       images = imgRaw
           .split(',')
           .map((e) => e.trim())
           .where((e) => e.isNotEmpty)
           .toList();
+    } else {
+      // 无图则不塞占位图，留空走兜底（避免假图）
+      images = const <String>[];
     }
 
     final accImages = _parseList(_accImgCtrl.text);
@@ -162,14 +199,54 @@ class _SpotSubmitPageState extends State<SpotSubmitPage> {
       submitter: SpotSubmitter.ugc,
     );
 
-    SpotService.addSpot(spot);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('钓点已提交，感谢分享！'),
-        backgroundColor: _primary,
-      ),
-    );
-    Navigator.pop(context);
+    final submission = <String, dynamic>{
+      'spot_id': spot.id,
+      'name': spot.name,
+      'type': spot.type,
+      'type_emoji': spot.typeEmoji,
+      'city': spot.city,
+      'district': spot.district,
+      'address': spot.address,
+      'latitude': spot.latitude,
+      'longitude': spot.longitude,
+      'images_json': SpotSubmissionService.jsonList(images),
+      'fish_species': SpotSubmissionService.jsonList(spot.fishSpecies),
+      'fish_peak_season': SpotSubmissionService.jsonMap(spot.fishPeakSeason),
+      'price': spot.price,
+      'price_note': spot.priceNote,
+      'business_hours': spot.businessHours,
+      'contact_phone': spot.contactPhone,
+      'wechat': spot.wechat,
+      'owner_name': spot.ownerName,
+      'description': spot.description,
+      'facilities_json': SpotSubmissionService.jsonList(spot.facilities),
+      'has_accommodation': spot.hasAccommodation,
+      'submitter_phone': UserProfile.instance.phone ?? '',
+      'submitter_name': UserProfile.instance.loginName ?? '钓友',
+      'status': 'pending',
+    };
+
+    setState(() => _submitting = true);
+    try {
+      await SpotSubmissionService.submitSpot(submission);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('提交成功，感谢分享！审核通过后将在钓点库展示'),
+            backgroundColor: _primary,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('提交失败：$e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
   }
 
   List<String> _parseList(String raw) =>
@@ -186,11 +263,16 @@ class _SpotSubmitPageState extends State<SpotSubmitPage> {
         title: const Text('添加钓点',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: _primary)),
         actions: [
-          TextButton(
-            onPressed: _submit,
-            child: const Text('提交',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _primary)),
-          ),
+          _submitting
+              ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: _primary)),
+                )
+              : TextButton(
+                  onPressed: _submit,
+                  child: const Text('提交',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _primary)),
+                ),
         ],
       ),
       body: SingleChildScrollView(
@@ -343,7 +425,69 @@ class _SpotSubmitPageState extends State<SpotSubmitPage> {
               _buildDivider(),
               _buildField(label: '负责人', ctrl: _ownerCtrl, hint: '选填'),
               _buildDivider(),
-              _buildField(label: '图片URL', ctrl: _imageCtrl, hint: '选填，多个用逗号分隔'),
+              // 真实照片上传（替代原来的图片URL占位）
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Text('钓点照片', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _textMain)),
+                        const SizedBox(width: 6),
+                        const Text('真实照片优先', style: TextStyle(fontSize: 11, color: _textWeak)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        ..._photos.map((uri) => Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.network(uri, width: 76, height: 76, fit: BoxFit.cover),
+                            ),
+                            Positioned(
+                              top: 2, right: 2,
+                              child: GestureDetector(
+                                onTap: () => setState(() => _photos.remove(uri)),
+                                child: Container(
+                                  width: 20, height: 20,
+                                  decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                                  child: const Icon(Icons.close, size: 14, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )),
+                        GestureDetector(
+                          onTap: _pickPhotos,
+                          child: Container(
+                            width: 76, height: 76,
+                            decoration: BoxDecoration(
+                              color: _bg,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: _primary.withValues(alpha: 0.3)),
+                            ),
+                            child: const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add_a_photo, size: 22, color: _primary),
+                                SizedBox(height: 2),
+                                Text('添加', style: TextStyle(fontSize: 11, color: _primary)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              _buildDivider(),
+              _buildField(label: '图片链接(选填)', ctrl: _imageCtrl, hint: '有网图可粘贴链接，多个逗号分隔', maxLines: 2),
               _buildDivider(),
               _buildField(label: '简介', ctrl: _descCtrl, hint: '介绍一下这个钓点', maxLines: 3),
             ]),

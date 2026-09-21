@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/spot.dart';
 import '../services/spot_service.dart';
 import '../services/favorite_service.dart';
 import '../services/post_service.dart';
+import '../services/spot_submission_service.dart';
+import '../services/user_profile.dart';
 import 'share_card_page.dart';
 
 /// 服务·价格产品卡数据
@@ -93,6 +96,89 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
   void _toggleFav() {
     FavoriteService.instance.toggleSpotFav(spot.id);
     _syncFav();
+  }
+
+  /// 举报：图片错误 / 信息有误 / 该钓点已关闭
+  void _showReportSheet() {
+    String reason = '图片错误（与钓点不符/占位图）';
+    final noteCtl = TextEditingController();
+    final photos = <String>[];
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: _surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSt) => Padding(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('反馈这个问题', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: _primary)),
+              const SizedBox(height: 14),
+              const Text('问题类型', style: TextStyle(fontSize: 13, color: _textWeak)),
+              const SizedBox(height: 8),
+              ...['图片错误（与钓点不符/占位图）', '信息有误（价格/地址/营业时间）', '钓点已关闭/不存在', '其他']
+                  .map((r) => RadioListTile<String>(
+                        contentPadding: EdgeInsets.zero,
+                        dense: true,
+                        title: Text(r, style: const TextStyle(fontSize: 14)),
+                        value: r,
+                        groupValue: reason,
+                        activeColor: _primary,
+                        onChanged: (v) => setSt(() => reason = v!),
+                      ))
+                  .toList(),
+              TextField(
+                controller: noteCtl,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: '补充说明（选填）',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: () async {
+                    try {
+                      await SpotSubmissionService.submitCorrection({
+                        'spot_id': spot.id,
+                        'spot_name': spot.name,
+                        'reason': reason,
+                        'note': noteCtl.text.trim(),
+                        'submitter_name': UserProfile.instance.loginName ?? '匿名钓友',
+                        'status': 'pending',
+                      });
+                      if (mounted) Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('已收到反馈，感谢纠错！'), backgroundColor: _primary),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('提交失败：$e'), backgroundColor: Colors.red),
+                      );
+                    }
+                  },
+                  child: const Text('提交反馈', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _openUrl(String url) async {
@@ -228,6 +314,17 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                   onPressed: () => Navigator.pop(context),
                 ),
                 actions: [
+                  IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.report_problem_outlined, color: Colors.white, size: 18),
+                    ),
+                    onPressed: _showReportSheet,
+                  ),
                   IconButton(
                     icon: Container(
                       padding: const EdgeInsets.all(6),
