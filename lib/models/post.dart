@@ -72,10 +72,11 @@ class Post {
     createdAt: json['createdAt'] == null
         ? DateTime.now()
         : DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now(),
-    sections: (json['sections'] as List?)
-            ?.map((e) => PostSection.fromJson(Map<String, dynamic>.from(e)))
-            .toList() ??
-        const <PostSection>[],
+    sections: json['sections'] is List
+        ? (json['sections'] as List)
+            .map((e) => PostSection.fromJson(Map<String, dynamic>.from(e)))
+            .toList()
+        : const <PostSection>[],
   );
 }
 
