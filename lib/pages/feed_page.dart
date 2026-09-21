@@ -532,7 +532,9 @@ class _FeedImageCardState extends State<_FeedImageCard>
                   SizedBox(
                     height: widget.post.height,
                     width: double.infinity,
-                    child: Image.network(
+                    child: widget.post.imageUrl.isEmpty
+                        ? _OfficialBanner(post: widget.post, height: widget.post.height)
+                        : Image.network(
                       widget.post.imageUrl,
                       fit: BoxFit.cover,
                       loadingBuilder: (context, child, loadingProgress) {
@@ -672,6 +674,59 @@ class _FeedImageCardState extends State<_FeedImageCard>
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// 官方指南帖封面：无网络图时用品牌渐变横幅，避免假图/裂图。
+class _OfficialBanner extends StatelessWidget {
+  final Post post;
+  final double height;
+  const _OfficialBanner({required this.post, required this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: height,
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0A7C74), Color(0xFF148F86)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 16, top: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.22),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('📢', style: TextStyle(fontSize: 13)),
+                  SizedBox(width: 4),
+                  Text('摸鱼圈官方', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 16, right: 16, bottom: 16,
+            child: Text(
+              post.title,
+              style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.w800),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -210,7 +210,31 @@ class _PostDetailPageState extends State<PostDetailPage>
               background: SizedBox(
                 height: widget.imageHeight + 60,
                 width: double.infinity,
-                child: Image.network(
+                child: widget.imageUrl.isEmpty
+                    ? Container(
+                        width: double.infinity,
+                        height: widget.imageHeight + 60,
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF0A7C74), Color(0xFF148F86)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Text(
+                              widget.title,
+                              style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.w800),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Image.network(
                   widget.imageUrl,
                   fit: BoxFit.cover,
                   loadingBuilder: (context, child, loadingProgress) {

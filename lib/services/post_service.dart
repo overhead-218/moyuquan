@@ -16,6 +16,28 @@ class PostService {
   // ---------------------------------------------------------------------------
   /// 全部城市覆盖的 Mock 数据
   static final List<Post> _mockPosts = [
+    // ── 官方指南帖（置顶，讲解入驻与玩法）──────────────────────
+    Post(id:'p_off_001', authorId:'official', authorName:'摸鱼圈官方', authorAvatar:'📢',
+        type:'guide', title:'商家如何免费认领你的钓点',
+        content:'你是钓场 / 农家乐 / 路亚基地老板？在摸鱼圈搜索你的钓点，进入详情页点右上角「举报」旁的认领入口，提交资质与联系方式即可认领。认领后你可以：① 自助维护价格、营业时间、联系方式；② 上传真实钓点照片替换占位图；③ 展示「商家认证价」替代平台采集参考价。完全免费，运营审核通过后立刻生效。',
+        location:'全国',
+        imageUrl:'', height:280,
+        likeCount:86, commentCount:21,
+        createdAt: DateTime(2026, 9, 21)),
+    Post(id:'p_off_002', authorId:'official', authorName:'摸鱼圈官方', authorAvatar:'📢',
+        type:'guide', title:'怎么用摸鱼圈找到好钓点',
+        content:'首页底部「钓点」按城市 + 热度排序，顶部「热门推荐」是近期最火的水域。点进详情能看到真实钓友照片、收费、鱼种旺季、设施配套。看到错误图片或信息？右上角「举报」一键反馈，运营核实后会修正并入库。收藏的钓点都在「我的」里随时查看。',
+        location:'全国',
+        imageUrl:'', height:240,
+        likeCount:54, commentCount:12,
+        createdAt: DateTime(2026, 9, 21)),
+    Post(id:'p_off_003', authorId:'official', authorName:'摸鱼圈官方', authorAvatar:'📢',
+        type:'guide', title:'发布渔获，认识同城钓友',
+        content:'首页中间「➕」可发布钓点 / 晒渔获 / 写渔获日记，带真实照片更容易被推荐。带定位的帖子会出现在同城信息流，方便约钓。在他人主页点头像可私信。请文明垂钓，不要展示禁钓区与违规钓法。',
+        location:'全国',
+        imageUrl:'', height:300,
+        likeCount:47, commentCount:15,
+        createdAt: DateTime(2026, 9, 21)),
     // ── 江苏 ──────────────────────────────────────────────────
     Post(id:'p_001', authorId:'u_one_bowl', authorName:'一碗木瓜水', authorAvatar:'🎣',
         type:'catch', title:'今早老位置又爆护了',
