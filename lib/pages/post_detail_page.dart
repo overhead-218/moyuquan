@@ -341,9 +341,11 @@ class _PostDetailPageState extends State<PostDetailPage>
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                const Text(
-                                  '3小时前 · 南京',
-                                  style: TextStyle(
+                                Text(
+                                  widget.location.isNotEmpty
+                                      ? widget.location
+                                      : '摸鱼圈官方',
+                                  style: const TextStyle(
                                     fontSize: 12,
                                     color: _kTextWeak,
                                   ),
@@ -395,9 +397,9 @@ class _PostDetailPageState extends State<PostDetailPage>
                   ),
                   const SizedBox(height: 16),
                   // 标题
-                  const Text(
-                    '周末钓鱼记录',
-                    style: TextStyle(
+                  Text(
+                    widget.title,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: _kTextPrimary,
@@ -405,9 +407,9 @@ class _PostDetailPageState extends State<PostDetailPage>
                   ),
                   const SizedBox(height: 10),
                   // 正文
-                  const Text(
-                    '今天天气非常好，一大早就出发了，去了南京郊区的野钓点。鱼口很旺，连竿上了十几条大板鲫，最大的有半斤多！饵料用的是老坛玉米加蓝鲫，效果非常好。',
-                    style: TextStyle(
+                  Text(
+                    widget.content,
+                    style: const TextStyle(
                       fontSize: 15,
                       color: _kTextPrimary,
                       height: 1.6,
@@ -415,16 +417,14 @@ class _PostDetailPageState extends State<PostDetailPage>
                   ),
                   const SizedBox(height: 12),
                   // 标签
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _Tag('野钓'),
-                      _Tag('大板鲫'),
-                      _Tag('老坛玉米'),
-                      _Tag('南京'),
-                    ],
-                  ),
+                  if (widget.location.isNotEmpty)
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _Tag(widget.location),
+                      ],
+                    ),
                   const SizedBox(height: 20),
                   // 点赞互动栏
                   Container(
