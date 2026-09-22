@@ -8,6 +8,7 @@ import 'privacy_policy_page.dart';
 import 'user_agreement_page.dart';
 import '../services/user_profile.dart';
 import '../services/sms_service.dart';
+import '../services/tcb_rest_client.dart';
 
 /// 登录页：Apple登录 / 手机号登录（自有账号体系）/ 游客模式
 class LoginPage extends StatefulWidget {
@@ -76,8 +77,34 @@ class _LoginPageState extends State<LoginPage>
         displayName = full;
       } else if (credential.email != null && credential.email!.isNotEmpty) {
         displayName = credential.email!.split('@').first;
+      } else {
+        // Apple 仅在首次授权返回姓名，再次登录不返回；优先从云库取回已存昵称，避免清空用户改过的名字
+        try {
+          final rows = await TcbRestClient.query(
+            UserProfile.kTable,
+            params: {
+              'select': 'name,loginName',
+              'id': 'eq.${UserProfile.kId}',
+              'limit': '1',
+            },
+          );
+          if (rows.isNotEmpty) {
+            final cloudName = (rows.first['name'] ??
+                    rows.first['loginName'] ??
+                    '')
+                .toString()
+                .trim();
+            if (cloudName.isNotEmpty) displayName = cloudName;
+          }
+        } catch (_) {}
+        // 兜底：内存里仍有登录名（如从「我的」页重新登录）时保留
+        if (displayName == null || displayName!.isEmpty) {
+          if (UserProfile.instance.loginName.isNotEmpty) {
+            displayName = UserProfile.instance.loginName;
+          }
+        }
       }
-      UserProfile.instance
+      await UserProfile.instance
           .markLoggedIn(method: 'apple', displayName: displayName);
       if (!mounted) return;
       _enterHome();
@@ -415,7 +442,7 @@ class _PhoneLoginSheetState extends State<_PhoneLoginSheet> {
         return;
       }
       // 验证码正确，写入登录态
-      UserProfile.instance.markLoggedIn(method: 'phone', phone: phone);
+      await UserProfile.instance.markLoggedIn(method: 'phone', phone: phone);
       if (!mounted) return;
       Navigator.pop(context); // 关闭 BottomSheet
       widget.onSuccess();

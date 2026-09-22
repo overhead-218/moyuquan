@@ -7,7 +7,7 @@ import 'tcb_rest_client.dart';
 /// 内存单例，会话内有效；启动默认为「本地游客」（中性默认值，非 mock 账号）。
 /// 登出 = resetToGuest()：清空所有用户态数据，回到干净游客。
 class UserProfile {
-  static const String _table = 'profiles';
+  static const String kTable = 'profiles';
   static const String kId = 'me';
 
   static const String kGuestName = '钓鱼人';
@@ -89,11 +89,11 @@ class UserProfile {
   /// [method] 登录方式：'apple' | 'phone'
   /// [displayName] 第三方返回的展示名（如 Apple 全名），手机号登录时传 null
   /// [phone] 手机号（手机号登录时传入，用于内部记录；展示名自动生成 138****xxxx 格式）
-  void markLoggedIn({
+  Future<void> markLoggedIn({
     required String method,
     String? displayName,
     String? phone,
-  }) {
+  }) async {
     isLoggedIn = true;
     loginMethod = method;
     loginName = displayName ?? '';
@@ -108,7 +108,7 @@ class UserProfile {
       if (bio == kGuestBio) bio = '这个人很懒，什么都没留下';
     }
     _notify();
-    _persistLogin(); // 持久化登录态（防杀进程丢失）
+    await _persistLogin(); // 同步落盘后再返回，避免杀进程丢登录态
     save(); // 同步到云库（覆盖老李等 mock profile）
   }
 
@@ -139,7 +139,7 @@ class UserProfile {
   void save() {
     _notify();
     if (!BackendConfig.cloudEnabled) return;
-    TcbRestClient.upsert(_table, toJson()).then((_) {
+    TcbRestClient.upsert(kTable, toJson()).then((_) {
       log('[UserProfile] 已保存云库');
     }).catchError((e) {
       log('[UserProfile] 保存云库失败：$e');
@@ -150,7 +150,7 @@ class UserProfile {
   Future<void> refreshFromCloud() async {
     if (!BackendConfig.cloudEnabled) return;
     try {
-      final rows = await TcbRestClient.query(_table,
+      final rows = await TcbRestClient.query(kTable,
           params: {'select': '*', 'id': 'eq.$kId', 'limit': '1'});
       if (rows.isNotEmpty) {
         applyFromCloud(rows.first);
