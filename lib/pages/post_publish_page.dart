@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart' as img;
+import 'dart:convert';
 import 'dart:io';
 import '../services/post_service.dart';
 import '../services/spot_service.dart';
+import '../services/user_profile.dart';
 import '../models/post.dart';
 import '../models/spot.dart';
 
@@ -119,6 +122,28 @@ class _PostPublishPageState extends State<PostPublishPage> {
     );
   }
 
+  /// 把选中的图片压成 JPEG 再转 base64 data URI，并返回合适的卡片高度。
+  /// 直接存手机本地路径（image_picker 的临时目录）是无效的——换设备/重启就断。
+  /// 现阶段不进对象存储，压缩后 base64 存库（与头像 avatarData 同一套思路）。
+  Future<(String, double)> _toDataUri(XFile f) async {
+    final bytes = await f.readAsBytes();
+    final decoded = img.decodeImage(bytes);
+    if (decoded == null) return ('', 280.0);
+    const maxSide = 1280;
+    var out = decoded;
+    if (decoded.width > maxSide || decoded.height > maxSide) {
+      out = decoded.width >= decoded.height
+          ? img.copyResize(decoded, width: maxSide)
+          : img.copyResize(decoded, height: maxSide);
+    }
+    final jpg = img.encodeJpg(out, quality: 72);
+    final uri = 'data:image/jpeg;base64,${base64Encode(jpg)}';
+    // 按朝向给卡片高度，避免 height=0 导致图区被压扁
+    final ratio = out.width / out.height;
+    final h = ratio >= 1.15 ? 220.0 : (ratio <= 0.87 ? 340.0 : 280.0);
+    return (uri, h);
+  }
+
   Future<void> _submit() async {
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -136,20 +161,38 @@ class _PostPublishPageState extends State<PostPublishPage> {
     setState(() => _isSubmitting = true);
 
     try {
-      // TODO: 上传图片到云端，这里先用本地路径模拟
-      final imageUrls = _images.map((f) => f.path).toList();
+      // 压缩 + base64 编码，保证图片随帖子一起进云库、换设备也能看到
+      final imageUrls = <String>[];
+      var postHeight = 280.0;
+      for (final f in _images) {
+        final r = await _toDataUri(f);
+        if (r.$1.isNotEmpty) {
+          if (imageUrls.isEmpty) postHeight = r.$2;
+          imageUrls.add(r.$1);
+        }
+      }
+      if (imageUrls.isEmpty) {
+        if (mounted) {
+          setState(() => _isSubmitting = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('图片处理失败，请重新选择')),
+          );
+        }
+        return;
+      }
 
+      final profile = UserProfile.instance;
       final post = Post(
         id: 'post_${DateTime.now().millisecondsSinceEpoch}',
         authorId: 'me',
-        authorName: '钓鱼人',
-        authorAvatar: '',
+        authorName: profile.name,
+        authorAvatar: profile.avatarEmoji,
         type: _postType,
         title: _titleController.text.trim(),
         content: _contentController.text.trim(),
         location: _selectedSpot?.name ?? _locationController.text.trim(),
         imageUrl: imageUrls.first,
-        height: 0.0,
+        height: postHeight,
         likeCount: 0,
         commentCount: 0,
         createdAt: DateTime.now(),

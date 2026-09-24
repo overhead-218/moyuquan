@@ -5,6 +5,7 @@ import '../services/follow_service.dart';
 import '../services/moderation_actions.dart';
 import '../services/post_service.dart';
 import '../models/post.dart';
+import '../widgets/smart_image.dart';
 
 /// 帖子详情页
 class PostDetailPage extends StatefulWidget {
@@ -282,8 +283,8 @@ class _PostDetailPageState extends State<PostDetailPage>
                           ),
                         ),
                       )
-                    : Image.network(
-                  widget.imageUrl,
+                    : SmartImage(
+                  url: widget.imageUrl,
                   fit: BoxFit.cover,
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;

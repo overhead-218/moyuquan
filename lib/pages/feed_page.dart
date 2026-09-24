@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/smart_image.dart';
 import '../models/post.dart';
 import '../services/post_service.dart';
 import '../services/spot_service.dart';
@@ -535,8 +536,8 @@ class _FeedImageCardState extends State<_FeedImageCard>
                     width: double.infinity,
                     child: widget.post.imageUrl.isEmpty
                         ? _OfficialBanner(post: widget.post, height: widget.post.height)
-                        : Image.network(
-                      widget.post.imageUrl,
+                        : SmartImage(
+                      url: widget.post.imageUrl,
                       fit: BoxFit.cover,
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
