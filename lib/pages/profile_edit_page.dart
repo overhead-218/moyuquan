@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
+import 'package:image_picker/image_picker.dart';
 import '../services/user_profile.dart';
 
 /// 编辑资料页
@@ -26,6 +30,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   final _locationCtrl =
       TextEditingController(text: UserProfile.instance.city);
   String _gender = UserProfile.instance.gender;
+  bool _savingAvatar = false;
 
   @override
   void dispose() {
@@ -121,15 +126,25 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                             width: 3,
                           ),
                         ),
-                        child: const Center(
-                          child: Text('🎣', style: TextStyle(fontSize: 44)),
+                        child: Center(
+                          child: UserProfile.instance.avatarData.isEmpty
+                              ? Text(UserProfile.instance.avatarEmoji,
+                                  style: const TextStyle(fontSize: 44))
+                              : ClipOval(
+                                  child: Image.memory(
+                                    base64Decode(UserProfile.instance.avatarData),
+                                    width: 88,
+                                    height: 88,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                         ),
                       ),
                       Positioned(
                         right: 0,
                         bottom: 0,
                         child: GestureDetector(
-                          onTap: () {},
+                          onTap: _savingAvatar ? null : _pickAvatar,
                           child: Container(
                             width: 30,
                             height: 30,
@@ -149,9 +164,13 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    '点击更换头像',
-                    style: TextStyle(
+                  Text(
+                    _savingAvatar
+                        ? '处理中…'
+                        : (UserProfile.instance.avatarData.isEmpty
+                            ? '点击更换头像'
+                            : '点击更换头像 · 再次选择可替换'),
+                    style: const TextStyle(
                       fontSize: 13,
                       color: _kTextWeak,
                     ),
@@ -197,6 +216,52 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             ]),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 选择头像：相册 → 压缩 256px JPEG base64 → 存本地+云库
+  Future<void> _pickAvatar() async {
+    final picker = ImagePicker();
+    final XFile? picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 80,
+    );
+    if (picked == null) return;
+    setState(() => _savingAvatar = true);
+    try {
+      final bytes = await picked.readAsBytes();
+      final decoded = img.decodeImage(bytes);
+      if (decoded == null) {
+        _showAvatarError('图片解码失败，换一张试试');
+        return;
+      }
+      final resized = img.copyResize(
+        decoded,
+        width: decoded.width >= decoded.height ? 256 : null,
+        height: decoded.width >= decoded.height ? null : 256,
+      );
+      final jpg = img.encodeJpg(resized, quality: 72);
+      UserProfile.instance.avatarData = base64Encode(jpg);
+      UserProfile.instance.save();
+      setState(() {});
+    } catch (e) {
+      _showAvatarError('选择失败：' + e.toString());
+    } finally {
+      setState(() => _savingAvatar = false);
+    }
+  }
+
+  void _showAvatarError(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

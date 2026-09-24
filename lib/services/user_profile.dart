@@ -24,6 +24,7 @@ class UserProfile {
   static const _kLoginMethod = 'up_loginMethod';
   static const _kLoginName = 'up_loginName';
   static const _kPhone = 'up_phone';
+  static const _kAvatarData = 'up_avatarData';
 
   /// 启动时调用：从本地 SharedPreferences 恢复登录态。
   /// 不读云库，避免刷新后自动续登/被云库 mock profile 覆盖。
@@ -33,6 +34,7 @@ class UserProfile {
     instance.loginMethod = p.getString(_kLoginMethod) ?? '';
     instance.loginName = p.getString(_kLoginName) ?? '';
     instance.phone = p.getString(_kPhone) ?? '';
+    instance.avatarData = p.getString(_kAvatarData) ?? '';
     log('[UserProfile] hydrate: isLoggedIn=${instance.isLoggedIn} method=${instance.loginMethod}');
   }
 
@@ -42,6 +44,7 @@ class UserProfile {
     await p.setString(_kLoginMethod, loginMethod);
     await p.setString(_kLoginName, loginName);
     await p.setString(_kPhone, phone);
+    await p.setString(_kAvatarData, avatarData);
   }
 
   // 基本信息
@@ -51,6 +54,11 @@ class UserProfile {
   String gender = kGuestGender;
   String avatarEmoji = kGuestAvatar;
   String phone = ''; // 手机号（仅登录态内存用，不对外暴露完整号）
+
+  /// 自定义头像（压缩后的 JPEG base64，空串表示使用 emoji 默认头像）。
+  /// 优先级高于 [avatarEmoji]；存本地 SP + 云库 profiles.avatarData 双份，
+  /// 刷新/换设备都能恢复。早期量级直接存库，省掉对象存储桶。
+  String avatarData = '';
 
   // 登录态（仅内存，无持久化）：
   // - 启动/登出后：isLoggedIn=false（游客浏览态）
@@ -78,6 +86,7 @@ class UserProfile {
     gender = kGuestGender;
     avatarEmoji = kGuestAvatar;
     phone = '';
+    avatarData = '';
     isLoggedIn = false;
     loginMethod = '';
     loginName = '';
@@ -121,6 +130,7 @@ class UserProfile {
         'gender': gender,
         'avatarEmoji': avatarEmoji,
         'loginMethod': loginMethod,
+        'avatarData': avatarData,
       };
 
   /// 用云库行覆盖本地字段
@@ -131,6 +141,9 @@ class UserProfile {
     gender = row['gender']?.toString() ?? gender;
     avatarEmoji = row['avatarEmoji']?.toString() ?? avatarEmoji;
     loginMethod = row['loginMethod']?.toString() ?? loginMethod;
+    // 云库有头像则覆盖（无该字段时保留本地 SP 值）
+    final cloudAvatar = row['avatarData']?.toString();
+    if (cloudAvatar != null && cloudAvatar.isNotEmpty) avatarData = cloudAvatar;
     // 登录态仅内存，不由云库 profile 推导（避免刷新后自动续登）
     _notify();
   }

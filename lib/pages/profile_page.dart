@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'profile_edit_page.dart';
 import 'my_posts_page.dart';
@@ -135,7 +136,16 @@ class _ProfilePageState extends State<ProfilePage> {
                                 width: 2.5),
                           ),
                           alignment: Alignment.center,
-                          child: Text(_avatar, style: const TextStyle(fontSize: 36)),
+                          child: UserProfile.instance.avatarData.isEmpty
+                              ? Text(_avatar, style: const TextStyle(fontSize: 36))
+                              : ClipOval(
+                                  child: Image.memory(
+                                    base64Decode(UserProfile.instance.avatarData),
+                                    width: 68,
+                                    height: 68,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(width: 20),

@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image/image.dart' as img;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/spot.dart';
@@ -141,6 +143,52 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                   contentPadding: const EdgeInsets.all(12),
                 ),
               ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Text('补充图片（可选，最多 3 张）', style: TextStyle(fontSize: 13, color: _textWeak)),
+                  const Spacer(),
+                  TextButton.icon(
+                    onPressed: photos.length >= 3 ? null : () => _pickCorrectionImages(photos, () => setSt(() {})),
+                    icon: const Icon(Icons.add_photo_alternate_outlined, size: 18),
+                    label: const Text('添加图片'),
+                  ),
+                ],
+              ),
+              if (photos.isNotEmpty)
+                SizedBox(
+                  height: 64,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: photos.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (_, i) => Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.memory(
+                            base64Decode(photos[i]),
+                            width: 64,
+                            height: 64,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: GestureDetector(
+                            onTap: () => setSt(() => photos.removeAt(i)),
+                            child: Container(
+                              decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                              padding: const EdgeInsets.all(2),
+                              child: const Icon(Icons.close, size: 14, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               const SizedBox(height: 14),
               SizedBox(
                 width: double.infinity,
@@ -153,11 +201,20 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                   ),
                   onPressed: () async {
                     try {
+                      final correctionType = reason.contains('图片')
+                          ? 'image_wrong'
+                          : (reason.contains('已关闭') || reason.contains('不存在'))
+                              ? 'closed'
+                              : reason.contains('信息')
+                                  ? 'info_wrong'
+                                  : 'other';
                       await SpotSubmissionService.submitCorrection({
                         'spot_id': spot.id,
                         'spot_name': spot.name,
                         'reason': reason,
+                        'correction_type': correctionType,
                         'note': noteCtl.text.trim(),
+                        'images_json': jsonEncode(photos),
                         'submitter_name': UserProfile.instance.loginName ?? '匿名钓友',
                         'status': 'pending',
                       });
@@ -179,6 +236,39 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
         ),
       ),
     );
+  }
+
+  /// 选择补充图片：多选 → 压缩 720px JPEG → base64（最多 3 张）
+  Future<void> _pickCorrectionImages(List<String> photos, void Function() refresh) async {
+    try {
+      final picker = ImagePicker();
+      final List<XFile> picked = await picker.pickMultiImage(
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 80,
+      );
+      if (picked.isEmpty) return;
+      for (final f in picked) {
+        if (photos.length >= 3) break;
+        try {
+          final bytes = await f.readAsBytes();
+          final decoded = img.decodeImage(bytes);
+          if (decoded == null) continue;
+          final resized = img.copyResize(
+            decoded,
+            width: decoded.width >= decoded.height ? 720 : null,
+            height: decoded.width >= decoded.height ? null : 720,
+          );
+          photos.add(base64Encode(img.encodeJpg(resized, quality: 70)));
+        } catch (_) {}
+      }
+      refresh();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('选择图片失败：$e'), backgroundColor: Colors.redAccent),
+      );
+    }
   }
 
   void _openUrl(String url) async {
