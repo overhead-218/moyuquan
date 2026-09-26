@@ -192,6 +192,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
         content: _contentController.text.trim(),
         location: _selectedSpot?.name ?? _locationController.text.trim(),
         imageUrl: imageUrls.first,
+        images: imageUrls,
         height: postHeight,
         likeCount: 0,
         commentCount: 0,

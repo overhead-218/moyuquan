@@ -550,6 +550,7 @@ class _PostTile extends StatelessWidget {
               authorName: post.authorName,
               authorAvatar: post.authorAvatar,
               imageUrl: post.imageUrl,
+              images: post.images,
               imageHeight: 200,
               likeCount: post.likeCount,
               index: 0,

@@ -491,6 +491,7 @@ class _FeedImageCardState extends State<_FeedImageCard>
                     authorName: widget.post.authorName,
                     authorAvatar: widget.post.authorAvatar,
                     imageUrl: widget.post.imageUrl,
+                    images: widget.post.images,
                     imageHeight: widget.post.height,
                     likeCount: widget.post.likeCount,
                     index: widget.index,

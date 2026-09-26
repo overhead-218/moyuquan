@@ -128,9 +128,11 @@ class _ShareCardPageState extends State<ShareCardPage> {
     final png = await ScreenshotService.capture(_cardKey);
     if (!mounted) return;
     if (png == null) { setState(() => _saving = false); _showMsg('截图失败，请重试'); return; }
-    await webDownloadImpl(png, 'moyuquan_${DateTime.now().millisecondsSinceEpoch}.png');
-    setState(() { _saving = false; _saved = true; });
-    _showMsg('长按图片保存，或截图后通过微信发送');
+    final result = await webDownloadImpl(png, 'moyuquan_${DateTime.now().millisecondsSinceEpoch}.png');
+    if (!mounted) return;
+    final wechat = result == WebSaveResult.wechatLongPress;
+    setState(() { _saving = false; _saved = !wechat; });
+    _showMsg(wechat ? '长按图片保存到相册（点空白关闭）' : '图片已下载，可在相册中查看');
   }
 
   Future<void> _onShare() async {
@@ -143,8 +145,10 @@ class _ShareCardPageState extends State<ShareCardPage> {
     try {
       await Share.shareXFiles([xFile], text: _shareText);
     } catch (_) {
-      await webDownloadImpl(png, 'moyuquan_share.png');
-      _showMsg('图片已下载，可通过相册分享');
+      final result = await webDownloadImpl(png, 'moyuquan_share.png');
+      if (!mounted) return;
+      final wechat = result == WebSaveResult.wechatLongPress;
+      _showMsg(wechat ? '长按图片保存到相册（点空白关闭）' : '图片已下载，可通过相册分享');
     }
     if (mounted) setState(() => _sharing = false);
   }

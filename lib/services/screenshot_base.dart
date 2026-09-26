@@ -3,6 +3,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+/// [webDownloadImpl] 实际走的保存路径，供上层挑选提示文案
+enum WebSaveResult { browserDownload, wechatLongPress }
+
 /// 截图服务（平台无关核心）
 /// [capture] 将 GlobalKey 对应的 Widget 渲染为 PNG
 class ScreenshotService {

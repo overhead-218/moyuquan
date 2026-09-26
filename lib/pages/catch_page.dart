@@ -666,6 +666,7 @@ class _PostRankCard extends StatelessWidget {
                   authorName: post.authorName,
                   authorAvatar: post.authorAvatar,
                   imageUrl: post.imageUrl,
+              images: post.images,
                   imageHeight: post.height,
                   likeCount: post.likeCount,
                   commentCount: post.commentCount,

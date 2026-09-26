@@ -1,4 +1,6 @@
 /// 帖子数据模型
+import 'dart:convert';
+
 class Post {
   final String id;
   final String authorId;
@@ -9,6 +11,7 @@ class Post {
   final String content;
   final String location;
   final String imageUrl;
+  final List<String> images; // 多图（封面取第一张；缺省空）
   final double height;      // 卡片高度（瀑布流用）
   final int likeCount;
   final int commentCount;
@@ -25,6 +28,7 @@ class Post {
     required this.content,
     required this.location,
     required this.imageUrl,
+    this.images = const <String>[],
     required this.height,
     required this.likeCount,
     required this.commentCount,
@@ -43,6 +47,7 @@ class Post {
     'content': content,
     'location': location,
     'imageUrl': imageUrl,
+    'images': images,
     'height': height,
     'likeCount': likeCount,
     'commentCount': commentCount,
@@ -56,6 +61,18 @@ class Post {
   static int _asInt(dynamic v, [int d = 0]) =>
       v is num ? v.toInt() : int.tryParse(v.toString()) ?? d;
 
+  static List<String> _asListStr(dynamic v) {
+    if (v == null) return const <String>[];
+    if (v is List) return v.map((e) => e.toString()).toList();
+    if (v is String) {
+      try {
+        final d = jsonDecode(v);
+        if (d is List) return d.map((e) => e.toString()).toList();
+      } catch (_) {}
+    }
+    return const <String>[];
+  }
+
   factory Post.fromJson(Map<String, dynamic> json) => Post(
     id: _asStr(json['id']) ?? '',
     authorId: _asStr(json['authorId']) ?? '',
@@ -66,6 +83,7 @@ class Post {
     content: _asStr(json['content']) ?? '',
     location: _asStr(json['location']) ?? '',
     imageUrl: _asStr(json['imageUrl']) ?? '',
+    images: _asListStr(json['images']) ?? (json['imageUrl'] != null ? [_asStr(json['imageUrl'])!] : const <String>[]),
     height: _asDouble(json['height'], 280),
     likeCount: _asInt(json['likeCount']),
     commentCount: _asInt(json['commentCount']),

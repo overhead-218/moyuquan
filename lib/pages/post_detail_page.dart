@@ -12,6 +12,7 @@ class PostDetailPage extends StatefulWidget {
   final String authorName;
   final String authorAvatar;
   final String imageUrl;
+  final List<String> images;
   final double imageHeight;
   final int likeCount;
   final int index;
@@ -29,6 +30,7 @@ class PostDetailPage extends StatefulWidget {
     required this.authorName,
     required this.authorAvatar,
     required this.imageUrl,
+    this.images = const <String>[],
     required this.imageHeight,
     required this.likeCount,
     required this.index,
@@ -52,6 +54,8 @@ class _PostDetailPageState extends State<PostDetailPage>
   late final Animation<double> _heartScale;
   bool _liked = false;
   late int _likeCount;
+  PageController? _heroCtrl;
+  int _heroPage = 0;
 
   static const _kPrimary = Color(0xFF0A7C74);
   static const Color _kLightTeal = Color(0xFF148F86);
@@ -115,6 +119,7 @@ class _PostDetailPageState extends State<PostDetailPage>
     PostService.removeListener(_syncLike);
     FollowService.instance.removeListener(_syncLike);
     _heartCtrl.dispose();
+    _heroCtrl?.dispose();
     super.dispose();
   }
 
@@ -124,6 +129,84 @@ class _PostDetailPageState extends State<PostDetailPage>
     if (liked) {
       _heartCtrl.forward(from: 0);
     }
+  }
+
+  Widget _buildHero(List<Color> gradient, String fishEmoji) {
+    final imgs = widget.images.isNotEmpty
+        ? widget.images
+        : (widget.imageUrl.isNotEmpty ? [widget.imageUrl] : const <String>[]);
+    if (imgs.isEmpty) {
+      return Container(
+        width: double.infinity,
+        height: widget.imageHeight + 60,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF0A7C74), Color(0xFF148F86)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Align(
+          alignment: Alignment.bottomLeft,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(widget.title,
+                style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.w800),
+                maxLines: 2, overflow: TextOverflow.ellipsis),
+          ),
+        ),
+      );
+    }
+    final controller = _heroCtrl ??= PageController();
+    final viewer = PageView.builder(
+      controller: controller,
+      itemCount: imgs.length,
+      itemBuilder: (context, i) => SmartImage(
+        url: imgs[i],
+        fit: BoxFit.cover,
+        loadingBuilder: (c, child, pr) => pr == null
+            ? child
+            : Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                ),
+                child: const Center(
+                  child: SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white)),
+                ),
+              ),
+        errorBuilder: (c, e, st) => Container(
+          decoration: BoxDecoration(gradient: LinearGradient(colors: gradient)),
+          child: Center(child: Text(fishEmoji, style: const TextStyle(fontSize: 80))),
+        ),
+      ),
+      onPageChanged: (i) => setState(() => _heroPage = i),
+    );
+    if (imgs.length == 1) return viewer;
+    return Stack(
+      children: [
+        viewer,
+        Positioned(
+          top: 12, right: 14,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(20)),
+            child: Text('${_heroPage + 1}/${imgs.length}', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+          ),
+        ),
+        Positioned(
+          bottom: 12, left: 0, right: 0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(imgs.length, (i) => Container(
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              width: i == _heroPage ? 18 : 6,
+              height: 6,
+              decoration: BoxDecoration(color: i == _heroPage ? Colors.white : Colors.white54, borderRadius: BorderRadius.circular(3)),
+            )),
+          ),
+        ),
+      ],
+    );
   }
 
   List<Widget> _buildGuide(List<PostSection> sections) {
@@ -259,69 +342,7 @@ class _PostDetailPageState extends State<PostDetailPage>
               background: SizedBox(
                 height: widget.imageHeight + 60,
                 width: double.infinity,
-                child: widget.imageUrl.isEmpty
-                    ? Container(
-                        width: double.infinity,
-                        height: widget.imageHeight + 60,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Color(0xFF0A7C74), Color(0xFF148F86)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                        ),
-                        child: Align(
-                          alignment: Alignment.bottomLeft,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Text(
-                              widget.title,
-                              style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.w800),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                      )
-                    : SmartImage(
-                  url: widget.imageUrl,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: gradient,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                      child: const Center(
-                        child: SizedBox(
-                          width: 28,
-                          height: 28,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, st) => Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: gradient,
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(fishEmoji, style: const TextStyle(fontSize: 80)),
-                    ),
-                  ),
-                ),
-              ),
+                child: _buildHero(gradient, fishEmoji),              ),
             ),
           ),
           // 内容区

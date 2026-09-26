@@ -371,6 +371,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           authorName: p.authorName,
           authorAvatar: p.authorAvatar,
           imageUrl: p.imageUrl,
+          images: p.images,
           imageHeight: 300,
           likeCount: PostService.likeCountOf(p),
           index: 0,
