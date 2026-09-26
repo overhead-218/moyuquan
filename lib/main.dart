@@ -4,6 +4,7 @@ import 'pages/home_shell.dart';
 import 'services/spot_service.dart';
 import 'services/post_service.dart';
 import 'services/message_service.dart';
+import 'services/claim_service.dart';
 import 'services/user_profile.dart';
 
 void main() async {
@@ -18,6 +19,7 @@ void main() async {
 
   // 启动后后台拉取云库数据（失败自动回退本地 mock，不打断首屏）
   SpotService.refreshFromCloud();
+  ClaimService.refreshFromCloud();
   PostService.refreshFromCloud();
   MessageService.refreshFromCloud();
   UserProfile.instance.refreshFromCloud();

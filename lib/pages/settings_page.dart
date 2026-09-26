@@ -8,6 +8,8 @@ import '../services/follow_service.dart';
 import '../services/favorite_service.dart';
 import '../services/message_service.dart';
 import '../services/post_service.dart';
+import '../services/claim_service.dart';
+import 'claim_review_page.dart';
 
 /// 设置页
 class SettingsPage extends StatelessWidget {
@@ -177,6 +179,9 @@ class SettingsPage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
             ],
+            // 运营入口（口令保护）
+            const _ClaimReviewEntry(),
+            const SizedBox(height: 20),
             // 版本信息
             Center(
               child: Column(
@@ -321,6 +326,76 @@ class SettingsPage extends StatelessWidget {
             child: const Text('确认注销'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 设置页：认领审核入口（运营专用，进入后需口令）
+class _ClaimReviewEntry extends StatefulWidget {
+  const _ClaimReviewEntry();
+
+  @override
+  State<_ClaimReviewEntry> createState() => _ClaimReviewEntryState();
+}
+
+class _ClaimReviewEntryState extends State<_ClaimReviewEntry> {
+  @override
+  void initState() {
+    super.initState();
+    ClaimService.addListener(_onChange);
+  }
+
+  @override
+  void dispose() {
+    ClaimService.removeListener(_onChange);
+    super.dispose();
+  }
+
+  void _onChange() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final n = ClaimService.pendingAll().length;
+    return Container(
+      decoration: BoxDecoration(
+        color: SettingsPage._kSurface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            offset: const Offset(0, 4),
+            blurRadius: 16,
+            color: SettingsPage._kShadow.withValues(alpha: 0.06),
+          ),
+        ],
+      ),
+      child: ListTile(
+        leading: const Icon(Icons.how_to_reg_outlined, color: Color(0xFF0A7C74), size: 22),
+        title: const Text('认领审核', style: TextStyle(fontSize: 15, color: Color(0xFF1A1A1A))),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (n > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF4757),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text('\$n', style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w700)),
+              ),
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right, color: Color(0xFF999999), size: 20),
+          ],
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ClaimReviewPage()),
+          );
+        },
       ),
     );
   }

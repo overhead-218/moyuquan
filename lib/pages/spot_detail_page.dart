@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/spot.dart';
 import '../services/spot_service.dart';
+import '../services/claim_service.dart';
 import '../services/favorite_service.dart';
 import '../services/post_service.dart';
 import '../services/spot_submission_service.dart';
@@ -291,11 +292,15 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
     } catch (_) {}
   }
 
-  /// 商家认领钓点：自助维护联系方式
+  /// 商家认领钓点：
+  /// 未认领 → 提交认领申请（pending，运营审核通过后才生效）；
+  /// 已认领 → 商家直接自助维护联系方式（立即生效）。
   void _showClaimSheet() {
+    final claimed = spot.isClaimed;
     final nameCtl = TextEditingController(text: spot.ownerName ?? '');
     final phoneCtl = TextEditingController(text: spot.contactPhone ?? '');
     final wxCtl = TextEditingController(text: spot.wechat ?? '');
+    final noteCtl = TextEditingController();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -309,15 +314,24 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('认领此钓点', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _textMain)),
+            Text(claimed ? '维护联系方式' : '认领此钓点', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _textMain)),
             const SizedBox(height: 4),
-            const Text('认领后可自助维护联系方式，让钓友准确找到你', style: TextStyle(fontSize: 12, color: _textWeak)),
+            Text(
+              claimed
+                  ? '已通过审核，修改后立即生效'
+                  : '提交后由运营审核（1-3 个工作日）。审核通过前不会展示「商家认证价」，也不会覆盖平台采集信息。',
+              style: const TextStyle(fontSize: 12, color: _textWeak),
+            ),
             const SizedBox(height: 16),
             _ClaimField(label: '负责人 / 店名', hint: '如：老王钓场', controller: nameCtl),
             const SizedBox(height: 12),
             _ClaimField(label: '联系电话', hint: '公开管理电话', controller: phoneCtl, keyboardType: TextInputType.phone),
             const SizedBox(height: 12),
             _ClaimField(label: '微信号', hint: '便于钓友加微信咨询', controller: wxCtl),
+            if (!claimed) ...[
+              const SizedBox(height: 12),
+              _ClaimField(label: '资质说明', hint: '营业执照/场地授权、现场情况等', controller: noteCtl),
+            ],
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
@@ -330,17 +344,32 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                     );
                     return;
                   }
-                  final updated = SpotService.claimSpot(
-                    spot.id,
-                    ownerName: name,
-                    contactPhone: phoneCtl.text.trim().isEmpty ? null : phoneCtl.text.trim(),
-                    wechat: wxCtl.text.trim().isEmpty ? null : wxCtl.text.trim(),
-                  );
-                  if (updated != null) setState(() => spot = updated);
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('认领成功，联系方式已展示'), duration: Duration(seconds: 2)),
-                  );
+                  final phone = phoneCtl.text.trim().isEmpty ? null : phoneCtl.text.trim();
+                  final wx = wxCtl.text.trim().isEmpty ? null : wxCtl.text.trim();
+                  final note = noteCtl.text.trim().isEmpty ? null : noteCtl.text.trim();
+                  if (claimed) {
+                    final updated = SpotService.claimSpot(
+                      spot.id,
+                      ownerName: name,
+                      contactPhone: phone,
+                      wechat: wx,
+                    );
+                    if (updated != null) setState(() => spot = updated);
+                    Navigator.pop(ctx);
+                    _snack('已更新，立即生效');
+                  } else {
+                    ClaimService.submit(
+                      spotId: spot.id,
+                      spotName: spot.name,
+                      applicantName: name,
+                      contactPhone: phone,
+                      wechat: wx,
+                      note: note,
+                    );
+                    Navigator.pop(ctx);
+                    setState(() {});
+                    _snack('认领申请已提交，运营审核通过后生效');
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _primary,
@@ -348,7 +377,7 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('提交认领', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                child: Text(claimed ? '保存' : '提交认领申请', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
               ),
             ),
           ],
@@ -1410,17 +1439,28 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
             const SizedBox(height: 14),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _showClaimSheet,
-                icon: const Icon(Icons.handshake_outlined, size: 18),
-                label: const Text('认领此钓点'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
+              child: ClaimService.hasPending(spot.id)
+                  ? OutlinedButton.icon(
+                      onPressed: null,
+                      icon: const Icon(Icons.hourglass_top_outlined, size: 18),
+                      label: const Text('认领审核中'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: _textWeak,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    )
+                  : ElevatedButton.icon(
+                      onPressed: _showClaimSheet,
+                      icon: const Icon(Icons.handshake_outlined, size: 18),
+                      label: const Text('认领此钓点'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
             ),
           ],
         ),
