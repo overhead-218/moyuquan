@@ -924,7 +924,7 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
 
   /// 模块1：顶部商家信息条（抖音风格）
   Widget _buildMerchantBar() {
-    final certTag = spot.isClaimed ? '已认领 · 商家' : '平台整理';
+    final certTag = spot.sourceLabel;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1094,6 +1094,31 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
         child: Text(text, style: const TextStyle(fontSize: 11, color: _textWeak)),
       );
 
+  /// 价格出处徽章：已认领→商家认证价；未认领→平台采集参考价（以商家实际为准）
+  Widget _priceSourceBadge() {
+    final claimed = spot.isClaimed;
+    final color = claimed ? const Color(0xFF1F8A4C) : _primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(claimed ? Icons.verified : Icons.info_outline, size: 13, color: color),
+          const SizedBox(width: 4),
+          Text(
+            spot.priceSourceLabel,
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// 模块3：服务·价格产品卡（抖音「商家」tab 风格），数据驱动
   Widget _buildServiceCards() {
     final cards = <_SvcCard>[];
@@ -1131,15 +1156,17 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
       ));
     }
     if (spot.facilityChips.contains('餐饮')) {
-      cards.add(_SvcCard(emoji: '🍱', title: '餐饮', price: '提供', unit: '', note: '平台整理 · 商家提供'));
+      cards.add(_SvcCard(emoji: '🍱', title: '餐饮', price: '提供', unit: '', note: '平台采集 · 商家入驻中'));
     }
     if (spot.facilityChips.contains('导钓服务')) {
-      cards.add(_SvcCard(emoji: '🧭', title: '导钓', price: '提供', unit: '', note: '平台整理 · 商家提供'));
+      cards.add(_SvcCard(emoji: '🧭', title: '导钓', price: '提供', unit: '', note: '平台采集 · 商家入驻中'));
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle('🛒 服务 & 价格'),
+        const SizedBox(height: 8),
+        _priceSourceBadge(),
         const SizedBox(height: 12),
         SizedBox(
           height: 134,
@@ -1372,7 +1399,7 @@ class _SpotDetailPageState extends State<SpotDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      Text('本钓点信息由平台整理', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _textMain)),
+                      Text('本钓点信息由平台采集', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _textMain)),
                       SizedBox(height: 2),
                       Text('商家可认领并自助维护联系方式', style: TextStyle(fontSize: 11, color: _textWeak)),
                     ],

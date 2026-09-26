@@ -148,6 +148,32 @@ class Spot {
   /// 是否已认领（商家自助维护）
   bool get isClaimed => claimedBy != null;
 
+  /// 来源标签（短）：详情页顶部信息条用
+  String get sourceLabel {
+    if (isClaimed) return '已认领 · 商家';
+    switch (submitter) {
+      case SpotSubmitter.ugc:
+        return '钓友分享';
+      case SpotSubmitter.owner:
+        return '商家自营';
+      case SpotSubmitter.operator:
+        return '平台采集 · 商家入驻中';
+    }
+  }
+
+  /// 价格出处标签：价格区块徽章用
+  String get priceSourceLabel {
+    if (isClaimed) return '商家认证价';
+    switch (submitter) {
+      case SpotSubmitter.ugc:
+        return '钓友分享价（以商家实际为准）';
+      case SpotSubmitter.owner:
+        return '商家自营价';
+      case SpotSubmitter.operator:
+        return '平台采集参考价（商家入驻中）';
+    }
+  }
+
   /// 综合热度分（越高越靠前）
   double get hotspotScore =>
       viewCount * 0.1 +

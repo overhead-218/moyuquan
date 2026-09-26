@@ -157,6 +157,36 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     _scrollToBottom();
   }
 
+
+  void _showEmojiPicker() {
+    final emojis = ['🎣', '🐟', '🐠', '🐡', '🦀', '🍤', '🌊', '☀️', '😂', '👍'];
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('插入表情'),
+        content: Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: emojis
+              .map(
+                (e) => GestureDetector(
+                  onTap: () {
+                    final t = _controller.text;
+                    final sel = _controller.selection.baseOffset;
+                    final pos = sel < 0 ? t.length : sel;
+                    _controller.text = t.substring(0, pos) + e + t.substring(pos);
+                    _controller.selection = TextSelection.collapsed(offset: pos + e.length);
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(e, style: const TextStyle(fontSize: 28)),
+                ),
+              )
+              .toList(),
+        ),
+      ),
+    );
+  }
+
   void _sendMessage() {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
@@ -358,7 +388,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
 
                   // 表情按钮
                   GestureDetector(
-                    onTap: () {},
+                    onTap: _showEmojiPicker,
                     child: Container(
                       width: 36,
                       height: 36,

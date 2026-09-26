@@ -216,7 +216,14 @@ class _PlaceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {},
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('演示数据：接通真实钓点库后将展示你的真实钓鱼足迹'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          },
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
