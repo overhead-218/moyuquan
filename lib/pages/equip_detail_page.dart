@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../services/equip_review_service.dart';
+import '../services/user_profile.dart';
+import '../widgets/image_preview.dart';
+import '../widgets/smart_image.dart';
+
 /// 装备详情页（鱼竿/鱼轮/饵料/小药共用）
-class EquipDetailPage extends StatelessWidget {
+class EquipDetailPage extends StatefulWidget {
   final String name;
   final String spec;
   final String type; // 鱼竿/鱼轮/饵料/小药
@@ -14,6 +19,9 @@ class EquipDetailPage extends StatelessWidget {
   final String? imageUrl;
   final List<String> gallery; // 详情页更多介绍图
   final String desc; // 产品简介
+
+  /// 云库 equips.id，用于读取真实评价
+  final String equipId;
 
   const EquipDetailPage({
     super.key,
@@ -29,7 +37,120 @@ class EquipDetailPage extends StatelessWidget {
     this.imageUrl,
     this.gallery = const [],
     this.desc = '',
+    this.equipId = '',
   });
+
+  @override
+  State<EquipDetailPage> createState() => _EquipDetailPageState();
+}
+
+class _EquipDetailPageState extends State<EquipDetailPage> {
+  List<EquipReview> _reviews = const [];
+  bool _loadingReviews = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReviews();
+  }
+
+  Future<void> _loadReviews() async {
+    if (widget.equipId.isEmpty) {
+      setState(() => _loadingReviews = false);
+      return;
+    }
+    final list = await EquipReviewService.fetch(widget.equipId);
+    if (!mounted) return;
+    setState(() {
+      _reviews = list;
+      _loadingReviews = false;
+    });
+  }
+
+  Future<void> _submitReview() async {
+    final ctrl = TextEditingController();
+    var rating = 5;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlg) => AlertDialog(
+          title: const Text('写评价'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const Text('评分'),
+                  const SizedBox(width: 12),
+                  for (var i = 1; i <= 5; i++)
+                    IconButton(
+                      icon: Icon(
+                        i <= rating ? Icons.star : Icons.star_border,
+                        color: const Color(0xFFC49A5E),
+                        size: 22,
+                      ),
+                      onPressed: () => setDlg(() => rating = i),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: ctrl,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  hintText: '说说这件装备的真实使用感受',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('取消')),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('发布'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (ok != true) return;
+    final content = ctrl.text.trim();
+    if (content.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('评价内容不能为空')));
+      return;
+    }
+    final sent = await EquipReviewService.submit(
+      equipId: widget.equipId,
+      authorId: UserProfile.id,
+      authorName: UserProfile.instance.name,
+      rating: rating,
+      content: content,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(sent ? '评价已发布' : '发布失败，请检查网络后重试'),
+    ));
+    if (sent) _loadReviews();
+  }
+
+  // ── 以下为原 StatelessWidget 的字段与方法，转到 State 上 ──
+  String get name => widget.name;
+  String get spec => widget.spec;
+  String get type => widget.type;
+  String get waterType => widget.waterType;
+  int get rank => widget.rank;
+  int get score => widget.score;
+  int get heat => widget.heat;
+  int get replies => widget.replies;
+  List<String> get tags => widget.tags;
+  String? get imageUrl => widget.imageUrl;
+  List<String> get gallery => widget.gallery;
+  String get desc => widget.desc;
 
   // 配色
   static const _primary  = Color(0xFF0A7C74);
@@ -39,6 +160,14 @@ class EquipDetailPage extends StatelessWidget {
   static const _textMain = Color(0xFF1A1A1A);
   static const _textMid  = Color(0xFF666666);
   static const _textWeak = Color(0xFF999999);
+
+  // 文件级常量：供页面内的私有小组件（如 _HeatItem / _SpecRow）使用。
+  // 这些组件不在 State 里，拿不到上面的 static 成员。
+  static const cTextMain = Color(0xFF1A1A1A);
+  static const cTextMid  = Color(0xFF666666);
+  static const cTextWeak = Color(0xFF999999);
+  static const cGold     = Color(0xFFC49A5E);
+  static const cPrimary  = Color(0xFF0A7C74);
 
   Color get _rankColor {
     if (rank == 1) return _gold;
@@ -89,19 +218,32 @@ class EquipDetailPage extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   // 产品图
+                  // ⚠️ 原来用 Image.asset，但 equips.imageUrl 是 cdn.shopify.com 的
+                  //    https 网址，asset 只能读本地资源 → 详情页大图也是裂的。
+                  // 点击大图同样进全屏预览（含主图 + 实景图集，可左右切换）。
                   if (imageUrl != null)
-                    Image.asset(
-                      imageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: _primary.withValues(alpha: 0.1),
-                        child: Center(
-                          child: Icon(
-                            type == '鱼竿' ? Icons.sports_cricket
-                                : type == '鱼轮' ? Icons.settings
-                                : type == '饵料' ? Icons.catching_pokemon
-                                : Icons.water_drop,
-                            size: 80, color: _primary.withValues(alpha: 0.3),
+                    GestureDetector(
+                      onTap: () => ImagePreviewDialog.open(
+                        context,
+                        urls: [imageUrl!, ...gallery],
+                      ),
+                      child: SmartImage(
+                        url: imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: _primary.withValues(alpha: 0.1),
+                          child: Center(
+                            child: Icon(
+                              type == '鱼竿'
+                                  ? Icons.sports_cricket
+                                  : type == '鱼轮'
+                                      ? Icons.settings
+                                      : type == '饵料'
+                                          ? Icons.catching_pokemon
+                                          : Icons.water_drop,
+                              size: 80,
+                              color: _primary.withValues(alpha: 0.3),
+                            ),
                           ),
                         ),
                       ),
@@ -322,12 +464,27 @@ class EquipDetailPage extends StatelessWidget {
                         separatorBuilder: (_, __) => const SizedBox(width: 10),
                         itemBuilder: (_, i) => ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            gallery[i], width: 130, height: 180, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              width: 130, height: 180,
-                              color: _primary.withValues(alpha: 0.08),
-                              child: const Center(child: Icon(Icons.image_outlined, color: _primary)),
+                          // ⚠️ 之前这里只渲染图片、没绑任何手势，点了是死图。
+                          //   现在点开全屏预览（可双指缩放、左右切换）。
+                          child: GestureDetector(
+                            onTap: () => ImagePreviewDialog.open(
+                              context,
+                              urls: gallery,
+                              initialIndex: i,
+                            ),
+                            child: SmartImage(
+                              url: gallery[i],
+                              width: 130,
+                              height: 180,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                width: 130,
+                                height: 180,
+                                color: _primary.withValues(alpha: 0.08),
+                                child: const Center(
+                                    child:
+                                        Icon(Icons.image_outlined, color: _primary)),
+                              ),
                             ),
                           ),
                         ),
@@ -421,39 +578,55 @@ class EquipDetailPage extends StatelessWidget {
                           color: _gold.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Text('精选 ${tags.length} 条',
+                        child: Text('${_reviews.length} 条',
                           style: const TextStyle(fontSize: 11, color: _gold, fontWeight: FontWeight.w600)),
+                      ),
+                      const Spacer(),
+                      TextButton.icon(
+                        onPressed: _submitReview,
+                        icon: const Icon(Icons.rate_review_outlined, size: 16),
+                        label: const Text('写评价'),
+                        style: TextButton.styleFrom(
+                            foregroundColor: _primary, visualDensity: VisualDensity.compact),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  _ReviewCard(
-                    avatar: '钓',
-                    name: '路亚发烧友',
-                    time: '3天前',
-                    content: tags.isNotEmpty
-                        ? '用了一段时间，这款${type}真的不错，${tags.first}是最大亮点。手感很好，值得入手。'
-                        : '用了一段时间，这款${type}真心不错，值得推荐。',
-                    stars: 5,
-                  ),
-                  const SizedBox(height: 10),
-                  _ReviewCard(
-                    avatar: '鲈',
-                    name: '台钓老手',
-                    time: '1周前',
-                    content: tags.length > 1
-                        ? '朋友推荐的，试了两次，${tags[1]}确实给力。性价比很高，强烈推荐！'
-                        : '朋友推荐的，试了两次效果不错，性价比很高！',
-                    stars: 4,
-                  ),
-                  const SizedBox(height: 10),
-                  _ReviewCard(
-                    avatar: '鳜',
-                    name: '野钓爱好者',
-                    time: '2周前',
-                    content: '钓获稳定，${tags.isNotEmpty ? tags.last : '整体表现'}值得信赖。已经推荐给钓友了。',
-                    stars: 4,
-                  ),
+                  // 真实评价来自云库 equip_reviews 表，无数据时如实显示空态，
+                  // 不再用标签拼接生成模板评价。
+                  if (_loadingReviews)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (_reviews.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: _surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE8E2D8)),
+                      ),
+                      child: const Center(
+                        child: Text('还没有钓友评价，来说两句吧',
+                          style: TextStyle(color: _textWeak, fontSize: 13)),
+                      ),
+                    )
+                  else
+                    for (var i = 0; i < _reviews.length; i++) ...[
+                      if (i > 0) const SizedBox(height: 10),
+                      _ReviewCard(
+                        avatar: _reviews[i].authorName.isEmpty
+                            ? '?'
+                            : _reviews[i].authorName.substring(0, 1),
+                        name: _reviews[i].authorName.isEmpty
+                            ? '匿名钓友'
+                            : _reviews[i].authorName,
+                        time: _reviews[i].timeAgo,
+                        content: _reviews[i].content,
+                        stars: _reviews[i].rating,
+                      ),
+                    ],
                 ],
               ),
             ),
@@ -484,11 +657,11 @@ class _HeatItem extends StatelessWidget {
         Icon(icon, size: 20, color: iconColor),
         const SizedBox(height: 6),
         Text(value, style: const TextStyle(
-          fontSize: 17, fontWeight: FontWeight.w800, color: EquipDetailPage._textMain,
+          fontSize: 17, fontWeight: FontWeight.w800, color: _EquipDetailPageState.cTextMain,
         )),
         const SizedBox(height: 2),
         Text(label, style: const TextStyle(
-          fontSize: 10, color: EquipDetailPage._textWeak,
+          fontSize: 10, color: _EquipDetailPageState.cTextWeak,
         )),
       ],
     );
