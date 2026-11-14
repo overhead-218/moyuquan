@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>摸鱼圈 App · Web 版预览</title>
+<style>
+:root{
+  --bg:#0d1117;--card:#161b22;--line:#21262d;--txt:#e6edf3;--mid:#8b949e;
+  --green:#0A7C74;--gold:#C49A5E;--sea:#1E88E5;--fresh:#2E7D32;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding:18px 14px 60px}
+.wrap{max-width:1000px;margin:0 auto}
+header{background:linear-gradient(135deg,#0A7C74,#064E4A);border-radius:18px;padding:20px;margin-bottom:14px}
+header h1{font-size:19px;margin-bottom:6px}
+header p{color:#b8e0dc;font-size:13px;line-height:1.7}
+.badges{margin-top:10px;display:flex;gap:7px;flex-wrap:wrap}
+.badge{background:rgba(255,255,255,.16);border-radius:20px;padding:4px 11px;font-size:11px}
+.tabs-top{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px}
+.tt{flex:0 0 auto;background:var(--card);border:1px solid var(--line);color:var(--mid);
+  padding:8px 15px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap}
+.tt.on{background:var(--green);border-color:var(--green);color:#fff}
+.panel{display:none}.panel.on{display:block}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.sec h2{font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sec h2 span{font-size:12px;color:var(--mid);font-weight:400}
+input.s{width:100%;background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:10px 14px;
+  color:var(--txt);font-size:14px;margin-bottom:12px;outline:none}
+.row{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:none}
+.rank{width:26px;flex:0 0 26px;text-align:center;font-size:14px;font-weight:700;color:var(--gold);padding-top:5px}
+.th{width:52px;height:52px;flex:0 0 52px;border-radius:9px;object-fit:contain;background:#0d1117;border:1px solid var(--line)}
+.info{flex:1;min-width:0}
+.nm{font-size:13.5px;font-weight:600;line-height:1.4;margin-bottom:4px;word-break:break-all}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px}
+.tg{font-size:10.5px;padding:2px 6px;border-radius:5px;background:#21262d;color:var(--mid)}
+.tg.sea{background:rgba(30,136,229,.16);color:#7cc0f8}
+.tg.fr{background:rgba(46,125,50,.16);color:#81c784}
+.tg.hd{background:rgba(196,154,94,.18);color:var(--gold)}
+.meta{font-size:11px;color:var(--mid)}
+.price{color:var(--gold);font-weight:600}
+.empty{text-align:center;padding:34px 0;color:var(--mid);font-size:13px}
+table{width:100%;border-collapse:collapse}
+td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:12.5px}
+th{color:var(--mid);font-weight:500;font-size:12px}
+code{background:#0d1117;padding:2px 6px;border-radius:5px;font-size:11.5px;color:#7ee787}
+.ok{color:#3fb950}.no{color:#f85149}.mid{color:var(--gold)}
+.note{font-size:12px;color:var(--mid);line-height:1.85}
+.rig{display:grid;grid-template-columns:1fr 170px 1fr;gap:10px;align-items:start}
+.col{display:flex;flex-direction:column;gap:8px}
+.slot{background:#0d1117;border:1px solid var(--line);border-radius:10px;padding:9px 10px;cursor:pointer}
+.slot:hover{border-color:var(--green)}
+.slot.sel{border-color:var(--gold)}
+.slot .lab{font-size:10.5px;color:var(--gold);margin-bottom:3px}
+.slot .nm2{font-size:12px;line-height:1.35;margin-bottom:3px;word-break:break-all}
+.slot .m{font-size:10.5px;color:var(--mid)}
+.fisher{background:linear-gradient(180deg,#1c2530,#0d1117);border:1px solid var(--line);
+  border-radius:14px;padding:14px 8px;text-align:center}
+.person{font-size:72px;line-height:1}
+.fisher .nm3{font-size:13px;font-weight:700;margin-top:8px}
+.fisher .st{font-size:11px;color:var(--mid);margin-top:4px}
+.picker{max-height:320px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:6px}
+.pick{display:flex;gap:8px;padding:7px;border-radius:8px;cursor:pointer;align-items:center}
+.pick:hover{background:rgba(255,255,255,.05)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>摸鱼圈 App · Web 版预览</h1>
+  <p>装备图鉴已全部接真实商品数据（Shopify 钓具商城导出，<b>1548 件</b>），原 183 条编造装备与 3 条模板评价已彻底移除。</p>
+  <div class="badges">
+    <span class="badge">真实装备 1548</span>
+    <span class="badge">硬编码假装备 0</span>
+    <span class="badge">模板假评价 0</span>
+    <span class="badge">真实云库表 16</span>
+  </div>
+</header>
+
+<div class="tabs-top">
+  <div class="tt on" data-p="gear">装备图鉴</div>
+  <div class="tt" data-p="rigp">装备栏装配</div>
+  <div class="tt" data-p="chg">改造对照</div>
+</div>
+
+<div class="panel on" id="p-gear">
+  <div class="sec">
+    <h2>装备图鉴<span id="cnt"></span></h2>
+    <input class="s" id="q" placeholder="搜索品牌 / 型号 / 系列，如 Shimano、STELLA、B86">
+    <div class="tabs-top" id="cats"></div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<div class="panel" id="p-rigp">
+  <div class="sec">
+    <h2>我的装备栏<span>点击左侧槽位选择装备 · 数据全部来自真实商品库</span></h2>
+    <div class="tabs-top" id="rigcats"></div>
+    <div class="rig">
+      <div class="col" id="leftcol"></div>
+      <div class="fisher">
+        <div class="person">🎣</div>
+        <div class="nm3">钓鱼人</div>
+        <div class="st" id="rigstat">未装备</div>
+      </div>
+      <div class="col" id="rightcol"></div>
+    </div>
+    <div class="picker" id="picker" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<div class="panel" id="p-chg">
+  <div class="sec">
+    <h2>真实化改造对照表</h2>
+    <table>
+      <tr><th style="width:24%">功能</th><th style="width:30%">改造前（假）</th><th>改造后（真实）</th></tr>
+      <tr><td>装备图鉴</td><td class="no">183 条硬编码，编造热度/评分</td><td class="ok">云库 <code>equips</code>，1548 件真实商品，含真实价格/图片/规格</td></tr>
+      <tr><td>装备评价</td><td class="no">3 条模板拼接，所有装备评价一样</td><td class="ok">云库 <code>equip_reviews</code>，真实评分 + 支持发表</td></tr>
+      <tr><td>装备榜空态</td><td class="no">无数据时回落假榜单</td><td class="ok">显示空态，如实告知未导入</td></tr>
+      <tr><td>账号身份</td><td class="no">全员共用 <code>me</code> 一个账号</td><td class="ok">按登录凭据派生稳定 uid，跨设备隔离</td></tr>
+      <tr><td>点赞/收藏/关注</td><td class="no">纯内存，重启即丢</td><td class="ok">写云库对应表，写库失败自动回滚</td></tr>
+      <tr><td>评论</td><td class="no">3 条写死评论</td><td class="ok">云库 <code>spot_comments</code>/<code>post_comments</code>，支持回复与图片</td></tr>
+      <tr><td>私信</td><td class="no">任何人可见全部私信摘要</td><td class="ok">按 uid 过滤 <code>conversations</code>，5 秒轮询新消息</td></tr>
+      <tr><td>搜人聊天</td><td class="no">只能搜到 10 个硬编码假人</td><td class="ok">搜云库真实用户，卡片直接发消息</td></tr>
+      <tr><td>渔获榜</td><td class="no">16 条 mock 渔获</td><td class="ok">云库 <code>catches</code>/<code>catch_likes</code></td></tr>
+      <tr><td>举报/拉黑</td><td class="no">失败也提示已提交</td><td class="ok">如实反馈成败，云库持久化</td></tr>
+      <tr><td>注销账号</td><td class="no">只清本地，云端数据留存</td><td class="ok">按 uid 清理多表云端数据</td></tr>
+      <tr><td>版本检查</td><td class="no">永远提示已是最新</td><td class="ok">查云库 <code>app_config</code>，按 build 比较</td></tr>
+      <tr><td>钓点数据</td><td class="mid">云库有但被本地覆盖</td><td class="ok">云库为权威，后台改完即时生效</td></tr>
+    </table>
+  </div>
+  <div class="sec">
+    <h2>仍需外部资源</h2>
+    <div class="note">
+      · 短信验证码：云函数返回 <code>SMS_NOT_CONFIGURED</code>，需签名与模板过审<br>
+      · 原生定位：需接入 <code>geolocator</code> 与原生定位权限<br>
+      · 地图：地图 SDK 未接入，当前静态图占位<br>
+      · 图片消息：只存了文字，未上传对象存储<br>
+      · 天气 / 内容安全 / 运营鉴权：待接入<br>
+      · 建表：<code>sql/schema_social.sql</code> 需在腾讯云控制台执行一次
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const CATS=[
+ {k:'',n:'全部'},{k:'rod_spin',n:'路亚竿（直柄）'},{k:'rod_casting',n:'枪柄抛投竿'},
+ {k:'rod_bait',n:'台钓竿'},{k:'reel',n:'卷线器'},{k:'lure',n:'拟饵'},{k:'line',n:'前导线'}];
+let D=[],cur='',q='';
+let RIG={rod0:null,rod1:null,lure:null,line:null,reel:null};
+let rigCat='rod_spin',pickSlot='rod0';
+
+fetch('gear.json').then(r=>r.json()).then(d=>{D=d;cats();render();picker();});
+
+document.querySelectorAll('.tabs-top>.tt').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tabs-top>.tt').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById('p-'+t.dataset.p).classList.add('on');
+});
+
+function sub(r){
+  if(r.rodSub) return r.rodSub;
+  if(r.reelSub) return r.reelSub;
+  return r.cat;
+}
+function tagHtml(r){
+  const t=[];
+  if(r.brand)t.push('<span class="tg">'+r.brand+'</span>');
+  if(r.handle)t.push('<span class="tg hd">'+r.handle+'</span>');
+  if(r.water)t.push('<span class="tg '+(r.water==='海水'?'sea':'fr')+'">'+r.water+'</span>');
+  if(r.hand==='左手'||r.hand==='右手')t.push('<span class="tg hd">'+r.hand+'轮</span>');
+  if(r.scene)t.push('<span class="tg">'+r.scene+'</span>');
+  return t.join('');
+}
+function row(r,i){
+  const sk=Object.keys(r.specs||{}).slice(0,2).map(k=>k+' '+r.specs[k]).join(' · ');
+  const img=r.img?'<img class="th" src="'+r.img+'" referrerpolicy="no-referrer" onerror="this.style.visibility=\'hidden\'">' : '<div class="th"></div>';
+  return '<div class="row"><div class="rank">'+(i+1)+'</div>'+img+
+   '<div class="info"><div class="nm">'+r.name+'</div><div class="tags">'+tagHtml(r)+
+   '<span class="tg">'+sub(r)+'</span></div><div class="meta">'+(sk||r.model)+
+   (r.price?' · <span class="price">¥'+r.price+'</span>':'')+' · 评分 '+r.score+' · ★'+r.stars+'</div></div></div>';
+}
+function cats(){
+  document.getElementById('cats').innerHTML=CATS.map(c=>'<div class="tt '+(c.k===cur?'on':'')+'" data-k="'+c.k+'">'+c.n+'</div>').join('');
+  document.querySelectorAll('#cats .tt').forEach(e=>e.onclick=()=>{cur=e.dataset.k;cats();render();});
+  document.getElementById('rigcats').innerHTML=CATS.filter(c=>c.k).map(c=>'<div class="tt '+(c.k===rigCat?'on':'')+'" data-k="'+c.k+'">'+c.n+'</div>').join('');
+  document.querySelectorAll('#rigcats .tt').forEach(e=>e.onclick=()=>{rigCat=e.dataset.k;cats();picker();});
+}
+function render(){
+  let l=D;
+  if(cur)l=l.filter(r=>r.cat===cur);
+  if(q)l=l.filter(r=>(r.name+r.brand+r.model+r.series).toLowerCase().indexOf(q)>=0);
+  l=l.slice().sort((a,b)=>b.score-a.score);
+  document.getElementById('cnt').textContent='共 '+l.length+' 件';
+  document.getElementById('list').innerHTML=l.length
+    ? l.slice(0,60).map(row).join('')+(l.length>60?'<div class="empty">仅显示前 60 件，其余 '+ (l.length-60) +' 件在 App 内查看</div>':'')
+    : '<div class="empty">没有匹配的装备</div>';
+}
+document.getElementById('q').oninput=e=>{q=e.target.value.trim().toLowerCase();render();};
+
+const SLOTS_L=[
+  {k:'rod0',lab:'鱼竿槽位①（可放任意品类竿）'},
+  {k:'rod1',lab:'鱼竿槽位②（可放任意品类竿）'},
+  {k:'lure',lab:'拟饵 / 饵'},
+  {k:'line',lab:'前导线'}];
+const SLOTS_R=[{k:'reel',lab:'卷线器（单槽位 · 左/右手轮）'}];
+function slotHtml(s){
+  const v=RIG[s.k];
+  return '<div class="slot '+(pickSlot===s.k?'sel':'')+'" data-k="'+s.k+'">'+
+   '<div class="lab">'+s.lab+'</div>'+
+   '<div class="nm2">'+(v?v.name:'点击选择')+'</div>'+
+   '<div class="m">'+(v?(sub(v)+(v.price?' · ¥'+v.price:'')):'未装备')+'</div></div>';
+}
+function rig(){
+  document.getElementById('leftcol').innerHTML=SLOTS_L.map(slotHtml).join('');
+  document.getElementById('rightcol').innerHTML=SLOTS_R.map(slotHtml).join('');
+  const n=['rod0','rod1','reel','lure','line'].filter(k=>RIG[k]).length;
+  document.getElementById('rigstat').textContent=n?('已装备 '+n+' / 5 件'):'未装备';
+  document.querySelectorAll('.slot').forEach(e=>e.onclick=()=>{pickSlot=e.dataset.k;rig();picker();});
+}
+function picker(){
+  const l=D.filter(r=>r.cat===rigCat).slice().sort((a,b)=>b.score-a.score);
+  let h='<div class="pick" data-id=""><div class="th" style="width:36px;height:36px;flex:0 0 36px"></div>'+
+   '<div class="info"><div class="nm2" style="font-size:12px">清空该槽位</div></div></div>';
+  h+=l.slice(0,80).map(r=>{
+    const img=r.img?'<img class="th" style="width:36px;height:36px;flex:0 0 36px" src="'+r.img+'" referrerpolicy="no-referrer" onerror="this.style.visibility=\'hidden\'">' : '<div class="th" style="width:36px;height:36px;flex:0 0 36px"></div>';
+    return '<div class="pick" data-id="'+r.id+'">'+img+
+     '<div class="info"><div class="nm2" style="font-size:12px">'+r.name+'</div>'+
+     '<div class="m" style="font-size:10.5px;color:var(--mid)">'+tagHtml(r)+'</div></div></div>';
+  }).join('');
+  document.getElementById('picker').innerHTML=h;
+  document.querySelectorAll('.pick').forEach(e=>e.onclick=()=>{
+    RIG[pickSlot]=e.dataset.id?D.find(x=>x.id===e.dataset.id):null;
+    rig();picker();
+  });
+}
+rig();
+</script>
+</body>
+</html>
