@@ -102,17 +102,20 @@ class PostCard extends StatelessWidget {
               ),
             ),
             // 图片
-            SizedBox(
-              height: 170,
-              width: double.infinity,
-              child: !_canShowImage
-                  ? _placeholder()
-                  : Image.network(
-                      post.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _placeholder(),
-                    ),
-            ),
+            // ⚠️ 没有真实配图时不再撑 170px 的大色块（那是在用装饰冒充实拍），
+            //   改为紧凑的 56px 说明条。官方引导帖有示意图，正常显示大图。
+            if (_canShowImage)
+              SizedBox(
+                height: 170,
+                width: double.infinity,
+                child: Image.network(
+                  post.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _placeholder(),
+                ),
+              )
+            else
+              _noPhotoStrip(),
             // 正文
             Padding(
               padding: const EdgeInsets.all(14),
@@ -187,6 +190,26 @@ class PostCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _noPhotoStrip() {
+    return Container(
+      height: 56,
+      width: double.infinity,
+      color: const Color(0xFFF2F6F5),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      child: const Row(
+        children: [
+          Icon(Icons.image_not_supported_outlined,
+              size: 16, color: Color(0xFF9AA8A6)),
+          SizedBox(width: 6),
+          Text(
+            '本帖暂无实拍配图',
+            style: TextStyle(fontSize: 12, color: Color(0xFF7A8C8A)),
+          ),
+        ],
       ),
     );
   }
