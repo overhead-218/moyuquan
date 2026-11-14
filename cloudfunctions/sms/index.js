@@ -15,10 +15,27 @@
  *   POST /  {action:"verify", phone, code}  → 比对 HMAC 并置 used（防重放 + 错误次数锁定）
  *   GET  /?action=ping                      → 健康检查
  *
+ * ⚠️ 双通道设计（2026-10-27）：账号无营业执照，腾讯云国内短信【个人认证已无法申请签名】
+ *    （2025-09-18 新规：不再支持个人自用资质，运营商也不给个人主体做实名报备）。
+ *    故先走【阿里云短信认证服务】（免资质、免签名、免模板，个人实名即可开通），
+ *    等业务上量后再切腾讯云自有签名。切换方式：改环境变量 SMS_PROVIDER + 重新部署。
+ *
+ *    两通道的唯一实质差异 —— 验证码存哪：
+ *      · 阿里云通道：验证码由【阿里云生成并保管】，我们拿不到明文。
+ *        TemplateParam 必须传 {"code":"##code##","min":"5"} 占位符，
+ *        传明文的话阿里云【无法校验】（官方文档明确说明）。
+ *        校验走 CheckSmsVerifyCode，看 Model.VerifyResult == 'PASS'。
+ *        防重放依赖 DuplicatePolicy=1（覆盖处理，旧码自动失效）。
+ *      · 腾讯云通道：验证码我们自己生成，HMAC 后存 sms_verify_codes，校验时查库比对。
+ *
+ *    对外契约【完全不变】：前端始终只调 send / verify，登录页零改动。
+ *    用户表 profiles、posts 等业务数据零影响。
+ *
  * 安全要点：
- *   1. 腾讯云 SecretId/SecretKey/SmsSdkAppId/TemplateId 只存在于本函数环境变量，
- *      绝不下发客户端（App 直连腾讯云 API 会被反编译提取密钥 → 盗刷短信费）。
- *   2. 验证码不落明文：库里只存 HMAC-SHA256(CODE_PEPPER, phone|code)。
+ *   1. 腾讯云 SecretId/SecretKey/阿里云 AccessKey 只存在于本函数环境变量，
+ *      绝不下发客户端（App 直连云 API 会被反编译提取密钥 → 盗刷短信费）。
+ *   2. 验证码不落明文：腾讯云通道库里只存 HMAC-SHA256(CODE_PEPPER, phone|code)；
+ *      阿里云通道我们连明文都拿不到，库里 code 字段存空串，仅作发送记录用于限流。
  *      短信验证码表对 anon 角色是「可读写」（云函数用 Publishable Key 访问），
  *      若不哈希，攻击者用公开的 Publishable Key 就能 SELECT 出所有人的待验证码 → 批量登录。
  *      加了 pepper（仅存在于云函数环境变量）后，读到哈希也算不出 6 位码。
@@ -27,13 +44,19 @@
  * 零第三方依赖（仅 Node 内置 http / https / crypto）。
  *
  * 环境变量：
- *   TC_SECRET_ID / TC_SECRET_KEY          腾讯云 API 密钥
- *   TC_SMS_SDK_APP_ID                     短信应用 SdkAppId（1401192900）
- *   TC_SMS_SIGN_NAME                      短信签名（摸鱼圈）
- *   TC_SMS_TEMPLATE_ID                    验证码模板 ID
- *   TC_SMS_REGION                         默认 ap-guangzhou
- *   RDB_BASE / RDB_KEY                    云开发 PG(PostgREST) 端点 + Publishable Key
- *   CODE_PEPPER                           验证码哈希用的服务端盐（务必设随机值，勿留默认）
+ *   SMS_PROVIDER                        通道选择：aliyun（默认）/ tencent
+ *   TC_SECRET_ID / TC_SECRET_KEY        腾讯云 API 密钥（B 通道用）
+ *   TC_SMS_SDK_APP_ID                   短信应用 SdkAppId（B 通道用，1401192900）
+ *   TC_SMS_SIGN_NAME                    短信签名（B 通道用，摸鱼圈）
+ *   TC_SMS_TEMPLATE_ID                  验证码模板 ID（B 通道用）
+ *   TC_SMS_REGION                       默认 ap-guangzhou
+ *   ALIYUN_ACCESS_KEY_ID                 阿里云 AccessKeyId（A 通道用）
+ *   ALIYUN_ACCESS_KEY_SECRET             阿里云 AccessKeySecret（A 通道用）
+ *   ALIYUN_SMS_SIGN_NAME                 阿里云【赠送】签名名（A 通道用，从控制台抄）
+ *   ALIYUN_SMS_TEMPLATE_CODE             阿里云【赠送】模板 CODE（A 通道用，从控制台抄）
+ *   ALIYUN_SMS_REGION                    默认 ap-southeast-1
+ *   RDB_BASE / RDB_KEY                  云开发 PG(PostgREST) 端点 + Publishable Key
+ *   CODE_PEPPER                         验证码哈希用的服务端盐（务必设随机值，勿留默认）
  */
 
 const http = require('http');
@@ -49,6 +72,29 @@ const TC_SDK_APP_ID = process.env.TC_SMS_SDK_APP_ID || '';
 const TC_SIGN_NAME = process.env.TC_SMS_SIGN_NAME || '摸鱼圈';
 const TC_TEMPLATE_ID = process.env.TC_SMS_TEMPLATE_ID || '';
 const TC_REGION = process.env.TC_SMS_REGION || 'ap-guangzhou';
+
+// ── 阿里云短信认证通道（A 阶段用，免资质）─────────────
+const ALIYUN_AK = process.env.ALIYUN_ACCESS_KEY_ID || '';
+const ALIYUN_SK = process.env.ALIYUN_ACCESS_KEY_SECRET || '';
+const ALIYUN_SIGN_NAME = process.env.ALIYUN_SMS_SIGN_NAME || '';
+const ALIYUN_TEMPLATE_CODE = process.env.ALIYUN_SMS_TEMPLATE_CODE || '';
+const ALIYUN_REGION = process.env.ALIYUN_SMS_REGION || 'ap-southeast-1';
+const ALIYUN_HOST = 'dypnsapi.aliyuncs.com';
+const ALIYUN_VERSION = '2017-05-25';
+
+/**
+ * 通道选择。
+ *   aliyun  → 阿里云短信认证服务（免资质，个人可用）—— 当前默认
+ *   tencent → 腾讯云自有签名（需营业执照 + 签名模板过审 + 运营商报备）
+ * 未显式配置时按「哪边配齐了用哪边」自动判断：阿里云配齐优先阿里云，
+ * 否则腾讯云。这样即使忘了改环境变量也不会整个挂掉。
+ */
+const SMS_PROVIDER = String(
+  process.env.SMS_PROVIDER ||
+    (ALIYUN_AK && ALIYUN_SK && ALIYUN_SIGN_NAME && ALIYUN_TEMPLATE_CODE
+      ? 'aliyun'
+      : 'tencent'),
+).toLowerCase();
 
 const RDB_BASE = (process.env.RDB_BASE || '').replace(/\/+$/, '');
 const RDB_KEY = process.env.RDB_KEY || '';
@@ -66,6 +112,72 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
+
+// ─────────────────────────────────────────────
+// IP 频控（进程内计数，无需额外存储）
+//
+// ⚠️ 为什么需要：/sms 端点任何人可调。若不加限流，攻击者可用你的 AccessKey
+//    刷爆短信套餐包（阿里云短信认证按量 0.042 元/次，套餐包用完后直接扣账户余额）。
+//    配合「单号日限 5 条」不够 —— 攻击者可用成千上万个不同手机号。
+//    这里按 IP 限：同一 IP 每小时最多发 20 条、单日最多 60 条。
+//
+//    局限：云函数多实例时每个实例各有一份计数（不精确）。
+//    这是【兜底】而非唯一防线 —— 真正的硬防线是阿里云侧的套餐包额度上限。
+// ─────────────────────────────────────────────
+const IP_HOURLY_MAX = Number(process.env.SMS_IP_HOURLY_MAX || 20);
+const IP_DAILY_MAX = Number(process.env.SMS_IP_DAILY_MAX || 60);
+const ipHits = new Map(); // ip → { hour: ts, hourCount, day, dayCount }
+
+// 定期清理过期条目，防止内存无限增长
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, rec] of ipHits) {
+    if (now - rec.day > 24 * 3600 * 1000 + 3600 * 1000) ipHits.delete(ip);
+  }
+}, 10 * 60 * 1000).unref();
+
+function clientIp(req) {
+  const xff = req.headers['x-forwarded-for'];
+  if (xff) return String(xff).split(',')[0].trim();
+  return String(req.socket && req.socket.remoteAddress ? req.socket.remoteAddress : 'unknown');
+}
+
+/** 返回 null 表示放行；否则返回错误响应 */
+function checkIpRate(ip) {
+  const now = Date.now();
+  const hour = Math.floor(now / 3600000);
+  const day = Math.floor(now / 86400000);
+  let rec = ipHits.get(ip);
+  if (!rec) {
+    rec = { hour, hourCount: 0, day, dayCount: 0 };
+    ipHits.set(ip, rec);
+  }
+  if (rec.hour !== hour) {
+    rec.hour = hour;
+    rec.hourCount = 0;
+  }
+  if (rec.day !== day) {
+    rec.day = day;
+    rec.dayCount = 0;
+  }
+  rec.hourCount += 1;
+  rec.dayCount += 1;
+  if (rec.hourCount > IP_HOURLY_MAX) {
+    return fail(429, {
+      ok: false,
+      error: 'IP_RATE_LIMITED',
+      message: '请求过于频繁，请稍后再试',
+    });
+  }
+  if (rec.dayCount > IP_DAILY_MAX) {
+    return fail(429, {
+      ok: false,
+      error: 'IP_RATE_LIMITED',
+      message: '今日请求次数已达上限',
+    });
+  }
+  return null;
+}
 
 // ─────────────────────────────────────────────
 // 基础工具
@@ -267,30 +379,179 @@ async function callSendSms(phone, code) {
 }
 
 // ─────────────────────────────────────────────
+// 阿里云短信认证：SendSmsVerifyCode / CheckSmsVerifyCode
+// 签名：ACS3-HMAC-SHA256（阿里云 API 3.0），零依赖手写
+// ─────────────────────────────────────────────
+
+/** 阿里云 API 3.0 签名：ACS3-HMAC-SHA256 */
+function aliyunSign(action, body) {
+  const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+  const nonce = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random();
+  const payload = JSON.stringify(body);
+  const contentSha256 = sha256hex(payload);
+
+  // 参与签名的头：host + x-acs-* ，按字典序
+  const canonicalHeaders =
+    'host:' + ALIYUN_HOST + '\n' +
+    'x-acs-action:' + action + '\n' +
+    'x-acs-content-sha256:' + contentSha256 + '\n' +
+    'x-acs-date:' + timestamp + '\n' +
+    'x-acs-signature-nonce:' + nonce + '\n' +
+    'x-acs-version:' + ALIYUN_VERSION + '\n';
+  const signedHeaders =
+    'host;x-acs-action;x-acs-content-sha256;x-acs-date;x-acs-signature-nonce;x-acs-version';
+
+  // POST / 空 query
+  const canonicalRequest = [
+    'POST',
+    '/',
+    '',
+    canonicalHeaders,
+    signedHeaders,
+    contentSha256,
+  ].join('\n');
+
+  const stringToSign =
+    'ACS3-HMAC-SHA256\n' + sha256hex(canonicalRequest);
+
+  const signature = crypto
+    .createHmac('sha256', ALIYUN_SK)
+    .update(stringToSign, 'utf8')
+    .digest('hex');
+
+  const authorization =
+    'ACS3-HMAC-SHA256 Credential=' + ALIYUN_AK + ',' +
+    'SignedHeaders=' + signedHeaders + ',' +
+    'Signature=' + signature;
+
+  return {
+    url: 'https://' + ALIYUN_HOST + '/',
+    headers: {
+      Authorization: authorization,
+      'Content-Type': 'application/json',
+      'x-acs-action': action,
+      'x-acs-content-sha256': contentSha256,
+      'x-acs-date': timestamp,
+      'x-acs-signature-nonce': nonce,
+      'x-acs-version': ALIYUN_VERSION,
+    },
+    payload,
+  };
+}
+
+/** 调阿里云 OpenAPI，返回解析后的 body（失败抛错，err.aliyunCode 带错误码） */
+async function aliyunCall(action, body) {
+  const signed = aliyunSign(action, body);
+  const r = await httpsRequest(
+    'POST',
+    signed.url,
+    signed.headers,
+    signed.payload,
+  );
+  let data;
+  try {
+    data = JSON.parse(r.body || '{}');
+  } catch (e) {
+    throw new Error('ALIYUN_BAD_RESPONSE: ' + String(r.body).slice(0, 200));
+  }
+  if (data.Code && data.Code !== 'OK') {
+    const err = new Error(data.Message || data.Code);
+    err.aliyunCode = data.Code || '';
+    err.aliyunRequestId = data.RequestId || '';
+    throw err;
+  }
+  if (data.Success === false) {
+    const err = new Error(data.Message || 'ALIPAY_FAILED');
+    err.aliyunCode = data.Code || '';
+    throw err;
+  }
+  return data;
+}
+
+/**
+ * 发送验证码（阿里云通道）。
+ *
+ * ⚠️ 关键：TemplateParam 必须用 "##code##" 占位符，让【阿里云生成并保管】验证码。
+ *    若传明文（如 {"code":"123456"}），CheckSmsVerifyCode 将【无法校验】（官方文档明确说明）。
+ *    这样我们库里也永远拿不到明文码，安全性反而更高。
+ *
+ * DuplicatePolicy=1 → 覆盖处理，同号重发时旧码自动失效（防重放）。
+ * Interval=60 → 与我们自己的 60 秒重发间隔对齐，双保险。
+ */
+async function aliyunSendCode(phone) {
+  await aliyunCall('SendSmsVerifyCode', {
+    PhoneNumber: phone,
+    CountryCode: '86',
+    SchemeName: '',
+    SignName: ALIYUN_SIGN_NAME,
+    TemplateCode: ALIYUN_TEMPLATE_CODE,
+    TemplateParam: JSON.stringify({ code: '##code##', min: String(CODE_TTL_MIN) }),
+    CodeLength: 6,
+    CodeType: 1,
+    ValidTime: CODE_TTL_MIN * 60,
+    DuplicatePolicy: 1,
+    Interval: RESEND_SECONDS,
+    ReturnVerifyCode: false,
+    OutId: 'moyuquan-' + Date.now(),
+  });
+}
+
+/**
+ * 校验验证码（阿里云通道）。
+ * 返回 true = 通过；false = 码不对/已失效。
+ *
+ * ⚠️ 官方强调：「接口请求成功不代表验证码核验成功，核验结果仅以
+ *    Model.VerifyResult 参数返回值为准」——所以必须看 VerifyResult，不能只看 Code==='OK'。
+ */
+async function aliyunVerifyCode(phone, code) {
+  const data = await aliyunCall('CheckSmsVerifyCode', {
+    PhoneNumber: phone,
+    CountryCode: '86',
+    SchemeName: '',
+    OutId: '',
+    VerifyCode: String(code),
+    CaseAuthPolicy: 1, // 不区分大小写
+  });
+  const model = data.Model || {};
+  return model.VerifyResult === 'PASS';
+}
+
+// ─────────────────────────────────────────────
 // 业务处理
 // ─────────────────────────────────────────────
-function notConfigured() {
+// ⚠️ 这里刻意把「缺什么」拆开报，而不是笼统的 SMS_NOT_CONFIGURED。
+//   之前所有配置缺失都返回同一个码，运维只能反复试，无法一眼定位。
+//   现在每个缺失项单独一个错误码，前端 sms_service.dart 也有对应翻译。
+function notConfigured(missing) {
   return fail(503, {
     ok: false,
     error: 'SMS_NOT_CONFIGURED',
-    message: '短信凭证未配置（等待签名/模板审核通过后填云函数环境变量）',
+    missing,                       // 缺失项清单，便于排查
+    message: `短信服务配置未完成，缺少：${missing.join('、')}`
+      + '（等待短信签名/模板审核通过后填云函数环境变量）',
   });
 }
 
 async function handleSend(phone) {
   if (!isValidPhone(phone)) return fail(400, { ok: false, error: 'INVALID_PHONE' });
 
-  if (
-    !TC_SECRET_ID ||
-    !TC_SECRET_KEY ||
-    !TC_SDK_APP_ID ||
-    !TC_TEMPLATE_ID ||
-    !CODE_PEPPER ||
-    !RDB_BASE ||
-    !RDB_KEY
-  ) {
-    return notConfigured();
+  // 逐项检查并报出缺哪几个 —— 顺序按"最可能先缺"的排
+  const missing = [];
+  if (SMS_PROVIDER === 'aliyun') {
+    if (!ALIYUN_AK)             missing.push('ALIYUN_ACCESS_KEY_ID');
+    if (!ALIYUN_SK)             missing.push('ALIYUN_ACCESS_KEY_SECRET');
+    if (!ALIYUN_SIGN_NAME)      missing.push('ALIYUN_SMS_SIGN_NAME（赠送签名名）');
+    if (!ALIYUN_TEMPLATE_CODE)  missing.push('ALIYUN_SMS_TEMPLATE_CODE（赠送模板CODE）');
+  } else {
+    if (!TC_SDK_APP_ID)          missing.push('TC_SMS_SDK_APP_ID（短信应用ID）');
+    if (!TC_SECRET_ID)           missing.push('TC_SECRET_ID');
+    if (!TC_SECRET_KEY)          missing.push('TC_SECRET_KEY');
+    if (!TC_TEMPLATE_ID)         missing.push('TC_SMS_TEMPLATE_ID（模板ID，模板未过审时为空）');
   }
+  if (!CODE_PEPPER)              missing.push('CODE_PEPPER');
+  if (!RDB_BASE)                 missing.push('RDB_BASE');
+  if (!RDB_KEY)                  missing.push('RDB_KEY');
+  if (missing.length) return notConfigured(missing);
 
   const rows = await rdbGet(
     'select=id,created_at&phone=eq.' +
@@ -310,8 +571,26 @@ async function handleSend(phone) {
     return fail(429, { ok: false, error: 'DAILY_LIMIT', message: '今日发送次数已达上限' });
   }
 
+  if (SMS_PROVIDER === 'aliyun') {
+    // 阿里云通道：码由阿里云生成并保管，我们只落一条「发送记录」用于限流。
+    // code 字段存空串 —— 绝不能存明文（这张表 anon 可读）。
+    try {
+      await aliyunSendCode(phone);
+    } catch (e) {
+      return fail(502, {
+        ok: false,
+        error: 'SMS_API_ERROR',
+        provider: 'aliyun',
+        aliyunCode: e.aliyunCode || '',
+        message: e.message,
+      });
+    }
+    await rdbInsert({ phone: phone, code: '', used: false, attempts: 0 });
+    return ok({ ok: true, provider: 'aliyun' });
+  }
+
+  // 腾讯云通道：码我们自己生成，只存哈希不落明文
   const code = genCode();
-  // 只存哈希，不落明文
   await rdbInsert({ phone: phone, code: hashCode(phone, code), used: false, attempts: 0 });
 
   try {
@@ -320,18 +599,64 @@ async function handleSend(phone) {
     return fail(502, {
       ok: false,
       error: 'SMS_API_ERROR',
+      provider: 'tencent',
       tcCode: e.tcCode || '',
       message: e.message,
     });
   }
-  return ok({ ok: true });
+  return ok({ ok: true, provider: 'tencent' });
 }
 
 async function handleVerify(phone, code) {
   if (!isValidPhone(phone) || !/^\d{6}$/.test(String(code || ''))) {
     return fail(400, { ok: false, error: 'INVALID_INPUT' });
   }
-  if (!CODE_PEPPER || !RDB_BASE || !RDB_KEY) return notConfigured();
+  if (!CODE_PEPPER || !RDB_BASE || !RDB_KEY) {
+    const missing = [];
+    if (!CODE_PEPPER) missing.push('CODE_PEPPER');
+    if (!RDB_BASE)    missing.push('RDB_BASE');
+    if (!RDB_KEY)     missing.push('RDB_KEY');
+    return notConfigured(missing);
+  }
+
+  if (SMS_PROVIDER === 'aliyun') {
+    // 阿里云通道：校验交给阿里云（它才有明文码）。
+    // 我们的库里只有发送记录，没有码可比对 —— 这正是「明文不落库」的好处。
+    let passed = false;
+    try {
+      passed = await aliyunVerifyCode(phone, code);
+    } catch (e) {
+      // 阿里云返回 UNKNOWN 表示「码不匹配」，属于用户输错，不是服务异常。
+      // 其余错误码（配额、参数等）才当作异常抛出。
+      const code2 = e.aliyunCode || '';
+      const isMismatch = code2 === 'ISV_MOBILE_NOT_EXIST' || code2 === 'UNKNOWN';
+      if (!isMismatch) {
+        return fail(502, {
+          ok: false,
+          error: 'SMS_API_ERROR',
+          provider: 'aliyun',
+          aliyunCode: code2,
+          message: e.message,
+        });
+      }
+      passed = false;
+    }
+
+    // 校验通过后，把该手机号的未用发送记录标记掉（清理 + 防重放）
+    if (passed) {
+      const rows = await rdbGet(
+        'select=id&phone=eq.' + encodeURIComponent(phone) + '&used=eq.false',
+      );
+      for (const row of rows) {
+        try {
+          await rdbPatch(row.id, { used: true });
+        } catch (e) {
+          /* 单条失败不影响整体结果 */
+        }
+      }
+    }
+    return ok({ ok: passed, provider: 'aliyun' });
+  }
 
   // 取最近若干条未用码：不用 limit 1，避免他人插入垃圾行把真实那条挤掉
   const rows = await rdbGet(
@@ -433,11 +758,30 @@ const server = http.createServer(async (req, res) => {
   try {
     let out;
     if (action === 'ping') {
-      out = ok({ ok: true, pong: true, ts: Date.now() });
+      out = ok({
+        ok: true,
+        pong: true,
+        ts: Date.now(),
+        provider: SMS_PROVIDER,
+        // 各通道的关键配置是否就绪（只回布尔，不回密钥内容）
+        aliyunReady: !!(ALIYUN_AK && ALIYUN_SK && ALIYUN_SIGN_NAME && ALIYUN_TEMPLATE_CODE),
+        tencentReady: !!(TC_SDK_APP_ID && TC_SECRET_ID && TC_SECRET_KEY && TC_TEMPLATE_ID),
+      });
     } else if (action === 'send') {
-      out = await handleSend(phone);
+      const limited = checkIpRate(clientIp(req));
+      if (limited) {
+        out = limited;
+      } else {
+        out = await handleSend(phone);
+      }
     } else if (action === 'verify') {
-      out = await handleVerify(phone, code);
+      // verify 也限流：否则可暴力枚举 6 位码（100 万组合）
+      const limited = checkIpRate(clientIp(req) + ':v');
+      if (limited) {
+        out = limited;
+      } else {
+        out = await handleVerify(phone, code);
+      }
     } else {
       out = fail(400, {
         ok: false,
