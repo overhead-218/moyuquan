@@ -28,15 +28,18 @@ Future<void> showReportSheet(
     builder: (ctx) => _ReportSheetContent(reasons: reasons, title: title),
   );
   if (picked == null || !context.mounted) return;
-  await ModerationService.instance.report(
+  final ok = await ModerationService.instance.report(
     targetType: targetType,
     targetId: targetId,
     targetUserId: targetUserId,
     reason: picked,
   );
   if (!context.mounted) return;
+  // 如实反馈：写库失败时不能骗用户说「已提交」
   ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('举报已提交，我们会尽快处理')),
+    SnackBar(
+      content: Text(ok ? '举报已提交，我们会尽快处理' : '举报提交失败，请检查网络后重试'),
+    ),
   );
 }
 
@@ -100,8 +103,9 @@ Future<void> confirmBlock(
     ),
   );
   if (ok != true || !context.mounted) return;
-  ModerationService.instance.blockUser(userId);
+  final blocked = await ModerationService.instance.blockUser(userId);
   if (!context.mounted) return;
-  ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(content: Text('已拉黑 $userName')));
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    content: Text(blocked ? '已拉黑 $userName' : '拉黑失败，请检查网络后重试'),
+  ));
 }

@@ -1,7 +1,12 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/message_service.dart';
+import '../services/chat_service.dart';
+import '../services/user_profile.dart';
+import '../services/geo_service.dart';
+import '../services/post_service.dart';
 import '../services/moderation_actions.dart';
 
 /// 聊天详情页：与某个用户的私聊界面
@@ -39,8 +44,23 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   static const Color _kGold = Color(0xFFC49A5E);
   static const Color _kRed = Color(0xFFFF4757);
 
-  // 模拟聊天记录
+  // 真实聊天记录（来源：云库 chat_messages 表，见 chat_service.dart）
   final List<Map<String, dynamic>> _messages = [];
+
+  /// 当前会话 id（由双方 uid 派生，与顺序无关）
+  late final String _conversationId;
+
+  /// 对方 uid。
+  ///
+  /// ⚠️ 原实现存在真实 bug：会话 id 用 `widget.userId.isNotEmpty ? widget.userId
+  ///    : 'peer_${widget.name}'` 兜底，但所有 ChatService.send 调用传的都是裸的
+  ///    `peerId: widget.userId`。当 userId 为空时，会话 id 落到了 peer_昵称这个
+  ///    伪造 uid 上，而发给云库的 userBId 却是空字符串 → 会话列表在对方端不会出现。
+  /// 现在统一用 [peerId]，会话 id 与写库用同一个值。
+  late final String peerId;
+
+  /// 接收对方消息的轮询定时器
+  Timer? _pollTimer;
 
   // 工具栏展开状态
   bool _toolPanelVisible = false;
@@ -48,11 +68,64 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   @override
   void initState() {
     super.initState();
-    // 会话从空开始：历史消息由真实收发产生（当前体验版仅本机会话）
+    final me = UserProfile.id;
+    // 没有稳定 uid 时用「昵称派生」兜底，保证会话 id 稳定可复现
+    peerId = widget.userId.isNotEmpty
+        ? widget.userId
+        : 'peer_${Uri.encodeComponent(widget.name)}';
+    _conversationId = ChatService.conversationId(me, peerId);
+
+    // 真实消息：进入页面拉取云库历史记录
+    ChatService.loadConversation(_conversationId).then((_) {
+      if (!mounted) return;
+      setState(_syncMessagesFromService);
+      _scrollToBottom();
+    });
+
+    // 接收对方消息：CloudBase PG 暂无实时推送，用轮询实现
+    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
+      final added = await ChatService.pollNew(_conversationId);
+      if (added > 0 && mounted) {
+        setState(_syncMessagesFromService);
+        _scrollToBottom();
+      }
+    });
+  }
+
+  /// 把 ChatService 的消息模型转成页面气泡用的 Map
+  void _syncMessagesFromService() {
+    final me = UserProfile.id;
+    _messages
+      ..clear()
+      ..addAll(ChatService.messagesOf(_conversationId).map((m) {
+        final isMe = m.senderId == me;
+        final base = <String, dynamic>{
+          'isMe': isMe,
+          'text': m.isImage ? '' : m.content,
+          'time': m.timeLabel,
+        };
+        if (m.isImage) {
+          base['isImage'] = true;
+          base['imagePath'] = m.mediaUrl;
+        } else if (m.isLocation) {
+          base['isLocation'] = true;
+          base['locationName'] = m.content;
+          base['locationAddr'] = m.content;
+        } else if (m.isCatchCard) {
+          base['isCatchCard'] = true;
+          final parts = m.content.split(' ');
+          base['fishName'] = parts.isNotEmpty ? parts[0] : '';
+          base['fishWeight'] = parts.length > 1 ? parts[1] : '';
+          base['fishSpot'] = parts.length > 2 ? parts[2] : '';
+          base['fishImage'] = m.mediaUrl;
+        }
+        return base;
+      }));
   }
 
   @override
   void dispose() {
+    _pollTimer?.cancel();
     _controller.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
@@ -105,7 +178,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     }
   }
 
-  /// 发图片消息（mock）
+  /// 发图片消息
   Future<void> _sendImage(File imageFile) async {
     setState(() {
       _messages.add({
@@ -119,42 +192,101 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     });
     _pushConversation('[图片]');
     _scrollToBottom();
+    // ⚠️ 说明：图片本身暂存本地路径，未上传对象存储，
+    //    因此对方端暂时无法看到真实图片（消息文本已入库）。
+    //    接通 CloudBase 存储桶后，把 imageFile 换成上传后的 CDN URL 即可。
+    ChatService.send(
+      conversationId: _conversationId,
+      peerId: peerId,
+      type: 'image',
+      content: '[图片]',
+      mediaUrl: '',
+    );
   }
 
-  /// 发位置（mock）
-  void _sendLocation() {
+  /// 发位置
+  ///
+  /// ⚠️ 原实现写死「东江湖·白廊镇/ 湖南省郴州市资兴市白廊镇」，
+  ///    无论用户在哪都发同一个假位置。现在读取真实定位结果。
+  Future<void> _sendLocation() async {
+    final loc = await GeoService.locate();
+    String name;
+    if (loc == null) {
+      name = widget.name.isEmpty ? '未知位置' : '当前位置附近';
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('未获取到定位，已标注为「当前位置附近」'),
+        ));
+      }
+    } else {
+      // 有坐标就展示坐标，逆地理编码接腾讯位置服务后可显示地名
+      name = '${loc.lat.toStringAsFixed(5)}, ${loc.lon.toStringAsFixed(5)}';
+    }
+    if (!mounted) return;
     setState(() {
       _messages.add({
         'isMe': true,
         'text': '',
         'time': '刚刚',
         'isLocation': true,
-        'locationName': '东江湖·白廊镇',
-        'locationAddr': '湖南省郴州市资兴市白廊镇',
+        'locationName': name,
+        'locationAddr': name,
       });
       _toolPanelVisible = false;
     });
-    _pushConversation('[位置] 东江湖·白廊镇');
+    _pushConversation('[位置] $name');
     _scrollToBottom();
+    ChatService.send(
+      conversationId: _conversationId,
+      peerId: peerId,
+      type: 'location',
+      content: name,
+    );
   }
 
-  /// 发渔获卡片（mock）
-  void _sendCatchCard() {
+  /// 发渔获卡片
+  ///
+  /// ⚠️ 原实现写死「大翘嘴3.8斤 / 升钟湖·凤凰岛」+ 一张 picsum 随机图，
+  ///    无论用户实际发了什么渔获都推这张假卡片。
+  /// 现在从用户自己的真实渔获里选择。
+  Future<void> _sendCatchCard() async {
+    // 从当前用户真实渔获里挑一条（无渔获则提示先发布）
+    final mine = PostService.myCatchPosts();
+    if (mine.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('你还没有发布过渔获，先去发一条吧'),
+      ));
+      return;
+    }
+    // 取最新一条渔获帖作为卡片内容
+    final post = mine.first;
+    final fishName = post.title.isNotEmpty ? post.title : '我的渔获';
+    final summary = '$fishName ${post.location}';
+
+    if (!mounted) return;
     setState(() {
       _messages.add({
         'isMe': true,
         'text': '',
         'time': '刚刚',
         'isCatchCard': true,
-        'fishName': '大翘嘴',
-        'fishWeight': '3.8斤',
-        'fishSpot': '升钟湖·凤凰岛',
-        'fishImage': 'https://picsum.photos/seed/catch001/400/300',
+        'fishName': fishName,
+        'fishWeight': '',
+        'fishSpot': post.location,
+        'fishImage': post.imageUrl.isNotEmpty ? post.imageUrl : '',
       });
       _toolPanelVisible = false;
     });
-    _pushConversation('[鱼获] 大翘嘴 3.8斤');
+    _pushConversation('[渔获] $summary');
     _scrollToBottom();
+    ChatService.send(
+      conversationId: _conversationId,
+      peerId: peerId,
+      type: 'catchCard',
+      content: summary,
+      mediaUrl: post.imageUrl,
+    );
   }
 
 
@@ -201,6 +333,13 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     _controller.clear();
     _pushConversation(text);
     _scrollToBottom();
+    // 真实入库（chat_messages 表），对方才能收到
+    ChatService.send(
+      conversationId: _conversationId,
+      peerId: peerId,
+      type: 'text',
+      content: text,
+    );
   }
 
   /// 发出消息后同步到会话列表（MessageService），并置顶该会话。
