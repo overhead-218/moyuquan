@@ -9,11 +9,9 @@ import 'spot_submit_page.dart';
 
 // ── 全局常量（所有类共用）────────────────────────────
 const _primary    = Color(0xFF0A7C74);
-const _lightTeal  = Color(0xFF148F86);
 const _bg         = Color(0xFFF7F3EE);
 const _surface    = Color(0xFFFFFFFF);
 const _gold       = Color(0xFFC49A5E);
-const _red        = Color(0xFFFF4757);
 const _textMain   = Color(0xFF1A1A1A);
 const _textWeak   = Color(0xFF999999);
 
@@ -43,12 +41,18 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
     // 云库同步完成后刷新列表（_allSpots 引用原地更新即可见，这里触发 rebuild）
     SpotService.addListener(_onCloudUpdate);
     // 1. 记住的城市优先 — 记忆有效意味着用户曾经手动选过，置 _userPicked=true
-    //    防止后续定位覆盖用户的明确选择
-    final saved = GeoService.loadCity();
-    if (saved != null && _cities.contains(saved)) {
-      _selectedCity = saved;
-      _userPicked = true;
-    }
+    //    防止后续定位覆盖用户的明确选择。
+    //    ⚠️ 这里必须用异步版 loadCityAsync()：原生端的城市记忆存在
+    //    SharedPreferences 里，首帧读取必然是 null。旧代码用同步 loadCity()，
+    //    在 App 端永远读不到，导致「记住的城市」功能在手机上完全失效。
+    GeoService.loadCityAsync().then((saved) {
+      if (!mounted || saved == null) return;
+      if (!_cities.contains(saved)) return;
+      setState(() {
+        _selectedCity = saved;
+        _userPicked = true;
+      });
+    });
     // 2. 浏览器定位（刷新真实坐标 + 未手动选择时映射城市）
     _tryLocate();
   }
@@ -384,28 +388,17 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
                 fit: StackFit.expand,
                 children: [
                   Builder(builder: (_) {
-                    final url = s.displayImages.first;
+                    final imgs = s.displayImages;
+                    // ⚠️ 没有照片时不再套用通用示意图 —— 一张跟这个钓点无关的
+                    //    钓鱼照会让用户误以为那就是实景。改为纯色占位 + 明示。
+                    if (imgs.isEmpty) return _noPhotoTile(s, compact: true);
+                    final url = imgs.first;
                     final isHttp = url.startsWith('http');
-                    final img = isHttp
-                        ? Image.network(url, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(
-                            decoration: BoxDecoration(gradient: LinearGradient(
-                              colors: [const Color(0xFF0A7C74), const Color(0xFF148F86)],
-                            )),
-                            child: Center(child: Text(s.typeEmoji, style: const TextStyle(fontSize: 48))),
-                          ),
-                          loadingBuilder: (_, child, p) => p == null ? child : Container(
-                            decoration: BoxDecoration(gradient: LinearGradient(
-                              colors: [_primary, _lightTeal],
-                            )),
-                          ),
+                    return isHttp
+                        ? Image.network(url, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _noPhotoTile(s, compact: true),
+                          loadingBuilder: (_, child, p) => p == null ? child : _noPhotoTile(s, compact: true),
                         )
-                        : Image.asset(url, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(
-                            decoration: BoxDecoration(gradient: LinearGradient(
-                              colors: [const Color(0xFF0A7C74), const Color(0xFF148F86)],
-                            )),
-                            child: Center(child: Text(s.typeEmoji, style: const TextStyle(fontSize: 48))),
-                          ));
-                    return img;
+                        : Image.asset(url, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _noPhotoTile(s, compact: true));
                   }),
                   // 渐变遮罩
                   Container(
@@ -432,6 +425,37 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
                       ),
                     ),
                   ),
+                  // 左下角照片来源角标：有商家实拍/平台实景才显示，无图不显示
+                  if (s.photoBadge != null)
+                    Positioned(
+                      bottom: 44, left: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.55),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              s.imageSource == SpotImageSource.merchant
+                                  ? Icons.storefront_outlined
+                                  : (s.imageSource == SpotImageSource.community
+                                      ? Icons.groups_outlined
+                                      : (s.imageSource == SpotImageSource.platformShot
+                                          ? Icons.photo_camera_back_outlined
+                                          : Icons.public_outlined)),
+                              size: 9, color: Colors.white,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(s.photoBadge!,
+                                style: const TextStyle(
+                                    fontSize: 9, color: Colors.white, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                      ),
+                    ),
                   // 底部信息
                   Positioned(
                     left: 8, right: 8, bottom: 8,
@@ -465,8 +489,44 @@ class _SpotDiscoveryPageState extends State<SpotDiscoveryPage> {
     );
   }
 
-  Widget _buildSectionTitle(String title, String subtitle) {
-    return Row(
+  /// 无照片占位：深色实底 + 鱼种图标 + 明示文字。
+  ///
+  /// ⚠️ 绝不用通用示意图代替。宁可告诉用户「暂无实景照片」，
+  ///    也不能让一张跟这个钓点无关的钓鱼照被当成它的实景。
+  Widget _noPhotoTile(Spot s, {bool compact = false}) {
+    return Container(
+      color: _primary.withValues(alpha: 0.85),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(s.typeEmoji,
+                style: TextStyle(fontSize: compact ? 26 : 34)),
+            SizedBox(height: compact ? 3 : 6),
+            Text(
+              '暂无实景照片',
+              style: TextStyle(
+                fontSize: compact ? 9.5 : 11,
+                color: Colors.white.withValues(alpha: 0.92),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (!compact) ...[
+              const SizedBox(height: 2),
+              Text(
+                '商家认领后可上传实拍',
+                style: TextStyle(
+                    fontSize: 9.5, color: Colors.white.withValues(alpha: 0.72)),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, String subtitle) {    return Row(
       children: [
         Text(
           title,
@@ -677,6 +737,28 @@ class _SpotCard extends StatelessWidget {
   static ImageProvider _imgProvider(String url) =>
       url.startsWith('assets/') ? AssetImage(url) : NetworkImage(url);
 
+  /// 无照片占位（列表卡片版）
+  Widget _noPhoto() {
+    return Container(
+      decoration: BoxDecoration(gradient: LinearGradient(colors: _fallbackColors(spot.type))),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(spot.typeEmoji, style: const TextStyle(fontSize: 28)),
+          const SizedBox(height: 4),
+          Text(
+            '暂无实景照片',
+            style: TextStyle(
+              fontSize: 9.5,
+              color: Colors.white.withValues(alpha: 0.95),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -693,23 +775,22 @@ class _SpotCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: Row(
           children: [
-            // 封面图
+            // 封面图 / 无照片占位
             SizedBox(
               width: 110,
               height: 110,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image(
-                    image: _imgProvider(spot.displayImages.first),
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      decoration: BoxDecoration(gradient: LinearGradient(
-                        colors: _fallbackColors(spot.type),
-                      )),
-                      child: Center(child: Text(spot.typeEmoji, style: const TextStyle(fontSize: 40))),
+                  // ⚠️ spot.displayImages 现在无图时返回空列表（不再回退通用图池）
+                  if (spot.displayImages.isEmpty)
+                    _noPhoto()
+                  else
+                    Image(
+                      image: _imgProvider(spot.displayImages.first),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _noPhoto(),
                     ),
-                  ),
                   // 类型标签
                   Positioned(
                     top: 6, left: 6,
@@ -725,6 +806,39 @@ class _SpotCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                  // 左下角照片来源角标：有照片才显示
+                  if (spot.photoBadge != null)
+                    Positioned(
+                      bottom: 6, left: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.55),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              spot.imageSource == SpotImageSource.merchant
+                                  ? Icons.storefront_outlined
+                                  : (spot.imageSource == SpotImageSource.community
+                                      ? Icons.groups_outlined
+                                      : (spot.imageSource == SpotImageSource.platformShot
+                                          ? Icons.photo_camera_back_outlined
+                                          : Icons.public_outlined)),
+                              size: 9, color: Colors.white,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              spot.photoBadge!,
+                              style: const TextStyle(
+                                  fontSize: 8.5, color: Colors.white, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
