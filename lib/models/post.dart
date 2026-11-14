@@ -12,7 +12,7 @@ class Post {
   final String location;
   final String imageUrl;
   final List<String> images; // 多图（封面取第一张；缺省空）
-  final double height;      // 卡片高度（瀑布流用）
+  final double height;      // 卡片配图高度（瀑布流用）；无图帖子不给，0 表示不占图
   final int likeCount;
   final int commentCount;
   final DateTime createdAt;
@@ -27,9 +27,9 @@ class Post {
     required this.title,
     required this.content,
     required this.location,
-    required this.imageUrl,
+    this.imageUrl = '',
     this.images = const <String>[],
-    required this.height,
+    this.height = 0,
     required this.likeCount,
     required this.commentCount,
     required this.createdAt,
@@ -37,6 +37,12 @@ class Post {
   });
 
   // ── 云库序列化（字段名与 Postgres 列 1:1）─────────────────
+  /// ⚠️ posts 表**没有 images 列**（实测列：id/authorId/authorName/
+  ///    authorAvatar/type/title/content/location/imageUrl/height/
+  ///    likeCount/commentCount/createdAt/sections）。
+  ///    这里以前多写一个 'images': images，用户发帖时 PostgREST 直接报
+  ///    PGRST204（column not found），整条帖子写不进库、还会在本地假装成功。
+  ///    多图字段要等真加列（sql/part8.sql）后再放开，这里先只落 imageUrl。
   Map<String, dynamic> toJson() => {
     'id': id,
     'authorId': authorId,
@@ -47,7 +53,6 @@ class Post {
     'content': content,
     'location': location,
     'imageUrl': imageUrl,
-    'images': images,
     'height': height,
     'likeCount': likeCount,
     'commentCount': commentCount,
@@ -83,8 +88,10 @@ class Post {
     content: _asStr(json['content']) ?? '',
     location: _asStr(json['location']) ?? '',
     imageUrl: _asStr(json['imageUrl']) ?? '',
-    images: _asListStr(json['images']) ?? (json['imageUrl'] != null ? [_asStr(json['imageUrl'])!] : const <String>[]),
-    height: _asDouble(json['height'], 280),
+    // posts 表没有 images 列，多图字段要等真加列后再放开
+    images: _asListStr(json['images']),
+    // 无图帖子 height=0，UI 据此完全不占图区高度
+    height: _asDouble(json['height'], 0),
     likeCount: _asInt(json['likeCount']),
     commentCount: _asInt(json['commentCount']),
     createdAt: json['createdAt'] == null

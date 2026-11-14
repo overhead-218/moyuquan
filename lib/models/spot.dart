@@ -11,6 +11,24 @@ enum SpotStatus {
   pending,  // 待核实：缺联系方式或搜不到公开信息，先隐藏
 }
 
+/// 钓点图片来源
+///
+/// ⚠️ 2026-10-18 之前，详情页/首页对没有图片的钓点直接回退到工程内置的
+///    `wm_*.jpg` 兜底图池（40 张通用钓鱼照）。结果同一张图会被分配给几十个
+///    完全不同的钓点 —— 用户看到「阳宗海滩双基地」配了一张通用钓鱼剪影，
+///    以为那就是这个钓点的实景。这是**用假图冒充实景**，必须停掉。
+///
+///    现在改为如实分级：只有商家/钓友真的上传过的照片才算这个钓点的实景；
+///    平台采集的公共图库照单独标为「平台实景」，与商家实拍区分开；
+///    两者都没有时**不显示任何照片**，只给占位和上传引导。
+enum SpotImageSource {
+  none,       // 无照片：显示占位，不配图
+  merchant,   // 商家认领后上传的实拍 —— 最高优先级
+  community,  // 钓友投稿上传
+  platform,   // 平台采集的公共图库照（Wikimedia 等，非本钓点专属实景）
+  platformShot, // 平台方实地拍摄/提供的该钓点专属实景照片（imagesVerified=true）
+}
+
 /// 钓点数据模型
 /// type:野钓 | 斤塘 | 养殖塘 | 农家乐 | 游钓基地
 /// fishPeakSeason: 鱼种 → 旺季月份范围（如 '5-10'），仅野钓/游钓基地有意义
@@ -88,6 +106,7 @@ class Spot {
   final List<String> facilities;         // 设施服务标签（WiFi/停车场/餐厅/淋浴热水…）
   final Map<String, String> imageCaptions; // 图片路径→分类说明（如「豪华筏钓房」「路亚艇60匹」「钓货：米级翘嘴」），详情页在图右上加 chip
   final bool imagesVerified; // true=有钓点专属真实照片；false=仅用示意图/兜底图（非实景）
+  final SpotImageSource imageSource; // 图片来源（none/merchant/community/platform）
   final List<PriceTier> priceTiers; // 多档收费（房型/钓法不同价），空=用 price/priceNote 单档
 
   const Spot({
@@ -132,6 +151,7 @@ class Spot {
     this.facilities = const <String>[],
     this.imageCaptions = const <String, String>{},
     this.imagesVerified = false,
+    this.imageSource = SpotImageSource.none,
     this.priceTiers = const <PriceTier>[],
   });
 
@@ -233,55 +253,46 @@ class Spot {
   List<String> get galleryImages =>
       [...images, ...accommodationImages, ...commonAreaImages];
 
-  /// 默认实景图池（CC 授权的真实钓鱼/湖泊照，见 assets/images/spots/wm_*.jpg）
-  /// 用于没有钓友上传图的钓点兜底，避免渐变占位
-  static const List<String> _fallbackImages = [
-    'assets/images/spots/wm_01.jpg',
-    'assets/images/spots/wm_02.jpg',
-    'assets/images/spots/wm_03.jpg',
-    'assets/images/spots/wm_04.jpg',
-    'assets/images/spots/wm_05.jpg',
-    'assets/images/spots/wm_06.jpg',
-    'assets/images/spots/wm_07.jpg',
-    'assets/images/spots/wm_08.jpg',
-    'assets/images/spots/wm_09.jpg',
-    'assets/images/spots/wm_10.jpg',
-    'assets/images/spots/wm_11.jpg',
-    'assets/images/spots/wm_12.jpg',
-    'assets/images/spots/wm_13.jpg',
-    'assets/images/spots/wm_14.jpg',
-    'assets/images/spots/wm_15.jpg',
-    'assets/images/spots/wm_16.jpg',
-    'assets/images/spots/wm_17.jpg',
-    'assets/images/spots/wm_18.jpg',
-    'assets/images/spots/wm_19.jpg',
-    'assets/images/spots/wm_20.jpg',
-    'assets/images/spots/wm_21.jpg',
-    'assets/images/spots/wm_22.jpg',
-    'assets/images/spots/wm_23.jpg',
-    'assets/images/spots/wm_24.jpg',
-    'assets/images/spots/wm_25.jpg',
-    'assets/images/spots/wm_26.jpg',
-    'assets/images/spots/wm_27.jpg',
-    'assets/images/spots/wm_28.jpg',
-    'assets/images/spots/wm_29.jpg',
-    'assets/images/spots/wm_30.jpg',
-    'assets/images/spots/wm_31.jpg',
-    'assets/images/spots/wm_32.jpg',
-    'assets/images/spots/wm_33.jpg',
-    'assets/images/spots/wm_34.jpg',
-    'assets/images/spots/wm_35.jpg',
-    'assets/images/spots/wm_36.jpg',
-    'assets/images/spots/wm_37.jpg',
-    'assets/images/spots/wm_38.jpg',
-    'assets/images/spots/wm_39.jpg',
-    'assets/images/spots/wm_40.jpg',
-  ];
+  /// 展示用头图。
+  ///
+  /// ⚠️ 2026-10-18 重大行为变更：这里**只保留真实网络照片**。
+  ///    旧实现按 `id.hashCode % 40` 给每个钓点随机分配一张 `wm_*.jpg`
+  ///    通用钓鱼照，导致「阳宗海滩双基地」这种具体钓点配了一张毫不相关的示意图。
+  ///
+  /// 云库实测（597 行）还发现两类假数据已在前端被当作实景展示：
+  ///    · 250 行 images 写的是 `assets/images/spots/wm_02.jpg` 通用图池
+  ///    · 其余行写的是 `assets/images/spots/spot_001.jpg`，但抽查文件内容发现
+  ///      与钓点毫无关系（spot_001 是菠萝、spot_025 是东京街道、spot_060 是洛杉矶夕阳）
+  ///
+  /// 现在规则：**只有 http(s) 开头的真实网络照片才展示**，
+  /// 工程内置的本地 asset 一律视为非实景。
+  /// 商家/钓友上传照片后写入 http(s) URL，会自动成为该钓点的实景并优先展示。
+  List<String> get displayImages => images
+      .where((u) => u.trim().isNotEmpty)
+      .where((u) => u.startsWith('http'))
+      .toList(growable: false);
 
-  /// 展示用头图：按 id 稳定从兜底实景图池取 1 张
-  /// （真实图全走 `assets/images/spots/wm_*.jpg` 兜底，避免 251 个 spot 引用不存在的 spot_xxx.jpg）
-  List<String> get displayImages =>
-      [_fallbackImages[id.hashCode.abs() % _fallbackImages.length]];
+  /// 是否有可用照片。false 时 UI 必须显示占位，不能配任何示意/兜底图。
+  bool get hasPhoto => displayImages.isNotEmpty;
+
+  /// 照片角标文案（右上/左下角显示，如「商家实拍」「平台实景」）。
+  /// 无照片时返回 null（不显示角标）。
+  String? get photoBadge {
+    switch (imageSource) {
+      case SpotImageSource.merchant:
+        return '商家实拍';
+      case SpotImageSource.community:
+        return '钓友上传';
+      case SpotImageSource.platformShot:
+        // 该钓点的专属实景照片（平台方实地拍摄/提供），不是公共图库照
+        return '平台实拍';
+      case SpotImageSource.platform:
+        // 平台采集的是景区/湖泊公共图库照，不等于这个钓点的实景，必须说清楚
+        return '平台实景 · 非本钓点专属';
+      case SpotImageSource.none:
+        return null;
+    }
+  }
 
   /// 设施服务标签（合并 WiFi 标识）
   List<String> get facilityChips {
@@ -333,6 +344,9 @@ class Spot {
     'facilities': facilities,
     'imageCaptions': imageCaptions,
     'imagesVerified': imagesVerified,
+    // ⚠️ imageSource 是派生字段（由 images/submitter/imagesVerified 实时算出），
+    //    云库 spots 表【没有】imageSource 列。写进去会导致 insert/upsert 整条
+    //    报 PGRST204（unknown column），连带商家提交/编辑钓点全部失败。
     'priceTiers': priceTiers.map((t) => t.toJson()).toList(),
   };
 
@@ -379,7 +393,45 @@ class Spot {
 
   static String? _asStr(dynamic v) => v == null ? null : v.toString();
 
+  /// 判定图片来源。
+  ///
+  /// 优先级：商家认领 > 平台实拍 > 钓友投稿 > 平台采集。
+  /// 云库里 `images` 为 http 开头的是平台采集的公共图库照（Wikimedia 等），
+  /// 它们是真实存在的湖泊/景区照片，但**不是这个钓点的实景**，只能标「平台实景」。
+  ///
+  /// imagesVerified=true 表示「这个钓点确实有专属实拍照片」。
+  /// 此时再按 submitter 细分：
+  ///   owner    → 商家实拍（商家自己拍的）
+  ///   operator → 平台实拍（平台方实地拍到/提供的该钓点专属照片）
+  ///   ugc      → 钓友上传
+  static SpotImageSource _resolveImageSource(
+      List<String> rawImages, SpotSubmitter submitter, bool verified) {
+    // 只认 http(s) 真实照片：本地 asset 全是假图/通用图池
+    final images = rawImages.where((u) => u.startsWith('http')).toList();
+    if (images.isEmpty) return SpotImageSource.none;
+    if (verified) {
+      switch (submitter) {
+        case SpotSubmitter.owner:
+          return SpotImageSource.merchant;
+        case SpotSubmitter.operator:
+          return SpotImageSource.platformShot;
+        case SpotSubmitter.ugc:
+          return SpotImageSource.community;
+      }
+    }
+    // 非认领来源一律视为平台采集（含 Wikimedia 公共图库照）
+    return submitter == SpotSubmitter.owner
+        ? SpotImageSource.merchant
+        : SpotImageSource.platform;
+  }
+
   factory Spot.fromJson(Map<String, dynamic> json) {
+    final submitter = SpotSubmitter.values.firstWhere(
+      (e) => e.name == json['submitter'],
+      orElse: () => SpotSubmitter.operator,
+    );
+    final images = _asList(json['images']);
+    final verified = _asBool(json['imagesVerified'], false);
     return Spot(
       id: _asStr(json['id']) ?? '',
       name: _asStr(json['name']) ?? '',
@@ -402,18 +454,16 @@ class Spot {
       wechat: _asStr(json['wechat']),
       ownerName: _asStr(json['ownerName']),
       rating: json['rating'] is num ? (json['rating'] as num).toDouble() : null,
-      reviewCount: _asInt(json['reviewCount']) ?? 0,
-      viewCount: _asInt(json['viewCount']) ?? 0,
-      favoriteCount: _asInt(json['favoriteCount']) ?? 0,
-      postCount: _asInt(json['postCount']) ?? 0,
+      // _asInt 已带默认值，这里的 ?? 0 永远走不到
+      reviewCount: _asInt(json['reviewCount']),
+      viewCount: _asInt(json['viewCount']),
+      favoriteCount: _asInt(json['favoriteCount']),
+      postCount: _asInt(json['postCount']),
       description: _asStr(json['description']) ?? '',
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.tryParse(json['updatedAt'].toString()),
-      submitter: SpotSubmitter.values.firstWhere(
-        (e) => e.name == json['submitter'],
-        orElse: () => SpotSubmitter.operator,
-      ),
+      submitter: submitter,
       status: SpotStatus.values.firstWhere(
         (e) => e.name == json['status'],
         orElse: () => SpotStatus.active,
@@ -433,7 +483,8 @@ class Spot {
       commonAreaImages: _asList(json['commonAreaImages']),
       facilities: _asList(json['facilities']),
       imageCaptions: _asMap(json['imageCaptions']),
-      imagesVerified: _asBool(json['imagesVerified'], false),
+      imagesVerified: verified,
+      imageSource: _resolveImageSource(images, submitter, verified),
       priceTiers: _asTiers(json['priceTiers']),
     );
   }
