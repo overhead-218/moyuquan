@@ -55,6 +55,9 @@ String? loadCity() {
   }
 }
 
+/// 异步版（与原生端接口对齐）。Web 端 localStorage 是同步 API，直接包一层。
+Future<String?> loadCityAsync() async => loadCity();
+
 void saveCity(String city) {
   try {
     final ls = globalContext['localStorage'] as JSObject?;

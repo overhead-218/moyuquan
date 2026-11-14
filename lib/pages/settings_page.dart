@@ -10,6 +10,9 @@ import '../services/message_service.dart';
 import '../services/post_service.dart';
 import '../services/claim_service.dart';
 import 'claim_review_page.dart';
+import '../services/app_version.dart';
+import '../services/update_service.dart';
+import '../services/account_deletion_service.dart';
 
 /// 设置页
 class SettingsPage extends StatelessWidget {
@@ -186,23 +189,18 @@ class SettingsPage extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  const Text(
-                    '摸鱼圈 v1.0.0',
-                    style: TextStyle(
+                  Text(
+                    // 版本号从 pubspec.yaml 的 version 读取（当前 1.1.0+11），
+                    // 之前这里写死 'v1.0.0'，每次发版都要手改且极易漏改。
+                    '摸鱼圈 v${AppVersion.display}',
+                    style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFF999999),
                     ),
                   ),
                   const SizedBox(height: 4),
                   TextButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('已是最新版本 v1.0.0'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    },
+                    onPressed: () => _checkUpdate(context),
                     child: const Text(
                       '检查更新',
                       style: TextStyle(
@@ -282,6 +280,77 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
+  /// 真实的「检查更新」。
+  ///
+  /// ⚠️ 原实现是无条件弹「已是最新版本 v1.0.0」，从不查接口。
+  /// 现在查询云库 app_config 表，按 build 号比对：
+  ///   - 有新版本 → 弹更新说明 + 下载按钮
+  ///   - 无新版本 → 提示已是最新
+  ///   - 查询失败 → 如实提示失败原因，不谎报
+  static Future<void> _checkUpdate(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(const SnackBar(
+      content: Text('正在检查更新…'),
+      duration: Duration(seconds: 2),
+    ));
+    try {
+      final info = await UpdateService.check();
+      if (!context.mounted) return;
+      if (!info.hasUpdate) {
+        messenger.showSnackBar(SnackBar(
+          content: Text('已是最新版本 v${AppVersion.display}'),
+        ));
+        return;
+      }
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('发现新版本 v${info.latestVersion}'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('当前版本：v${AppVersion.display}'),
+                const SizedBox(height: 8),
+                if (info.releaseNotes.isNotEmpty) ...[
+                  const Text('更新内容：',
+                      style: TextStyle(fontWeight: FontWeight.w700)),
+                  Text(info.releaseNotes),
+                ],
+                if (info.forceUpdate) ...[
+                  const SizedBox(height: 10),
+                  const Text('该版本为必须更新',
+                      style: TextStyle(color: Colors.red)),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(info.forceUpdate ? '稍后' : '取消'),
+            ),
+            if (info.downloadUrl.isNotEmpty)
+              FilledButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  UpdateService.openDownload(info.downloadUrl);
+                },
+                child: const Text('去更新'),
+              ),
+          ],
+        ),
+      );
+    } on UpdateCheckException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('检查更新失败：${e.message}')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('检查更新失败：$e')));
+    }
+  }
+
   /// 清除当前设备上的全部本地用户态（登出 / 注销共用）
   static void _clearLocalUserData() {
     UserProfile.instance.resetToGuest();
@@ -309,10 +378,22 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               final nav = Navigator.of(context);
               nav.pop();
+              final messenger = ScaffoldMessenger.of(context);
+              // 先告知用户正在注销，避免长时间无反馈
+              messenger.showSnackBar(const SnackBar(
+                content: Text('正在注销，云端数据清理中…'),
+                duration: Duration(seconds: 6),
+              ));
+              // ⚠️ 原实现只清本地数据就跳登录页，云端 profiles / 帖子 /
+              //    评论 / 点赞 / 收藏 / 关注全部留存 —— 用户点了「注销账号」
+              //    以为数据已删除，实际换个手机登录还能看到全部历史内容。
+              //    这在个人信息保护上存在合规风险。
+              await AccountDeletionService.deleteMyAccount();
               _clearLocalUserData();
+              if (!nav.mounted) return;
               nav.pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const LoginPage()),
                 (route) => false,

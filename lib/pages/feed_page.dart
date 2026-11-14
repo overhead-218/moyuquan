@@ -418,8 +418,8 @@ class _FeedImageCardState extends State<_FeedImageCard>
     super.dispose();
   }
 
-  void _toggleLike() {
-    PostService.toggleLike(widget.post.id);
+  Future<void> _toggleLike() async {
+    await PostService.toggleLike(widget.post.id);
     _syncLike();
   }
 
@@ -532,12 +532,19 @@ class _FeedImageCardState extends State<_FeedImageCard>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 图片区
-                  SizedBox(
-                    height: widget.post.height,
-                    width: double.infinity,
-                    child: widget.post.imageUrl.isEmpty
-                        ? _OfficialBanner(post: widget.post, height: widget.post.height)
-                        : SmartImage(
+                  // ⚠️ 清洗掉通用图池假图后，大量帖子 imageUrl 为空、height 为 0。
+                  //   原来只要 imageUrl 为空就渲染 _OfficialBanner（带「摸鱼圈官方」
+                  //   角标的官方引导样式），会让所有普通钓友帖都冒充官方帖。
+                  //   现在只有作者确实是 official 时才走 banner，
+                  //   其余无图帖子完全不占图区高度，标题正文直接上移。
+                  if (widget.post.height > 0)
+                    SizedBox(
+                      height: widget.post.height,
+                      width: double.infinity,
+                      child: widget.post.authorId == 'official'
+                          ? _OfficialBanner(
+                              post: widget.post, height: widget.post.height)
+                          : SmartImage(
                       url: widget.post.imageUrl,
                       fit: BoxFit.cover,
                       loadingBuilder: (context, child, loadingProgress) {

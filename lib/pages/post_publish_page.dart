@@ -183,8 +183,8 @@ class _PostPublishPageState extends State<PostPublishPage> {
 
       final profile = UserProfile.instance;
       final post = Post(
-        id: 'post_${DateTime.now().millisecondsSinceEpoch}',
-        authorId: 'me',
+        id: 'post_${DateTime.now().microsecondsSinceEpoch}',
+        authorId: UserProfile.id,
         authorName: profile.name,
         authorAvatar: profile.avatarEmoji,
         type: _postType,

@@ -4,9 +4,12 @@ import '../models/spot.dart';
 import '../services/follow_service.dart';
 import '../services/post_service.dart';
 import '../services/spot_service.dart';
+import '../services/tcb_rest_client.dart';
+import '../services/user_profile.dart';
 import 'post_detail_page.dart';
 import 'spot_detail_page.dart';
 import 'user_profile_page.dart';
+import 'chat_detail_page.dart';
 
 /// 搜索页：综合搜索 + 热门发现
 /// Stitch 风格：Material 3 Expressive，暖白背景、青绿主色、金色点缀
@@ -40,6 +43,11 @@ class _SearchPageState extends State<SearchPage>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _focusNode.requestFocus();
+    // 预热真实用户表：进入搜索页就把 profiles 拉下来，
+    // 这样「输入名字 → 看到人 → 点发消息」是一气呵成的，不用等网络往返。
+    _userRows().then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -230,12 +238,112 @@ class _SearchPageState extends State<SearchPage>
     );
   }
 
+  /// 搜索云库 profiles 中的真实用户。
+  ///
+  /// 优先本地缓存（关注/粉丝列表里的人已缓存），再拉云库；
+  /// 云库不可用时返回空列表，UI 会显示「无结果」而不是假人。
+  List<Map<String, String>> _searchUsers(String q) {
+    final keyword = q.trim().toLowerCase();
+    final out = <Map<String, String>>[];
+    final seen = <String>{};
+
+    bool hit(String name, String id, [String nickname = '']) {
+      if (keyword.isEmpty) return true;
+      // 支持昵称/姓名模糊匹配，也允许直接用 uid 前缀找
+      return name.toLowerCase().contains(keyword) ||
+          nickname.toLowerCase().contains(keyword) ||
+          id.toLowerCase().contains(keyword);
+    }
+
+    void add(String id, String name, String avatar, String bio,
+        [String nickname = '']) {
+      if (id.isEmpty || name.isEmpty) return;
+      if (!hit(name, id, nickname)) return;
+      if (!seen.add(id)) return;
+      // 有昵称就用昵称展示，脱敏手机号当副标题
+      final display = nickname.trim().isNotEmpty ? nickname.trim() : name;
+      out.add({
+        'id': id,
+        'name': display,
+        'avatar': avatar,
+        'bio': bio,
+        'sub': display == name ? '' : name,
+      });
+    }
+
+    // 1) 已缓存的真实用户（关注/粉丝/帖子作者）
+    for (final id in {
+      ...FollowService.instance.followingIds,
+      ...FollowService.instance.followerIds,
+    }) {
+      final info = FollowService.userInfo(id);
+      add(id, info['name'] ?? '', info['avatar'] ?? '🎣', info['bio'] ?? '',
+          info['nickname'] ?? '');
+    }
+
+    // 2) 云库 profiles 全量小表（用户量级有限，直接拉取后本地过滤）
+    //    首次进入搜索页已预热，这里通常直接命中缓存，输入即出结果，不再闪烁。
+    //
+    //    ⚠️ PostgREST 返回列名一律小写（nickname / avatarEmoji...），
+    //    两种大小写都要兼容，否则新建的 nickname 列读不到值 = 搜不到人。
+    for (final r in _cachedUserRows) {
+      String pick(String key) {
+        if (r.containsKey(key)) return r[key] as String? ?? '';
+        final lower = key.toLowerCase();
+        for (final e in r.entries) {
+          if (e.key.toLowerCase() == lower) return e.value as String? ?? '';
+        }
+        return '';
+      }
+
+      final id = pick('id');
+      final name = pick('name');
+      add(id, name, pick('avatarEmoji').isNotEmpty ? pick('avatarEmoji') : '🎣',
+          pick('bio'), pick('nickname'));
+    }
+
+    // 3) 缓存还没回来时兜底异步拉一次
+    if (_cachedUserRows.isEmpty && !_usersLoading) {
+      _userRows().then((_) {
+        if (mounted) setState(() {});
+      });
+    }
+
+    return out;
+  }
+
+  static List<Map<String, dynamic>> _cachedUserRows = [];
+  static bool _usersLoading = false;
+
+  /// 启动即预热用户表，让「搜索名字→聊天」能立刻出结果。
+  Future<List<Map<String, dynamic>>> _userRows() async {
+    if (_cachedUserRows.isNotEmpty) return _cachedUserRows;
+    if (_usersLoading) return _cachedUserRows;
+    _usersLoading = true;
+    try {
+      final rows = await TcbRestClient.query('profiles', params: {
+        // 带上 nickname：手机号登录的用户展示名是脱敏号 138****8888，
+        // 光靠它别人搜不到（也搜不了完整手机号，因为库里没存），
+        // 必须让用户自己起一个可被搜到的昵称。
+        'select': 'id,name,nickname,avatarEmoji,bio',
+        'limit': '500',
+        'order': 'name.asc',
+      });
+      _cachedUserRows = rows;
+      return rows;
+    } catch (e) {
+      return const [];
+    } finally {
+      _usersLoading = false;
+    }
+  }
+
   Widget _buildSearchResults() {
     final q = _query;
-    // 用户：关注池 knownUsers 中昵称匹配
-    final users = FollowService.knownUsers
-        .where((u) => (u['name'] ?? '').contains(q))
-        .toList();
+    // 用户：搜索云库 profiles 表中的真实注册用户
+    // ⚠️ 原实现只搜 FollowService.knownUsers —— 那是 10 个硬编码假人
+    //    （海钓阿强/钓鱼王老周/老李…），现在这个列表已删除。
+    final users = _searchUsers(q);
     // 帖子：标题 / 正文 / 作者 / 地点匹配
     final posts = PostService.mockAll()
         .where((p) =>
@@ -260,6 +368,9 @@ class _SearchPageState extends State<SearchPage>
                   name: u['name']!,
                   avatar: u['avatar']!,
                   bio: u['bio']!,
+                  canChat: u['id']!.isNotEmpty &&
+                      u['id'] != 'me' &&
+                      u['id'] != UserProfile.id,
                 )),
             const SizedBox(height: 8),
           ],
@@ -293,7 +404,7 @@ class _SearchPageState extends State<SearchPage>
             ),
             const SizedBox(height: 4),
             const Text(
-              '换个关键词试试：路亚、鲫鱼、千岛湖…',
+              '换个关键词试试：钓友昵称、钓具品牌、路亚、千岛湖…',
               style: TextStyle(fontSize: 12, color: Color(0xFFBBBBBB)),
             ),
           ],
@@ -411,11 +522,16 @@ class _SectionTitle extends StatelessWidget {
 class _UserTile extends StatefulWidget {
   final String userId;
   final String name, avatar, bio;
+
+  /// 有稳定 uid 且不是自己时才能发消息
+  /// （不能给「自己」发消息，也不接受 uid 为空的对象）
+  final bool canChat;
   const _UserTile({
     required this.userId,
     required this.name,
     required this.avatar,
     required this.bio,
+    this.canChat = false,
   });
 
   @override
@@ -498,6 +614,38 @@ class _UserTileState extends State<_UserTile> {
               ),
             ),
             const SizedBox(width: 8),
+            // 直接发消息：搜索结果一键进入会话，不必先去个人主页再点私信
+            if (widget.canChat)
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ChatDetailPage(
+                        name: widget.name,
+                        avatar: widget.avatar,
+                        userId: widget.userId,
+                      ),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0A7C74),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Text(
+                    '发消息',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            if (widget.canChat) const SizedBox(width: 8),
             GestureDetector(
               onTap: () {
                 FollowService.instance.toggleFollow(

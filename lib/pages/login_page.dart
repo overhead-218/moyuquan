@@ -446,6 +446,10 @@ class _PhoneLoginSheetState extends State<_PhoneLoginSheet> {
       if (!mounted) return;
       Navigator.pop(context); // 关闭 BottomSheet
       widget.onSuccess();
+    } on SmsException catch (e) {
+      // 服务端配置类错误（签名/模板未过审等）要如实告知，
+      // 不能让用户以为是自己验证码打错了反复重试
+      setState(() { _error = e.message; _loading = false; });
     } catch (e) {
       setState(() { _error = '登录失败，请稍后重试'; _loading = false; });
     }

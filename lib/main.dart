@@ -6,6 +6,13 @@ import 'services/post_service.dart';
 import 'services/message_service.dart';
 import 'services/claim_service.dart';
 import 'services/user_profile.dart';
+import 'services/spot_comment_service.dart';
+import 'services/follow_service.dart';
+import 'services/favorite_service.dart';
+import 'services/moderation_service.dart';
+import 'services/spot_like_service.dart';
+import 'services/catch_service.dart';
+import 'services/equip_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,12 +24,25 @@ void main() async {
 
   runApp(const FishingApp());
 
-  // 启动后后台拉取云库数据（失败自动回退本地 mock，不打断首屏）
+  // 启动后后台拉取云库数据（失败自动回退本地兜底，不打断首屏）
+  //
+  // ⚠️ 这些 refresh 调用已补齐社交/点赞/评论等此前完全缺失的服务。
+  // 原来只同步了 spots/posts/messages，关注的10 个假用户、内存收藏、
+  // 重启即丢的点赞态都不会被云库数据纠正。
   SpotService.refreshFromCloud();
   ClaimService.refreshFromCloud();
   PostService.refreshFromCloud();
   MessageService.refreshFromCloud();
   UserProfile.instance.refreshFromCloud();
+  SpotCommentService.init();
+  FollowService.instance.refreshFromCloud();
+  FavoriteService.instance.refreshFromCloud();
+  PostService.refreshLikesFromCloud();
+  ModerationService.instance.refreshFromCloud();
+  SpotLikeService.refreshFromCloud();
+  CatchService.refreshFromCloud();
+  CatchService.refreshLikesFromCloud();
+  EquipService.refreshFromCloud();
 }
 
 class FishingApp extends StatelessWidget {

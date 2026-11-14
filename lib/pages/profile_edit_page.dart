@@ -24,8 +24,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   static const Color _kTextWeak = Color(0xFF999999);
   static const Color _kShadow = Color(0xFF1A1A1A);
 
-  final _nicknameCtrl =
-      TextEditingController(text: UserProfile.instance.name);
+  // 优先回填 nickname：手机号登录时 name 是 138****8888，
+  // 直接把脱敏号塞进输入框会让用户以为自己的昵称就是这个。
+  final _nicknameCtrl = TextEditingController(
+      text: UserProfile.instance.nickname.trim().isNotEmpty
+          ? UserProfile.instance.nickname.trim()
+          : UserProfile.instance.name);
   final _bioCtrl = TextEditingController(text: UserProfile.instance.bio);
   final _locationCtrl =
       TextEditingController(text: UserProfile.instance.city);
@@ -62,6 +66,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               final name = _nicknameCtrl.text.trim();
               UserProfile.instance
                 ..name = name.isEmpty ? UserProfile.kGuestName : name
+                // nickname 是「别人能搜到你」的公开标识，必须一起写库。
+                // 手机号登录时 name 是 138****8888 这种脱敏号，只有 nickname
+                // 能让人在搜索框里找到你。
+                ..nickname = name
                 ..bio = _bioCtrl.text.trim()
                 ..city = _locationCtrl.text.trim()
                 ..gender = _gender;
