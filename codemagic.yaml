@@ -10,6 +10,13 @@ workflows:
     environment:
       flutter: stable
       xcode: latest
+      # ⚠️ 只构建 iOS。
+      #    不加这一行时 Codemagic 会同时构建 Android，而 Android 构建失败会导致
+      #    整个 workflow 判为 failed、iOS 被 skipped —— build 12 就是这么挂的
+      #    （buildActions: Building Android=failed / Building iOS=skipped）。
+      #    我们只提审 App Store，不需要 APK。
+      platforms:
+        - ios
       vars:
         BUNDLE_ID: com.fishing.fishingApp
         DIST_IDENTITY: "Apple Distribution: Bin Zhong (25UKD3GY5R)"
