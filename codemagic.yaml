@@ -7,16 +7,24 @@ workflows:
   ios-release:
     name: iOS Release
     max_build_duration: 30
+    # ⚠️ platforms 必须在 workflow 级（与 environment / scripts 同级），
+    #    放在 environment 下会被忽略 —— build 13 实测：配置解析出来仍是
+    #    platforms: [android, ios]，Android 照样构建并失败。
+    #    我们只提审 App Store，不需要 APK，所以只保留 iOS。
+    platforms:
+      - ios
+    # ⚠️ 补上 triggering：之前 yaml 里没有这一块，导致 git push 到 main
+    #    永远不会自动触发构建（2026-09 就踩过，build 43 push 后排队 10 分钟未动）。
+    #    现在 push main 会自动跑 iOS Release workflow。
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: 'main'
+          include: true
     environment:
       flutter: stable
       xcode: latest
-      # ⚠️ 只构建 iOS。
-      #    不加这一行时 Codemagic 会同时构建 Android，而 Android 构建失败会导致
-      #    整个 workflow 判为 failed、iOS 被 skipped —— build 12 就是这么挂的
-      #    （buildActions: Building Android=failed / Building iOS=skipped）。
-      #    我们只提审 App Store，不需要 APK。
-      platforms:
-        - ios
       vars:
         BUNDLE_ID: com.fishing.fishingApp
         DIST_IDENTITY: "Apple Distribution: Bin Zhong (25UKD3GY5R)"
