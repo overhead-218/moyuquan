@@ -4,7 +4,15 @@
 #   Settings -> Code signing identities -> iOS certificates / iOS provisioning profiles
 # Apple API Key 变量放在 group: appstore_credentials（用于上传 TestFlight）
 workflows:
-  ios-release:
+  # ⚠️ 这个 key 必须是 Codemagic 上的【workflow ID】，不是随便起个名字。
+  #    Codemagic 用 workflow ID 去匹配 codemagic.yaml 里的 key，
+  #    对不上就静默回退到网页端的 Workflow Editor 配置（yaml 完全不生效）。
+  #    之前这里写的是 ios-release，而真实 ID 是下面这串 →
+  #    结果 platforms / triggering / scripts 等设置全被忽略，
+  #    一直按网页端的 [android, ios] 双端配置构建。
+  #    查真实 ID：GET https://api.codemagic.io/apps/<appId>
+  #               → application.workflows 的 key
+  6a8f01c3fa2a91e14a3d1169:
     name: iOS Release
     max_build_duration: 30
     # ⚠️ platforms 必须在 workflow 级（与 environment / scripts 同级），
