@@ -169,14 +169,14 @@ class _PostDetailPageState extends State<PostDetailPage>
     }
   }
 
-  /// 真实评论总数：云库有数据时用云库，否则退回帖子自带的 commentCount。
+  /// 真实评论总数：一律用云库 post_comments 的实际条数。
   ///
-  /// ⚠️ 原实现用 `_comments.length`（恒为 3），
-  /// 而帖子的真实 commentCount（如 156）被完全忽略，数据自相矛盾。
-  int get _commentCount {
-    final cloud = PostCommentService.countOf(widget.postId);
-    return cloud > 0 ? cloud : widget.commentCount;
-  }
+  /// ⚠️ 原实现「cloud > 0 ? cloud : widget.commentCount」—— 帖子确实
+  ///    没有评论时（cloud == 0 是真实状态）会退回种子数据编的静态值
+  ///    （如 15），出现「显示 15 条评论但列表是空的」的自相矛盾。
+  ///    种子帖子的假 commentCount 已由 tool/reset_post_counts.py 清洗归零，
+  ///    这里显示真实数（0 也诚实显示 0）。
+  int get _commentCount => PostCommentService.countOf(widget.postId);
 
   /// 发表顶级评论或回复。
   ///

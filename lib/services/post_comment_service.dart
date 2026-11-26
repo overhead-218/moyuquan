@@ -297,10 +297,30 @@ class PostCommentService {
     if (!BackendConfig.cloudEnabled) return true;
     try {
       await TcbRestClient.upsert(_table, c.toRow());
+      // 同步 posts 表聚合计数（与点赞同款 read-modify-write 模式），
+      // 否则卡片上的评论数永远不动，详情页和列表对不上。
+      await _syncPostCommentCount(postId);
       return true;
     } catch (e) {
       debugPrint('[PostComment] 写入失败：$e');
       return false;
+    }
+  }
+
+  /// 把 posts.commentCount 聚合字段同步为 post_comments 真实条数。
+  ///
+  /// 直接重算真实值（而不是 +1/-1 增量），多端并发下更稳。
+  static Future<void> _syncPostCommentCount(String postId) async {
+    try {
+      final rows = await TcbRestClient.query(_table, params: {
+        'select': 'id',
+        'postId': 'eq.$postId',
+        'limit': '1000',
+      });
+      await TcbRestClient.update('posts', {'id': 'eq.$postId'},
+          {'commentCount': rows.length});
+    } catch (e) {
+      debugPrint('[PostComment] 聚合计数同步失败（评论已生效）：$e');
     }
   }
 
@@ -311,6 +331,7 @@ class PostCommentService {
     if (!BackendConfig.cloudEnabled) return;
     try {
       await TcbRestClient.delete(_table, {'id': 'eq.$commentId'});
+      await _syncPostCommentCount(postId);
     } catch (e) {
       debugPrint('[PostComment] 删除失败：$e');
     }
