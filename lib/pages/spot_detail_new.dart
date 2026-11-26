@@ -6,7 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../models/post.dart';
 import '../models/spot.dart';
+import '../services/post_service.dart';
 import '../services/spot_comment_service.dart';
 import '../services/spot_like_service.dart';
 import '../services/favorite_service.dart';
@@ -414,6 +416,12 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
+          // 举报入口放回右上角（build 11 就是这个位置，截图里的 ⚠️ 图标）
+          IconButton(
+            icon: const Icon(Icons.report_problem_outlined, size: 19),
+            onPressed: () => showSpotReportSheet(context, _spot),
+            tooltip: '举报这个钓点',
+          ),
           IconButton(
             icon: const Icon(Icons.ios_share, size: 19),
             onPressed: _share,
@@ -460,6 +468,12 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
                 _actionBar(),
                 const SizedBox(height: 12),
                 _infoSection(),
+                const SizedBox(height: 16),
+                // 「联系商家」区块（承载认领入口），build 11 有，重写时丢了
+                _contactMerchantSection(),
+                const SizedBox(height: 16),
+                // 「近期鱼情」区块，build 11 有，重写时丢了
+                _recentCatchSection(),
                 const SizedBox(height: 16),
                 _commentSection(),
               ],
@@ -606,26 +620,32 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
 
     // 全部字段都没有内容时，才给一个诚实的提示（而不是摆一堆空行）
     if (rows.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.info_outline, size: 16, color: Colors.grey.shade400),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                '该钓点的收费、营业时间、联系方式尚未核实补充。\n'
-                '你可以在评论区留下到访记录，帮后来的人参考。',
-                style: TextStyle(
-                    fontSize: 12.5, height: 1.5, color: Colors.grey.shade600),
-              ),
+      return Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
             ),
-          ],
-        ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, size: 16, color: Colors.grey.shade400),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '该钓点的收费、营业时间、联系方式尚未核实补充。\n'
+                    '你可以在评论区留下到访记录，帮后来的人参考。',
+                    style: TextStyle(
+                        fontSize: 12.5, height: 1.5, color: Colors.grey.shade600),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          _contactMerchantSection(),
+        ],
       );
     }
 
@@ -659,6 +679,314 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
           ...rows,
         ],
       ),
+    );
+  }
+
+  /// 「近期鱼情」区块
+  ///
+  /// ⚠️ 这个区块在详情页重写时丢了（build 11 有，新版没有）。
+  ///
+  /// build 11 的小 bug：标题写「${spot.postCount}条渔获分享」，
+  /// 但 postCount 是钓点关联帖数（常常是 0），列表却是「同名匹配 + 全网补齐」凑出来的 3 条
+  /// —— 截图里就出现「0条渔获分享」下面列了 3 条的矛盾。
+  /// 现在计数改成**实际展示条数**，不写和列表对不上的数字。
+  Widget _recentCatchSection() {
+    final all = PostService.mockAll();
+    final name = _spot.name.trim();
+    // 先取 location 与本钓点相关的渔获帖，不足再用最近的渔获帖补齐
+    final related = all
+        .where((p) =>
+            p.type == 'catch' &&
+            p.location.isNotEmpty &&
+            name.isNotEmpty &&
+            (p.location.contains(name) || name.contains(p.location)))
+        .toList();
+    final rest =
+        all.where((p) => p.type == 'catch' && !related.contains(p)).toList();
+    final recent = [...related, ...rest].take(3).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.photo_camera_back_outlined,
+                size: 16, color: Color(0xFF0F7A6B)),
+            const SizedBox(width: 6),
+            Text('近期鱼情',
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade800)),
+            const SizedBox(width: 8),
+            // 计数用实际展示条数，不用 spot.postCount（那是关联帖总数，常为 0）
+            Text('${recent.length}条渔获分享',
+                style:
+                    TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (recent.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Text(
+              '还没有钓友在这里晒渔获，来发第一条吧 🎣',
+              style: TextStyle(fontSize: 13, color: Color(0xFF8A8578)),
+            ),
+          )
+        else
+          ...recent.map((p) => _catchCard(p)),
+      ],
+    );
+  }
+
+  Widget _catchCard(Post p) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2))
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3EFE6),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Center(
+                child: Icon(Icons.phishing, size: 19, color: Color(0xFF9A7B4F))),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        p.authorName.isEmpty ? '钓友' : p.authorName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2A2520)),
+                      ),
+                    ),
+                    if (p.location.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0A7C74).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            p.location,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 10,
+                                color: Color(0xFF0A7C74),
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
+                    ],
+                    const Spacer(),
+                    Text(_relTime(p.createdAt),
+                        style: const TextStyle(
+                            fontSize: 10, color: Color(0xFF8A8578))),
+                  ],
+                ),
+                if (p.content.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    p.content,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF2A2520),
+                        height: 1.4),
+                  ),
+                ],
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.favorite_border,
+                        size: 12, color: Color(0xFF8A8578)),
+                    const SizedBox(width: 4),
+                    Text('${p.likeCount}',
+                        style: const TextStyle(
+                            fontSize: 11, color: Color(0xFF8A8578))),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 相对时间：刚刚 / N分钟前 / N小时前 / N天前 / M月D日
+  String _relTime(DateTime? t) {
+    if (t == null) return '';
+    final d = DateTime.now().difference(t);
+    if (d.inMinutes < 1) return '刚刚';
+    if (d.inHours < 1) return '${d.inMinutes}分钟前';
+    if (d.inDays < 1) return '${d.inHours}小时前';
+    if (d.inDays < 30) return '${d.inDays}天前';
+    return '${t.month}月${t.day}日';
+  }
+
+  /// 「联系商家」区块
+  ///
+  /// ⚠️ 这个区块在详情页重写时丢了（build 11 有，新版没有）。
+  ///    里面承载「认领此钓点」按钮 —— 认领的唯一入口。
+  ///    视觉对齐 build 11：白色卡片 + 图标标题 + 全宽绿色认领按钮。
+  Widget _contactMerchantSection() {
+    final s = _spot;
+    final claimed = s.isClaimed;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.phone_in_talk, size: 16, color: Color(0xFF0F7A6B)),
+            const SizedBox(width: 6),
+            Text('联系商家',
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade800)),
+            if ((s.ownerName ?? '').isNotEmpty) ...[
+              const SizedBox(width: 8),
+              Text('负责人：${s.ownerName}',
+                  style:
+                      TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+            ],
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3EFE6),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.handshake_outlined,
+                        size: 18, color: Color(0xFF9A7B4F)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          claimed ? '本钓点已被认领' : '本钓点信息由平台整理',
+                          style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.grey.shade900),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          claimed
+                              ? '商家可自助维护联系方式与照片'
+                              : '商家可认领并自助维护联系方式',
+                          style: TextStyle(
+                              fontSize: 11, color: Colors.grey.shade500),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    if (claimed) {
+                      _toast('已认领，可上传实拍照片维护信息');
+                      return;
+                    }
+                    final ok = await showSpotClaimSheet(context, s);
+                    if (!mounted) return;
+                    if (ok) {
+                      await _reloadSpot();
+                      _toast('认领成功，联系方式已展示');
+                    }
+                  },
+                  icon: const Icon(Icons.handshake_outlined, size: 18),
+                  label: Text(claimed ? '已认领此钓点' : '认领此钓点'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0A7C74),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              // 一键联系商家（CTA）—— build 11 底部那个绿色大按钮
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _showContactSheet(s),
+                  icon: const Icon(Icons.phone_in_talk, size: 17),
+                  label: const Text('联系商家'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0A7C74),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    elevation: 3,
+                    shadowColor:
+                        const Color(0xFF0A7C74).withValues(alpha: 0.35),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -965,7 +1293,148 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
     );
   }
 
-  /// 「更多」菜单：认领钓点 / 举报钓点
+  /// 一键联系商家弹窗（build 11 的 _showContactSheet 对应实现）
+  ///
+  /// build 11 里这个弹窗有拨号 / 微信 / 导航三个按钮，重写时丢了。
+  /// 现在补回来 —— 底部「联系商家」按钮是主要入口，不能是死按钮。
+  void _showContactSheet(Spot s) {
+    final phone = (s.contactPhone ?? '').trim();
+    final wechat = (s.wechat ?? '').trim();
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: EdgeInsets.fromLTRB(
+            24, 24, 24, MediaQuery.of(ctx).padding.bottom + 24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: const Color(0xFFD8D4CB),
+                    borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(s.name,
+                style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF2A2520))),
+            const SizedBox(height: 4),
+            if ((s.ownerName ?? '').isNotEmpty)
+              Text('负责人：${s.ownerName}',
+                  style:
+                      const TextStyle(fontSize: 13, color: Color(0xFF8A8578))),
+            const SizedBox(height: 20),
+            if (phone.isNotEmpty)
+              _sheetBtn(
+                icon: Icons.phone,
+                label: '拨打电话',
+                sub: phone,
+                color: const Color(0xFF0A7C74),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _toast('钓点电话：$phone');
+                },
+              ),
+            if (phone.isNotEmpty && wechat.isNotEmpty)
+              const SizedBox(height: 12),
+            if (wechat.isNotEmpty)
+              _sheetBtn(
+                icon: Icons.chat_bubble_outline,
+                label: '加微信咨询',
+                sub: wechat,
+                color: const Color(0xFF07C160),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _toast('商家微信：$wechat');
+                },
+              ),
+            if (phone.isEmpty && wechat.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  '该钓点还没填联系方式。\n'
+                  '如果你是商家，可以点下面的「认领此钓点」自助维护。',
+                  style: TextStyle(
+                      fontSize: 12.5,
+                      height: 1.5,
+                      color: Colors.grey.shade600),
+                ),
+              ),
+            const SizedBox(height: 12),
+            _sheetBtn(
+              icon: Icons.map_outlined,
+              label: '导航前往',
+              sub: s.address.isEmpty ? s.city : s.address,
+              color: const Color(0xFF9A7B4F),
+              onTap: () {
+                Navigator.pop(ctx);
+                _toast('地址：${s.address.isEmpty ? s.city : s.address}');
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sheetBtn({
+    required IconData icon,
+    required String label,
+    required String sub,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: color),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label,
+                      style: TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                          color: color)),
+                  const SizedBox(height: 2),
+                  Text(sub,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 12, color: Color(0xFF8A8578))),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, size: 18, color: color),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 「更多」菜单：举报钓点
+  ///
+  /// 认领入口在「联系商家」区块（与 build 11 一致），这里只留举报。
   void _showMoreMenu() {
     showModalBottomSheet<void>(
       context: context,
@@ -978,39 +1447,8 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(
-                Icons.storefront_outlined,
-                color: _spot.isClaimed
-                    ? const Color(0xFF0A7C74)
-                    : const Color(0xFF8A8F98),
-              ),
-              title: Text(
-                _spot.isClaimed ? '已认领此钓点' : '认领此钓点',
-                style: const TextStyle(fontSize: 15),
-              ),
-              subtitle: Text(
-                _spot.isClaimed
-                    ? '可上传实拍照片维护电话与照片'
-                    : '认领后可自助维护联系方式，让钓友准确找到你',
-                style: const TextStyle(fontSize: 12, color: Color(0xFF8A8578)),
-              ),
-              onTap: () async {
-                Navigator.pop(ctx);
-                if (_spot.isClaimed) {
-                  _toast('已认领，可上传实拍照片维护信息');
-                  return;
-                }
-                final ok = await showSpotClaimSheet(context, _spot);
-                if (!mounted) return;
-                if (ok) {
-                  await _reloadSpot();
-                  _toast('认领成功，联系方式已展示');
-                }
-              },
-            ),
-            const Divider(height: 1, color: Color(0xFFF0EDE6)),
-            ListTile(
-              leading: const Icon(Icons.flag_outlined, color: Color(0xFF8A8F98)),
+              leading:
+                  const Icon(Icons.flag_outlined, color: Color(0xFF8A8F98)),
               title: const Text('举报这个钓点', style: TextStyle(fontSize: 15)),
               subtitle: const Text(
                 '图片错误 / 信息有误 / 已关闭',
