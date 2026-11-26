@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'user_profile_page.dart';
 import 'share_card_page.dart';
 import '../services/follow_service.dart';
+import '../services/favorite_service.dart';
 import '../services/moderation_actions.dart';
 import '../services/post_service.dart';
 import '../services/post_comment_service.dart';
@@ -57,6 +58,8 @@ class _PostDetailPageState extends State<PostDetailPage>
   late final Animation<double> _heartScale;
   bool _liked = false;
   late int _likeCount;
+  // 帖子收藏态（读 FavoriteService，云库 favorites 表 targetType='post'）
+  bool _fav = false;
   PageController? _heroCtrl;
   int _heroPage = 0;
 
@@ -135,8 +138,10 @@ class _PostDetailPageState extends State<PostDetailPage>
     super.initState();
     _likeCount = widget.likeCount + PostService.deltaOf(widget.postId);
     _liked = PostService.isLiked(widget.postId);
+    _fav = FavoriteService.instance.isPostFav(widget.postId);
     PostService.addListener(_syncLike);
     FollowService.instance.addListener(_syncLike);
+    FavoriteService.instance.addListener(_syncFav);
 
     _heartCtrl = AnimationController(
       vsync: this,
@@ -294,10 +299,59 @@ class _PostDetailPageState extends State<PostDetailPage>
     });
   }
 
+  void _syncFav() {
+    if (!mounted) return;
+    setState(() => _fav = FavoriteService.instance.isPostFav(widget.postId));
+  }
+
+  /// 收藏 / 取消收藏帖子（小红书互动栏的五角星）。
+  ///
+  /// 服务层 FavoriteService.togglePostFav 早就存在（云库 favorites 表
+  /// targetType='post'），帖子详情页一直没接 —— 收藏入口只有「我的-收藏」页。
+  Future<void> _toggleFav() async {
+    // 优先用 PostService 缓存里的真实帖子（收藏页列表要显示标题/内容）；
+    // 分享路径进来等缓存没有的情况，用页面已有字段构造轻量 Post。
+    Post post;
+    try {
+      post =
+          PostService.mockAll().firstWhere((p) => p.id == widget.postId);
+    } catch (_) {
+      post = Post(
+        id: widget.postId,
+        authorId: widget.authorId,
+        authorName: widget.authorName,
+        authorAvatar: widget.authorAvatar,
+        type: widget.postType,
+        title: widget.title,
+        content: widget.content,
+        location: widget.location,
+        imageUrl: widget.imageUrl,
+        images: widget.images,
+        height: widget.imageHeight,
+        likeCount: widget.likeCount,
+        commentCount: widget.commentCount,
+        createdAt: DateTime.now(),
+      );
+    }
+    final ok = await FavoriteService.instance.togglePostFav(post);
+    if (!mounted) return;
+    _syncFav();
+    if (ok) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(
+          content: Text('已收藏，可在「我的-收藏」查看'),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(milliseconds: 1400),
+        ));
+    }
+  }
+
   @override
   void dispose() {
     PostService.removeListener(_syncLike);
     FollowService.instance.removeListener(_syncLike);
+    FavoriteService.instance.removeListener(_syncFav);
     _heartCtrl.dispose();
     _heroCtrl?.dispose();
     _commentCtrl.dispose();
@@ -722,6 +776,33 @@ class _PostDetailPageState extends State<PostDetailPage>
                                 ),
                               ],
                             ),
+                          ),
+                        ),
+                        const SizedBox(width: 24),
+                        // 收藏（小红书互动栏第二位：五角星 + 数字）
+                        GestureDetector(
+                          onTap: _toggleFav,
+                          child: Row(
+                            children: [
+                              Icon(
+                                _fav ? Icons.star_rounded : Icons.star_border_rounded,
+                                color: _fav
+                                    ? const Color(0xFFF5A623)
+                                    : _kTextWeak,
+                                size: 27,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '收藏',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: _fav
+                                      ? const Color(0xFFF5A623)
+                                      : _kTextWeak,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(width: 24),
