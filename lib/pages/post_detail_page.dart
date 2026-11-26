@@ -806,20 +806,29 @@ class _PostDetailPageState extends State<PostDetailPage>
                           ),
                         ),
                         const SizedBox(width: 24),
-                        const Icon(Icons.chat_bubble_outline,
-                            color: _kTextWeak, size: 24),
-                        const SizedBox(width: 6),
-                        Text(
-                          '$_commentCount',
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: _kTextWeak,
+                        // 评论：接上点击（原来也是纯图标死按钮），滚到评论区聚焦输入框
+                        GestureDetector(
+                          onTap: _focusInput,
+                          behavior: HitTestBehavior.opaque,
+                          child: Row(
+                            children: [
+                              const Icon(Icons.chat_bubble_outline,
+                                  color: _kTextWeak, size: 24),
+                              const SizedBox(width: 6),
+                              Text(
+                                '$_commentCount',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: _kTextWeak,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const Spacer(),
-                        Icon(Icons.share_outlined,
-                            color: _kTextWeak.withValues(alpha: 0.7), size: 22),
+                        // ⚠️ 原来这里还有一个分享图标，但它是纯 Icon 没绑 onTap
+                        //    —— 点了没反应，是个假的。且右上角 AppBar 已有真分享，
+                        //    一个页面出现两个分享既重复又误导。已删除。
                       ],
                     ),
                   ),
