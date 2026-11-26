@@ -1255,10 +1255,6 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
               WidgetsBinding.instance.addPostFrameCallback((_) => jump());
             },
           ),
-          const SizedBox(width: 26),
-          // 收藏：旧版 build 11 底部有个显眼的方块按钮（图标+「收藏」文字），
-          // 新版只剩右上角一个小图标，很容易被当成没有这个功能 —— 补回来。
-          _favButton(),
           const Spacer(),
           // ⚠️ 认领 / 举报这两个入口在详情页重写时丢了，这里补回来。
           //    旧版 build 11 里认领是右上角菜单项、举报在底部弹窗。
@@ -1448,40 +1444,6 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
               },
             ),
             const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 底部的收藏方块按钮（视觉对齐旧版 build 11）
-  Widget _favButton() {
-    const primary = Color(0xFF0A7C74);
-    const red = Color(0xFFE8453C);
-    return GestureDetector(
-      onTap: _toggleFav,
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: const Color(0xFFF7F3EE),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: primary.withValues(alpha: 0.2)),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              _fav ? Icons.favorite : Icons.favorite_border,
-              size: 18,
-              color: _fav ? red : primary,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              '收藏',
-              style: TextStyle(
-                  fontSize: 9, color: _fav ? red : primary),
-            ),
           ],
         ),
       ),

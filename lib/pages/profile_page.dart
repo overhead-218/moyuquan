@@ -5,6 +5,7 @@ import 'my_posts_page.dart';
 import 'followers_page.dart';
 import 'following_page.dart';
 import 'my_catch_page.dart';
+import 'my_likes_page.dart';
 import 'favorites_page.dart';
 import 'settings_page.dart';
 import 'message_page.dart';
@@ -428,6 +429,16 @@ class _ProfilePageState extends State<ProfilePage> {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const MyCatchPage()),
+                    ),
+                  ),
+                  // 我的点赞（2026-11-26 用户提出补充）：赞过的帖子汇到这里
+                  _MenuItem(
+                    icon: Icons.favorite,
+                    label: '我的点赞',
+                    trailing: '${PostService.myLikedPosts().length}',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const MyLikesPage()),
                     ),
                   ),
                   _MenuItem(

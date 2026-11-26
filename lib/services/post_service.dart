@@ -439,6 +439,12 @@ class PostService {
       .where((p) => p.authorId == UserProfile.id && p.type == 'catch')
       .toList();
 
+  /// 我点赞过的帖子（云库 post_likes 表同步进 _likedIds）。
+  ///
+  /// 「我的」页新增「我的点赞」入口用。列表顺序跟 _cache（最新在前）。
+  static List<Post> myLikedPosts() =>
+      _cache.where((p) => _likedIds.contains(p.id)).toList();
+
   /// 某位作者（按昵称匹配）发布的帖子，用于他人主页；找不到返回空。
   static List<Post> postsByAuthorName(String authorName) => _cache
       .where((p) => p.authorName == authorName && p.authorId != UserProfile.id)
