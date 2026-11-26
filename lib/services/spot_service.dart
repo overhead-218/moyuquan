@@ -15795,6 +15795,11 @@ Spot(
     _pushAdd(spot);
   }
 
+  /// 商家/钓场认领钓点：填联系方式后写回本地缓存并同步云库。
+  ///
+  /// 云库同步在 [_pushClaim] 里做：只推被改的字段（contactPhone / wechat /
+  /// ownerName / claimedBy / claimedAt / submitter），不整行覆盖，
+  /// 避免踩到运营改过的其它列。已实测 spots 表这些列名全部存在。
   static Spot? claimSpot(String id, {
     String? contactPhone, String? wechat, String? ownerName,
     String? lastStockingDate, int? stockingCycleDays,

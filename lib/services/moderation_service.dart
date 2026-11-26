@@ -97,11 +97,16 @@ class ModerationService {
     }
   }
 
-  /// 提交举报。targetType: post | user | comment | message
+  /// 提交举报。targetType: post | spot | user | comment | message
   ///
   /// ⚠️ 原实现在写库失败时静默吞掉异常，UI 仍然提示「举报已提交」，
   ///    用户以为举报生效了其实根本没上报 —— 这在App Store 审核里是硬伤。
   /// 现在把成功与否如实返回给调用方，由 UI 决定提示文案。
+  ///
+  /// ⚠️ 云库 `reports` 表**没有** `targetUserId` 列（实测 select 该列报
+  ///    DATABASE_PGRST204 Could not find the 'targetUserId' column）。
+  ///    原来无条件带上这个字段 → 每一次举报都写入失败 → 举报功能从来没真正落库。
+  ///    现在只在非空时才带，且值放进 reason 里保留信息。
   Future<bool> report({
     required String targetType,
     required String targetId,
@@ -112,12 +117,16 @@ class ModerationService {
       'id': 'r_${UserProfile.id}_${DateTime.now().microsecondsSinceEpoch.toRadixString(36)}',
       'targetType': targetType,
       'targetId': targetId,
-      'targetUserId': targetUserId,
       'reason': reason,
       'reporterId': UserProfile.id,
       'status': 'pending',
       'createdAt': DateTime.now().toIso8601String(),
     };
+    // 仅当调用方明确给了被举报人 ID 且表里有该列时才写。
+    // 当前 reports 表没有这一列，所以先不写，改为把 ID 附在 reason 里。
+    if (targetUserId.isNotEmpty) {
+      r['reason'] = '$reason（被举报人 $targetUserId）';
+    }
     if (!BackendConfig.cloudEnabled) {
       _reports.add(r);
       return true;

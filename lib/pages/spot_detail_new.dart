@@ -14,6 +14,7 @@ import '../services/spot_service.dart';
 import '../services/storage_service.dart';
 import '../services/user_profile.dart';
 import '../widgets/image_preview.dart';
+import '../widgets/spot_claim_sheet.dart';
 
 /// 钓点详情页（带评论区 + 留言输入栏）
 ///
@@ -326,9 +327,21 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
           if (!s.isClaimed) ...[
             const SizedBox(height: 8),
             TextButton(
-              onPressed: () => _toast('认领入口在钓点资料页，认领后可自助维护电话与照片'),
-              child: const Text('先认领这个钓点',
-                  style: TextStyle(fontSize: 12, color: Colors.white70)),
+              // ⚠️ 原来只是弹个 toast 说「认领入口在钓点资料页」，
+              //    但钓点资料页根本没有这个入口 —— 功能等于消失了。
+              //    现在直接打开认领弹窗（表单 → SpotService.claimSpot → 云库）。
+              onPressed: () async {
+              final ok = await showSpotClaimSheet(context, _spot);
+              if (!mounted) return;
+              if (ok) {
+                // claimSpot 会更新 SpotService._cache，这里重新取一份，
+                // 让「已认领」角标和联系方式立即生效
+                await _reloadSpot();
+                _toast('认领成功，联系方式已展示');
+              }
+            },
+            child: const Text('先认领这个钓点',
+                style: TextStyle(fontSize: 12, color: Colors.white70)),
             ),
           ],
         ],
@@ -407,9 +420,12 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
           ),
           IconButton(
             // 真实收藏态（读云库 favorites），不再是永远空心的假图标
+            // ⚠️ 原来用 bookmark_rounded（书签），和旧版的心形图标不一致，
+            //    用户会以为「收藏不见了」。改回红心，与旧版 build 11 视觉一致。
             icon: Icon(
-              _fav ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+              _fav ? Icons.favorite : Icons.favorite_border,
               size: 20,
+              color: _fav ? const Color(0xFFE8453C) : null,
             ),
             onPressed: _toggleFav,
           ),
@@ -923,7 +939,21 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
               _inputFocus.requestFocus();
             },
           ),
+          const SizedBox(width: 26),
+          // 收藏：旧版 build 11 底部有个显眼的方块按钮（图标+「收藏」文字），
+          // 新版只剩右上角一个小图标，很容易被当成没有这个功能 —— 补回来。
+          _favButton(),
           const Spacer(),
+          // ⚠️ 认领 / 举报这两个入口在详情页重写时丢了，这里补回来。
+          //    旧版 build 11 里认领是右上角菜单项、举报在底部弹窗。
+          //    底部栏已经有点挤（点赞/评论/分享），所以收进「更多」菜单。
+          _action(
+            icon: Icons.more_horiz,
+            color: const Color(0xFF8A8F98),
+            label: '更多',
+            onTap: _showMoreMenu,
+          ),
+          const SizedBox(width: 22),
           _action(
             icon: Icons.ios_share,
             color: const Color(0xFF8A8F98),
@@ -931,6 +961,103 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
             onTap: _share,
           ),
         ],
+      ),
+    );
+  }
+
+  /// 「更多」菜单：认领钓点 / 举报钓点
+  void _showMoreMenu() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(
+                Icons.storefront_outlined,
+                color: _spot.isClaimed
+                    ? const Color(0xFF0A7C74)
+                    : const Color(0xFF8A8F98),
+              ),
+              title: Text(
+                _spot.isClaimed ? '已认领此钓点' : '认领此钓点',
+                style: const TextStyle(fontSize: 15),
+              ),
+              subtitle: Text(
+                _spot.isClaimed
+                    ? '可上传实拍照片维护电话与照片'
+                    : '认领后可自助维护联系方式，让钓友准确找到你',
+                style: const TextStyle(fontSize: 12, color: Color(0xFF8A8578)),
+              ),
+              onTap: () async {
+                Navigator.pop(ctx);
+                if (_spot.isClaimed) {
+                  _toast('已认领，可上传实拍照片维护信息');
+                  return;
+                }
+                final ok = await showSpotClaimSheet(context, _spot);
+                if (!mounted) return;
+                if (ok) {
+                  await _reloadSpot();
+                  _toast('认领成功，联系方式已展示');
+                }
+              },
+            ),
+            const Divider(height: 1, color: Color(0xFFF0EDE6)),
+            ListTile(
+              leading: const Icon(Icons.flag_outlined, color: Color(0xFF8A8F98)),
+              title: const Text('举报这个钓点', style: TextStyle(fontSize: 15)),
+              subtitle: const Text(
+                '图片错误 / 信息有误 / 已关闭',
+                style: TextStyle(fontSize: 12, color: Color(0xFF8A8578)),
+              ),
+              onTap: () {
+                Navigator.pop(ctx);
+                showSpotReportSheet(context, _spot);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 底部的收藏方块按钮（视觉对齐旧版 build 11）
+  Widget _favButton() {
+    const primary = Color(0xFF0A7C74);
+    const red = Color(0xFFE8453C);
+    return GestureDetector(
+      onTap: _toggleFav,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7F3EE),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: primary.withValues(alpha: 0.2)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              _fav ? Icons.favorite : Icons.favorite_border,
+              size: 18,
+              color: _fav ? red : primary,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              '收藏',
+              style: TextStyle(
+                  fontSize: 9, color: _fav ? red : primary),
+            ),
+          ],
+        ),
       ),
     );
   }
