@@ -481,8 +481,8 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
           ),
         ],
       ),
-      // 底部固定留言输入栏
-      bottomNavigationBar: _inputBar(),
+      // 底部固定操作栏：[收藏] [联系商家]（对齐 build 11）
+      bottomNavigationBar: _bottomBar(),
     );
   }
 
@@ -963,26 +963,8 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
-              // 一键联系商家（CTA）—— build 11 底部那个绿色大按钮
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _showContactSheet(s),
-                  icon: const Icon(Icons.phone_in_talk, size: 17),
-                  label: const Text('联系商家'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0A7C74),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                    elevation: 3,
-                    shadowColor:
-                        const Color(0xFF0A7C74).withValues(alpha: 0.35),
-                  ),
-                ),
-              ),
+              // 「联系商家」按钮已移到底部固定操作栏（对齐 build 11：
+              // 底部 = [收藏方块][联系商家]），这里不再重复放一个全宽按钮。
             ],
           ),
         ),
@@ -1256,15 +1238,21 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
             color: const Color(0xFF8A8F98),
             label: '$_commentCount',
             onTap: () {
-              // 聚焦底部留言输入栏（原来是空实现，点了毫无反应）
-              if (_scrollCtrl.hasClients) {
-                _scrollCtrl.animateTo(
-                  _scrollCtrl.position.maxScrollExtent,
-                  duration: const Duration(milliseconds: 280),
-                  curve: Curves.easeOut,
-                );
+              // 聚焦评论区末尾的留言输入卡片。
+              // 先滚到底部；键盘弹出会压缩视口，postFrame 后再滚一次保证输入卡片可见。
+              void jump() {
+                if (_scrollCtrl.hasClients) {
+                  _scrollCtrl.animateTo(
+                    _scrollCtrl.position.maxScrollExtent,
+                    duration: const Duration(milliseconds: 280),
+                    curve: Curves.easeOut,
+                  );
+                }
               }
+
+              jump();
               _inputFocus.requestFocus();
+              WidgetsBinding.instance.addPostFrameCallback((_) => jump());
             },
           ),
           const SizedBox(width: 26),
@@ -1559,6 +1547,8 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
               )
             else
               ...list.map(_commentItem),
+            // 留言输入卡片（原固定底栏，挪进评论区；底部栏让位给收藏+联系商家）
+            _inlineInputCard(),
           ],
         );
       },
@@ -1666,133 +1656,213 @@ class _SpotDetailPageNewState extends State<SpotDetailPageNew> {
   // ---------------------------------------------------------------------------
   // 底部输入栏
   // ---------------------------------------------------------------------------
-  Widget _inputBar() {
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+  /// 底部固定操作栏 —— 对齐 build 11 的布局：[收藏方块] [联系商家大按钮]
+  ///
+  /// 用户反馈：之前「认领此钓点」「联系商家」两个全宽按钮叠在页面中间，
+  /// 布局不好看。App（build 11）的布局是底部固定栏 = 收藏 + 联系商家。
+  Widget _bottomBar() {
+    const primary = Color(0xFF0A7C74);
+    const red = Color(0xFFE8453C);
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Color(0xFFE5E7EB))),
       ),
-      child: Padding(
-        //键盘弹出时跟随上移
-        padding: EdgeInsets.only(bottom: bottomInset),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 待上传图片预览
-                if (_pendingImages.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: SizedBox(
-                      height: 62,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _pendingImages.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 6),
-                        itemBuilder: (_, i) => Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: _thumb(_pendingImages[i], size: 62),
-                            ),
-                            Positioned(
-                              top: 2,
-                              right: 2,
-                              child: GestureDetector(
-                                onTap: () => setState(
-                                    () => _pendingImages.removeAt(i)),
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: const BoxDecoration(
-                                      color: Colors.black54,
-                                      shape: BoxShape.circle),
-                                  child: const Icon(Icons.close,
-                                      size: 11, color: Colors.white),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+          child: Row(
+            children: [
+              // 收藏方块（图标 + 文字，与 build 11 一致）
+              GestureDetector(
+                onTap: _toggleFav,
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: _fav ? red.withValues(alpha: 0.08) : const Color(0xFFF7F3EE),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                        color: (_fav ? red : primary).withValues(alpha: 0.25)),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        _fav ? Icons.favorite : Icons.favorite_border,
+                        size: 18,
+                        color: _fav ? red : primary,
                       ),
+                      const SizedBox(height: 2),
+                      Text('收藏',
+                          style: TextStyle(
+                              fontSize: 9, color: _fav ? red : primary)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // 一键联系商家（CTA，占满剩余宽度）
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => _showContactSheet(_spot),
+                  child: Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: primary,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                            color: primary.withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4)),
+                      ],
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.phone_in_talk,
+                            color: Colors.white, size: 18),
+                        SizedBox(width: 6),
+                        Text('联系商家',
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white)),
+                      ],
                     ),
                   ),
-                Row(
-                  children: [
-                    // 图片按钮
-                    IconButton(
-                      onPressed: _pickImages,
-                      icon: const Icon(Icons.image_outlined, size: 23),
-                      color: const Color(0xFF6B7280),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Container(
-                        height: 40,
-                        padding: const EdgeInsets.symmetric(horizontal: 13),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF2F3F5),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Center(
-                          child: TextField(
-                            controller: _inputCtrl,
-                            focusNode: _inputFocus,
-                            maxLines: 1,
-                            textInputAction: TextInputAction.send,
-                            onSubmitted: (_) => _send(),
-                            style: const TextStyle(fontSize: 14),
-                            decoration: const InputDecoration(
-                              isDense: true,
-                              border: InputBorder.none,
-                              hintText: '说点什么…',
-                              hintStyle: TextStyle(
-                                  fontSize: 14, color: Color(0xFF9CA3AF)),
-                            ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 留言输入卡片（内嵌在评论区末尾）
+  ///
+  /// 原先是 bottomNavigationBar 固定底栏；底部栏让位给「收藏 + 联系商家」
+  /// （对齐 build 11），输入栏挪进评论区，功能不变。
+  Widget _inlineInputCard() {
+    return Container(
+      margin: const EdgeInsets.only(top: 14),
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F5F0),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 待上传图片预览
+          if (_pendingImages.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: SizedBox(
+                height: 62,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _pendingImages.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 6),
+                  itemBuilder: (_, i) => Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: _thumb(_pendingImages[i], size: 62),
+                      ),
+                      Positioned(
+                        top: 2,
+                        right: 2,
+                        child: GestureDetector(
+                          onTap: () =>
+                              setState(() => _pendingImages.removeAt(i)),
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(
+                                color: Colors.black54, shape: BoxShape.circle),
+                            child: const Icon(Icons.close,
+                                size: 11, color: Colors.white),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    // 发送按钮
-                    GestureDetector(
-                      onTap: _sending ? null : _send,
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: (_inputCtrl.text.trim().isEmpty &&
-                                  _pendingImages.isEmpty)
-                              ? const Color(0xFFE5E7EB)
-                              : const Color(0xFF0F7A6B),
-                          shape: BoxShape.circle,
-                        ),
-                        child: _sending
-                            ? const Padding(
-                                padding: EdgeInsets.all(11),
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Colors.white),
-                              )
-                            : Icon(Icons.arrow_upward,
-                                size: 20,
-                                color:
-                                    (_inputCtrl.text.trim().isEmpty &&
-                                            _pendingImages.isEmpty)
-                                        ? const Color(0xFFADB5BD)
-                                        : Colors.white),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          Row(
+            children: [
+              // 图片按钮
+              IconButton(
+                onPressed: _pickImages,
+                icon: const Icon(Icons.image_outlined, size: 22),
+                color: const Color(0xFF6B7280),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Container(
+                  height: 40,
+                  padding: const EdgeInsets.symmetric(horizontal: 13),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFE5E1D8)),
+                  ),
+                  child: Center(
+                    child: TextField(
+                      controller: _inputCtrl,
+                      focusNode: _inputFocus,
+                      maxLines: 1,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => _send(),
+                      style: const TextStyle(fontSize: 14),
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        border: InputBorder.none,
+                        hintText: '说点什么…',
+                        hintStyle: TextStyle(
+                            fontSize: 14, color: Color(0xFF9CA3AF)),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 8),
+              // 发送按钮
+              GestureDetector(
+                onTap: _sending ? null : _send,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: (_inputCtrl.text.trim().isEmpty &&
+                            _pendingImages.isEmpty)
+                        ? const Color(0xFFE5E7EB)
+                        : const Color(0xFF0F7A6B),
+                    shape: BoxShape.circle,
+                  ),
+                  child: _sending
+                      ? const Padding(
+                          padding: EdgeInsets.all(11),
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : Icon(Icons.arrow_upward,
+                          size: 20,
+                          color: (_inputCtrl.text.trim().isEmpty &&
+                                  _pendingImages.isEmpty)
+                              ? const Color(0xFFADB5BD)
+                              : Colors.white),
+                ),
+              ),
+            ],
           ),
-        ),
+        ],
       ),
     );
   }
