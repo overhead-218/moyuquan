@@ -433,7 +433,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   _MenuItem(
                     icon: Icons.bookmark,
                     label: '收藏',
-                    trailing: '${FavoriteService.instance.postCount}',
+                    // ⚠️ 原来只算 postCount（帖子收藏），漏了 spotCount（钓点收藏）
+                    //    —— 用户收藏钓点后「我的」页永远显示 0，
+                    //    和上次 FavoritesPage 只读 favPosts 不读 favSpotIds 是同款问题。
+                    //    现在显示帖子 + 钓点总数。
+                    trailing:
+                        '${FavoriteService.instance.postCount + FavoriteService.instance.spotCount}',
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const FavoritesPage()),
