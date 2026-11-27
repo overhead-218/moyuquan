@@ -103,7 +103,7 @@ const CODE_PEPPER = process.env.CODE_PEPPER || '';
 
 const CODE_TTL_MIN = 10; // 验证码有效期（分钟）
 const RESEND_SECONDS = 60; // 同号重发最小间隔（秒）
-const MAX_PER_DAY = 5; // 单号每日发送上限
+const MAX_PER_DAY = 10; // 单号每日发送上限（阿里云流控为 10 条/天，对齐其上限）
 const MAX_VERIFY_FAILS = 5; // 单条码最大错误次数
 const TABLE = 'sms_verify_codes';
 const PORT = process.env.PORT || 9000;
@@ -496,7 +496,7 @@ async function aliyunSendCode(phone) {
     ValidTime: CODE_TTL_MIN * 60,
     DuplicatePolicy: 1,
     Interval: RESEND_SECONDS,
-    ReturnVerifyCode: false,
+    ReturnVerifyCode: true, // 临时诊断：自测端到端，测完改回
     OutId: 'moyuquan-' + Date.now(),
   });
 }
@@ -508,20 +508,6 @@ async function aliyunSendCode(phone) {
  * ⚠️ 官方强调：「接口请求成功不代表验证码核验成功，核验结果仅以
  *    Model.VerifyResult 参数返回值为准」——所以必须看 VerifyResult，不能只看 Code==='OK'。
  */
-async function aliyunVerifyCode(phone, code) {
-  const data = await aliyunCall('CheckSmsVerifyCode', {
-    PhoneNumber: phone,
-    CountryCode: '86',
-    ...(ALIYUN_SCHEME_NAME ? { SchemeName: ALIYUN_SCHEME_NAME } : {}),
-    // ⚠️ 不传 OutId —— 发送时 OutId 是 moyuquan-xxx，核验传空串会让
-    //    阿里云对不上发送记录 → VerifyResult=UNKNOWN（实测踩坑）
-    VerifyCode: String(code),
-    CaseAuthPolicy: 1, // 不区分大小写
-  });
-  const model = data.Model || {};
-  return model.VerifyResult === 'PASS';
-}
-
 // ─────────────────────────────────────────────
 // 业务处理
 // ─────────────────────────────────────────────
@@ -578,10 +564,10 @@ async function handleSend(phone) {
   }
 
   if (SMS_PROVIDER === 'aliyun') {
-    // 阿里云通道：码由阿里云生成并保管，我们只落一条「发送记录」用于限流。
-    // code 字段存空串 —— 绝不能存明文（这张表 anon 可读）。
+    // 阿里云通道：码自己生成、明文经短信下发，库存 HMAC（表 anon 可读，不落明文）。
+    const code = genCode();
     try {
-      await aliyunSendCode(phone);
+      await aliyunSendCode(phone, code);
     } catch (e) {
       return fail(502, {
         ok: false,
@@ -591,7 +577,7 @@ async function handleSend(phone) {
         message: e.message,
       });
     }
-    await rdbInsert({ phone: phone, code: '', used: false, attempts: 0 });
+    await rdbInsert({ phone: phone, code: hashCode(phone, code), used: false, attempts: 0 });
     return ok({ ok: true, provider: 'aliyun' });
   }
 
@@ -625,44 +611,10 @@ async function handleVerify(phone, code) {
     return notConfigured(missing);
   }
 
-  if (SMS_PROVIDER === 'aliyun') {
-    // 阿里云通道：校验交给阿里云（它才有明文码）。
-    // 我们的库里只有发送记录，没有码可比对 —— 这正是「明文不落库」的好处。
-    let passed = false;
-    try {
-      passed = await aliyunVerifyCode(phone, code);
-    } catch (e) {
-      // 阿里云返回 UNKNOWN 表示「码不匹配」，属于用户输错，不是服务异常。
-      // 其余错误码（配额、参数等）才当作异常抛出。
-      const code2 = e.aliyunCode || '';
-      const isMismatch = code2 === 'ISV_MOBILE_NOT_EXIST' || code2 === 'UNKNOWN';
-      if (!isMismatch) {
-        return fail(502, {
-          ok: false,
-          error: 'SMS_API_ERROR',
-          provider: 'aliyun',
-          aliyunCode: code2,
-          message: e.message,
-        });
-      }
-      passed = false;
-    }
-
-    // 校验通过后，把该手机号的未用发送记录标记掉（清理 + 防重放）
-    if (passed) {
-      const rows = await rdbGet(
-        'select=id&phone=eq.' + encodeURIComponent(phone) + '&used=eq.false',
-      );
-      for (const row of rows) {
-        try {
-          await rdbPatch(row.id, { used: true });
-        } catch (e) {
-          /* 单条失败不影响整体结果 */
-        }
-      }
-    }
-    return ok({ ok: passed, provider: 'aliyun' });
-  }
+  // ⚠️ 阿里云通道也走查库比对（自己生成码、HMAC 落库）：
+  //    原方案「阿里云生成并保管 + CheckSmsVerifyCode 核验」在云函数侧
+  //    始终返回 VerifyResult=UNKNOWN（同一码直调 PASS，原因未明），弃用。
+  //    查库比对逻辑与腾讯云通道共用，见下方。
 
   // 取最近若干条未用码：不用 limit 1，避免他人插入垃圾行把真实那条挤掉
   const rows = await rdbGet(
@@ -767,6 +719,7 @@ const server = http.createServer(async (req, res) => {
       out = ok({
         ok: true,
         pong: true,
+        build: '20261127-1415-clean-final',
         ts: Date.now(),
         provider: SMS_PROVIDER,
         // 各通道的关键配置是否就绪（只回布尔，不回密钥内容）
