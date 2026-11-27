@@ -12,7 +12,7 @@ workflows:
   #    一直按网页端的 [android, ios] 双端配置构建。
   #    查真实 ID：GET https://api.codemagic.io/apps/<appId>
   #               → application.workflows 的 key
-  6a8f01c3fa2a91e14a3d1169:
+  ios-release-moyuquan:
     name: iOS Release
     max_build_duration: 30
     # ⚠️ platforms 已移入 environment（11-27 实测：Codemagic 新版 schema
