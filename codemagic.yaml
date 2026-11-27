@@ -28,8 +28,6 @@ workflows:
         - pattern: 'main'
           include: true
     environment:
-      platforms:
-        - ios
       flutter: stable
       xcode: latest
       vars:
