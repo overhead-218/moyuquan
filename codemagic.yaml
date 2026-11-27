@@ -15,12 +15,9 @@ workflows:
   6a8f01c3fa2a91e14a3d1169:
     name: iOS Release
     max_build_duration: 30
-    # ⚠️ platforms 必须在 workflow 级（与 environment / scripts 同级），
-    #    放在 environment 下会被忽略 —— build 13 实测：配置解析出来仍是
-    #    platforms: [android, ios]，Android 照样构建并失败。
-    #    我们只提审 App Store，不需要 APK，所以只保留 iOS。
-    platforms:
-      - ios
+    # ⚠️ platforms 已移入 environment（11-27 实测：Codemagic 新版 schema
+    #    将 workflow 顶层 platforms 判为 extra fields not permitted，
+    #    导致整个 yaml 校验失败 —— 历史注释「必须在 workflow 级」已过时）。
     # ⚠️ 补上 triggering：之前 yaml 里没有这一块，导致 git push 到 main
     #    永远不会自动触发构建（2026-09 就踩过，build 43 push 后排队 10 分钟未动）。
     #    现在 push main 会自动跑 iOS Release workflow。
@@ -31,6 +28,8 @@ workflows:
         - pattern: 'main'
           include: true
     environment:
+      platforms:
+        - ios
       flutter: stable
       xcode: latest
       vars:
