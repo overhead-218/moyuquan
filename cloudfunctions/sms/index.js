@@ -77,6 +77,7 @@ const TC_REGION = process.env.TC_SMS_REGION || 'ap-guangzhou';
 const ALIYUN_AK = process.env.ALIYUN_ACCESS_KEY_ID || '';
 const ALIYUN_SK = process.env.ALIYUN_ACCESS_KEY_SECRET || '';
 const ALIYUN_SIGN_NAME = process.env.ALIYUN_SMS_SIGN_NAME || '';
+const ALIYUN_SCHEME_NAME = process.env.ALIYUN_SMS_SCHEME_NAME || '';
 const ALIYUN_TEMPLATE_CODE = process.env.ALIYUN_SMS_TEMPLATE_CODE || '';
 const ALIYUN_REGION = process.env.ALIYUN_SMS_REGION || 'ap-southeast-1';
 const ALIYUN_HOST = 'dypnsapi.aliyuncs.com';
@@ -482,7 +483,11 @@ async function aliyunSendCode(phone) {
   await aliyunCall('SendSmsVerifyCode', {
     PhoneNumber: phone,
     CountryCode: '86',
-    SchemeName: '',
+    // ⚠️ 短信认证 API 必须传 SchemeName（认证方案名称）——
+    //    方案 = 签名+模板+有效期等打包的配置，在号码认证服务控制台
+    //    「短信认证参数配置 → 方案配置」里查看（赠送方案）。
+    //    空值会报 lc.ASSERT_ERROR（schemeName 非空断言）。
+    ...(ALIYUN_SCHEME_NAME ? { SchemeName: ALIYUN_SCHEME_NAME } : {}),
     SignName: ALIYUN_SIGN_NAME,
     TemplateCode: ALIYUN_TEMPLATE_CODE,
     TemplateParam: JSON.stringify({ code: '##code##', min: String(CODE_TTL_MIN) }),
@@ -507,8 +512,9 @@ async function aliyunVerifyCode(phone, code) {
   const data = await aliyunCall('CheckSmsVerifyCode', {
     PhoneNumber: phone,
     CountryCode: '86',
-    SchemeName: '',
-    OutId: '',
+    ...(ALIYUN_SCHEME_NAME ? { SchemeName: ALIYUN_SCHEME_NAME } : {}),
+    // ⚠️ 不传 OutId —— 发送时 OutId 是 moyuquan-xxx，核验传空串会让
+    //    阿里云对不上发送记录 → VerifyResult=UNKNOWN（实测踩坑）
     VerifyCode: String(code),
     CaseAuthPolicy: 1, // 不区分大小写
   });
