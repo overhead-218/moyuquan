@@ -48,7 +48,7 @@ workflows:
         provisioning_profiles:
           - moyuquan-appstore
         certificates:
-          - moyuquan-distribution
+          - moyuquan-distribution-2
     scripts:
       - name: 安装依赖
         script: flutter pub get
